@@ -63,7 +63,7 @@ public class WorldLoader {
 
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 		System.setProperty("apple.awt.graphics.UseQuartz", "true");
-		System.setProperty("apple.laf.useScreenMenuBar", "true");
+		//System.setProperty("apple.laf.useScreenMenuBar", "true");
 		FileDialog dialog = new FileDialog(new Frame(), "Open File", FileDialog.LOAD);
 		dialog.setVisible(true);
 		if (dialog.getFile() == null)
@@ -71,11 +71,11 @@ public class WorldLoader {
 		File file = new File(dialog.getDirectory() + "/" + dialog.getFile());
 		ResourceModel model = loadResources(file);
 		JFrame f = new JFrame();
-		JMenuBar menubar = new JMenuBar();
-		JMenu menu = new JMenu("File");
-		menu.add(WorldLoader.getInstance().getRecentDocumentsManager().createOpenRecentMenu());
-		menubar.add(menu);
-		f.setJMenuBar(menubar);
+		//JMenuBar menubar = new JMenuBar();
+		//JMenu menu = new JMenu("File");
+		//menu.add(WorldLoader.getInstance().getRecentDocumentsManager().createOpenRecentMenu());
+		//menubar.add(menu);
+		//f.setJMenuBar(menubar);
 		Loader.setupCloseWindowKeyStrokes(f, f.getRootPane());
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.getRootPane().putClientProperty("Window.documentFile", file);
