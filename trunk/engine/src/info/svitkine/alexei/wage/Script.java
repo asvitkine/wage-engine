@@ -710,6 +710,13 @@ public class Script {
 				// TODO (also check order)
 			} else if (input.contains("rest")) {
 				// TODO (also check order)
+			} else {
+				Chr player = world.getPlayer();
+				if (player.hasNativeWeapon1() && input.contains(player.getNativeWeapon1()) && input.contains(player.getOperativeVerb1())) {
+					handleAttack(); // FIXME: parameters
+				} else if (player.hasNativeWeapon2() && input.contains(player.getNativeWeapon2()) && input.contains(player.getOperativeVerb2())) {
+					handleAttack(); // FIXME: parameters
+				}
 			}
 			// TODO: weapons, offer, etc...
 		} else if (inputClick instanceof Obj) {
@@ -722,6 +729,10 @@ public class Script {
 				callbacks.appendText(obj.getClickMessage());
 			}
 		}
+	}
+
+	private void handleAttack() { // TODO:
+		callbacks.appendText("There is no one to fight.");
 	}
 
 	private void handleTakeCommand(String target) {

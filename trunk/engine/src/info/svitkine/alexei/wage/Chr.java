@@ -199,6 +199,16 @@ public class Chr {
 		this.makesOfferComment = makesOfferComment;
 	}
 
+	public boolean hasNativeWeapon1() {
+		return nativeWeapon1 != null && operativeVerb1 != null &&
+			nativeWeapon1.length() > 0 && operativeVerb1.length() > 0;
+	}
+	
+	public boolean hasNativeWeapon2() {
+		return nativeWeapon2 != null && operativeVerb2 != null &&
+			nativeWeapon2.length() > 0 && operativeVerb2.length() > 0;
+	}
+
 	public String getNativeWeapon1() {
 		return nativeWeapon1;
 	}
