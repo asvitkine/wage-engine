@@ -75,15 +75,6 @@ class ConsoleWriter extends java.io.OutputStream {
 		}
 	}
 
-	public synchronized void write(char[] data, int off, int len) {
-		for (int i = off; i < len; i++) {
-			buffer.write(data[i]);
-			if (data[i] == '\n') {
-				flush();
-			}
-		}
-	}
-
 	public synchronized void flush() {
 		byte[] data = buffer.toByteArray();
 		if (data.length > 0) {
@@ -245,8 +236,7 @@ public class ConsoleTextArea extends JTextArea implements KeyListener, CaretList
 			select(start, end);
 	}
 
-	public synchronized void changedUpdate(DocumentEvent e) {
-	}
+	public void changedUpdate(DocumentEvent e) {}
 
 	public synchronized void caretUpdate(CaretEvent e) {
 		if (e.getMark() == e.getDot() && e.getMark() < outputMark) {
