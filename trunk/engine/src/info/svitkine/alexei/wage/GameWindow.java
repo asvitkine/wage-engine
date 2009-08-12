@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.TexturePaint;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -39,7 +40,7 @@ public class GameWindow extends JFrame {
 	private JPanel panel;
 	private Timer randomSoundTimer;
 	
-	public GameWindow(final World world) {
+	public GameWindow(final World world, TexturePaint[] patterns) {
 		this.world = world;
 		JMenuBar menubar = new JMenuBar();
 		JMenu fileMenu = createFileMenu();
@@ -51,9 +52,9 @@ public class GameWindow extends JFrame {
 		menubar.add(editMenu);
 		menubar.add(commandsMenu);
 		menubar.add(weaponsMenu);
-		Loader.setupCloseWindowKeyStrokes(this, getRootPane());
+		Utils.setupCloseWindowKeyStrokes(this, getRootPane());
 		WindowManager wm = new WindowManager();
-		viewer = new SceneViewer();
+		viewer = new SceneViewer(patterns);
 		textArea = createTextArea();
 		final JScrollPane scrollPane = wrapInScrollPane(textArea);
 		panel = wrapInPanel(scrollPane);
@@ -131,6 +132,7 @@ public class GameWindow extends JFrame {
 		setLocationRelativeTo(null);
 		setVisible(true);
 	}
+
 	
 	private static void runOnEventDispatchThread(Runnable runnable) {
 		if (SwingUtilities.isEventDispatchThread()) {

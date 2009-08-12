@@ -76,7 +76,7 @@ public class WorldLoader {
 		//menu.add(WorldLoader.getInstance().getRecentDocumentsManager().createOpenRecentMenu());
 		//menubar.add(menu);
 		//f.setJMenuBar(menubar);
-		Loader.setupCloseWindowKeyStrokes(f, f.getRootPane());
+		Utils.setupCloseWindowKeyStrokes(f, f.getRootPane());
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.getRootPane().putClientProperty("Window.documentFile", file);
 		f.setTitle(dialog.getFile());
@@ -180,6 +180,24 @@ public class WorldLoader {
 		}
 		if (world.getSoundLibrary2() != null && world.getSoundLibrary2().length() > 0) {
 			loadExternalSounds(world, file, world.getSoundLibrary2());
+		}
+		ResourceType patterns = model.getResourceType("PAT#");
+		if (patterns != null) {
+			Resource r = patterns.getResource((short) 900);
+			if (r != null) {
+				DataInputStream in = new DataInputStream(new ByteArrayInputStream(r.getData()));
+				try {
+					short count = in.readShort();
+					for (int i = 0; i < count; i++) {
+						byte[] pattern = new byte[8];
+						in.readFully(pattern);
+						world.getPatterns().add(pattern);
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
 		return world;
 	}
