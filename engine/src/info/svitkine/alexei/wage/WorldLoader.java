@@ -14,8 +14,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.prefs.Preferences;
 
 import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
+//import javax.swing.JMenu;
+//import javax.swing.JMenuBar;
 
 import org.freeshell.gbsmith.rescafe.resourcemanager.*;
 import org.freeshell.gbsmith.rescafe.MacBinaryHeader;

@@ -13,7 +13,8 @@ import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -29,13 +30,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
-
 public class GameWindow extends JFrame {
 	private World world;
 	private Engine engine;
 	private SceneViewer viewer;
 	private ConsoleTextArea textArea;
 	private JPanel panel;
+	private Timer randomSoundTimer;
 	
 	public GameWindow(final World world) {
 		this.world = world;
@@ -64,22 +65,10 @@ public class GameWindow extends JFrame {
 		Scene scene = world.getPlayer().getCurrentScene();
 		world.addMoveListener(new World.MoveListener() {
 			public void onMove(World.MoveEvent event) {
-				if (event.getTo() == world.getPlayer().getCurrentScene() ||
-					event.getFrom() == world.getPlayer().getCurrentScene()) {
-					try {
-						SwingUtilities.invokeAndWait(new Runnable() {
-							public void run() {
-								viewer.repaint();
-								getContentPane().repaint();
-							}
-						});
-					} catch (InterruptedException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					} catch (InvocationTargetException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
+				Scene currentScene = world.getPlayer().getCurrentScene();
+				if (event.getTo() == currentScene || event.getFrom() == currentScene) {
+					viewer.repaint();
+					getContentPane().repaint();
 					try {
 						Thread.sleep(100);
 					} catch (InterruptedException e) {
@@ -93,6 +82,7 @@ public class GameWindow extends JFrame {
 		wm.add(panel);
 		updateSceneViewerForScene(viewer, scene);
 		updateTextAreaForScene(textArea, panel, scene);
+		updateSoundTimerForScene(scene);
 		viewer.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -103,27 +93,13 @@ public class GameWindow extends JFrame {
 							public void run() {
 								engine.processTurn(null, target);
 								textArea.getOut().append("\n");
-								final Scene scene = world.getPlayer().getCurrentScene();
-								SwingUtilities.invokeLater(new Runnable() {
-									public void run() {
-										if (scene != viewer.getScene()) {
-											if (scene == world.getStorageScene()) {
-												JOptionPane.showMessageDialog(GameWindow.this, "Game over!");
-												setVisible(false);
-												dispose();
-											} else {
-												updateSceneViewerForScene(viewer, scene);
-												updateTextAreaForScene(textArea, panel, scene);
-											}
-										}
-										getContentPane().validate();
-										getContentPane().repaint();
-										textArea.postUpdateUI();
-									}
-								});
+								processEndOfTurn();
 							}
 						});
 						thread.start();
+						while (true) {
+							try { thread.join(); break; } catch (InterruptedException e1) { }
+						}
 					}
 				}
 			}
@@ -170,25 +146,30 @@ public class GameWindow extends JFrame {
 		synchronized (engine) {
 			engine.processTurn(line, null);
 			textArea.getOut().append("\n");
-			final Scene scene = world.getPlayer().getCurrentScene();
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					if (scene != viewer.getScene()) {
-						if (scene == world.getStorageScene()) {
-							JOptionPane.showMessageDialog(GameWindow.this, "Game over!");
-							setVisible(false);
-							dispose();
-						} else {
-							updateSceneViewerForScene(viewer, scene);
-							updateTextAreaForScene(textArea, panel, scene);
-						}
-					}
-					getContentPane().validate();
-					getContentPane().repaint();
-					textArea.postUpdateUI();
-				}
-			});
+			processEndOfTurn();
 		}
+	}
+	
+	private void processEndOfTurn() {
+		final Scene scene = world.getPlayer().getCurrentScene();
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				if (scene != viewer.getScene()) {
+					if (scene == world.getStorageScene()) {
+						JOptionPane.showMessageDialog(GameWindow.this, "Game over!");
+						setVisible(false);
+						dispose();
+					} else {
+						updateSceneViewerForScene(viewer, scene);
+						updateTextAreaForScene(textArea, panel, scene);
+						updateSoundTimerForScene(scene);
+					}
+				}
+				getContentPane().validate();
+				getContentPane().repaint();
+				textArea.postUpdateUI();
+			}
+		});
 	}
 	
 	private JMenu createAppleMenu() {
@@ -296,17 +277,70 @@ public class GameWindow extends JFrame {
 		}
 	}
 
-	public void updateTextAreaForScene(ConsoleTextArea textArea, JPanel panel, Scene scene) {
+	private void updateTextAreaForScene(ConsoleTextArea textArea, JPanel panel, Scene scene) {
 		textArea.setFont(new Font(scene.getFontName(), 0, scene.getFontSize()));
 		panel.setBounds(scene.getTextBounds());
 	}
 
-	public void updateSceneViewerForScene(SceneViewer viewer, Scene scene) {
+	private void updateSceneViewerForScene(SceneViewer viewer, Scene scene) {
 		viewer.setScene(scene);
 		viewer.setBounds(scene.getDesignBounds());
 	}
 
-	public ConsoleTextArea createTextArea() {
+	private static class PlaySoundTask extends TimerTask {
+		private Sound sound;
+
+		public PlaySoundTask(Sound sound) {
+			this.sound = sound;
+		}
+
+		public void run() {
+			sound.play();
+		}
+	}
+
+	private class UpdateSoundTimerTask extends TimerTask {
+		private Scene scene;
+
+		public UpdateSoundTimerTask(Scene scene) {
+			this.scene = scene;
+		}
+
+		public void run() {
+			synchronized (engine) {
+				if (world.getPlayer().getCurrentScene() == scene) {
+					updateSoundTimerForScene(scene);
+				}
+			}
+		}
+	}
+
+	private void updateSoundTimerForScene(final Scene scene) {
+		if (randomSoundTimer != null) {
+			randomSoundTimer.cancel();
+			randomSoundTimer = null;
+		}
+		if (scene.getSoundFrequency() > 0 && scene.getSoundName() != null && scene.getSoundName().length() > 0) {
+			final Sound sound = world.getSounds().get(scene.getSoundName().toLowerCase());
+			if (sound != null) {
+				randomSoundTimer = new Timer();
+				switch (scene.getSoundType()) {
+					case Scene.PERIODIC:
+						int delay = 60000 / scene.getSoundFrequency();
+						randomSoundTimer.schedule(new PlaySoundTask(sound), delay);
+						randomSoundTimer.schedule(new UpdateSoundTimerTask(scene), delay + 1);
+						break;
+					case Scene.RANDOM:
+						for (int i = 0; i < scene.getSoundFrequency(); i++)
+							randomSoundTimer.schedule(new PlaySoundTask(sound), (int) (Math.random() * 60000));
+						randomSoundTimer.schedule(new UpdateSoundTimerTask(scene), 60000);
+						break;
+				}
+			}
+		}
+	}
+
+	private ConsoleTextArea createTextArea() {
 		ConsoleTextArea textArea = new ConsoleTextArea();
 		textArea.setColumns(0);
 		textArea.setLineWrap(true);
@@ -314,7 +348,7 @@ public class GameWindow extends JFrame {
 		return textArea;
 	}
 
-	public JScrollPane wrapInScrollPane(JTextArea textArea) {
+	private JScrollPane wrapInScrollPane(JTextArea textArea) {
 		JScrollPane scrollPane = new JScrollPane(textArea);
 		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
@@ -322,7 +356,7 @@ public class GameWindow extends JFrame {
 		return scrollPane;
 	}
 
-	public JPanel wrapInPanel(JScrollPane scrollPane) {
+	private JPanel wrapInPanel(JScrollPane scrollPane) {
 		JPanel text = new JPanel() {
 			public void paint(Graphics g) {
 				Graphics2D g2d = (Graphics2D) g;
