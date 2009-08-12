@@ -205,10 +205,12 @@ public class ConsoleTextArea extends JTextArea implements KeyListener, CaretList
 	}
 
 	public synchronized void write(String str) {
+		int start = getSelectionStart();
+		int end = getSelectionEnd();
 		insert(str, outputMark);
 		int len = str.length();
 		outputMark += len;
-		select(outputMark, outputMark);
+		select(start + len, end + len);
 	}
 
 	public synchronized void insertUpdate(DocumentEvent e) {
