@@ -13,6 +13,7 @@ import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -67,14 +68,20 @@ public class GameWindow extends JFrame {
 			public void onMove(World.MoveEvent event) {
 				Scene currentScene = world.getPlayer().getCurrentScene();
 				if (event.getTo() == currentScene || event.getFrom() == currentScene) {
-					viewer.repaint();
-					getContentPane().repaint();
+					Runnable repainter = new Runnable() {
+						public void run() {
+							viewer.repaint();
+							getContentPane().repaint();
+						}
+					};
+					runOnEventDispatchThread(repainter);
 					try {
 						Thread.sleep(100);
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
+					textArea.setText("");
 				}
 			}
 		});
@@ -124,6 +131,20 @@ public class GameWindow extends JFrame {
 		setSize(640, 480);
 		setLocationRelativeTo(null);
 		setVisible(true);
+	}
+	
+	private static void runOnEventDispatchThread(Runnable runnable) {
+		if (SwingUtilities.isEventDispatchThread()) {
+			runnable.run();
+		} else try {
+			SwingUtilities.invokeAndWait(runnable);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (InvocationTargetException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 	}
 
 	private void doCommand(String line) {

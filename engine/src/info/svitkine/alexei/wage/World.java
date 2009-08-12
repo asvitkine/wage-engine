@@ -183,15 +183,16 @@ public class World {
 	public void move(Chr chr, Scene scene) {
 		if (chr == null)
 			return;
-		Object from = null;
-		if (chr.getCurrentScene() != null) {
-			chr.getCurrentScene().getChrs().remove(chr);
-			from = chr.getCurrentScene();
+		Scene from = chr.getCurrentScene();
+		if (from != scene) {
+			if (from != null)
+				from.getChrs().remove(chr);
+			chr.setCurrentScene(scene);
+			scene.getChrs().add(chr);
+			sortChrs(scene.getChrs());
+			chr.setVisits(chr.getVisits() + 1);
+			fireMoveEvent(new MoveEvent(chr, from, scene));
 		}
-		chr.setCurrentScene(scene);
-		scene.getChrs().add(chr);
-		sortChrs(scene.getChrs());
-		fireMoveEvent(new MoveEvent(chr, from, scene));
 	}
 
 	private void sortObjs(List<Obj> objs) {
