@@ -1,9 +1,12 @@
 package info.svitkine.alexei.wage;
 
+import info.svitkine.alexei.wage.World.MoveEvent;
+import info.svitkine.alexei.wage.World.MoveListener;
+
 import java.io.PrintStream;
 
 
-public class Engine implements Script.Callbacks {
+public class Engine implements Script.Callbacks, MoveListener {
 	private World world;
 	private Scene lastScene;
 	private PrintStream out;
@@ -20,6 +23,7 @@ public class Engine implements Script.Callbacks {
 		this.world = world;
 		this.out = out;
 		this.callbacks = callbacks;
+		world.addMoveListener(this);
 	}
 	
 	private void performInitialSetup() {
@@ -107,5 +111,54 @@ public class Engine implements Script.Callbacks {
 
 	public void setMenu(String menuData) {
 		callbacks.setCommandsMenu(menuData);
+	}
+
+	public void onMove(MoveEvent event) {
+		Chr player = world.getPlayer();
+		if (event.getWhat() != player && event.getWhat() instanceof Chr) {
+			if (event.getTo() == player.getCurrentScene()) {
+				Chr chr = (Chr) event.getWhat();
+				StringBuilder sb = new StringBuilder("You encounter ");
+				if (!chr.isNameProperNoun())
+					sb.append("a ");
+				sb.append(chr.getName());
+				sb.append(".");
+				appendText(sb.toString());
+				if (chr.getInitialComment() != null && chr.getInitialComment().length() > 0)
+					appendText(chr.getInitialComment());
+				performAttack(chr, player);
+			}
+		}
+	}
+	
+	private void performAttack(Chr attacker, Chr victim) {
+		String verb = attacker.getOperativeVerb1();
+		String weapon = attacker.getNativeWeapon1();
+		appendText(getAttackMessage(attacker, victim, verb, weapon, "chest"));
+		// TODO: roll some dice
+		// TODO: create interface weapon and getWeapon1() getWeapon2() adapters for chr
+		appendText("A miss!");
+	}
+
+	private String getAttackMessage(Chr attacker, Chr victim, String verb, String weapon, String target) {
+		StringBuilder sb = new StringBuilder();
+		if (!attacker.isNameProperNoun())
+			sb.append("The ");
+		sb.append(String.format("%s %ss ", attacker.getName(), verb));
+		if (attacker.getGender() == Chr.GENDER_HE)
+			sb.append("his ");
+		else if (attacker.getGender() == Chr.GENDER_SHE)
+			sb.append("her ");
+		else
+			sb.append("its ");
+		sb.append(weapon);
+		sb.append(" at ");
+		if (!victim.isNameProperNoun())
+			sb.append("the ");
+		sb.append(victim.getName());
+		sb.append("'s ");
+		sb.append(target);
+		sb.append(".");
+		return sb.toString();
 	}
 }
