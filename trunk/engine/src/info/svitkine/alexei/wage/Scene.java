@@ -23,7 +23,7 @@ public class Scene {
 	private int fontType; // 3 => Geneva, 22 => Courier, param to TextFont() function
 	private boolean[] blocked = new boolean[4];
 	private String[] messages = new String[4];
-	private int soundFrequency;
+	private int soundFrequency; // times a minute, max 3600
 	private int soundType;
 	private String soundName;
 	private int worldX;
