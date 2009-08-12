@@ -716,11 +716,11 @@ public class Script {
 				Scene playerScene = world.getPlayer().getCurrentScene();
 				callbacks.appendText(playerScene.getText());
 			} else if (input.contains("inventory")) {
-				// TODO (also check order)
+				handleInventoryCommand();
 			} else if (input.contains("status")) {
-				// TODO (also check order)
+				handleStatusCommand();
 			} else if (input.contains("rest")) {
-				// TODO (also check order)
+				handleRestCommand();
 			} else {
 				Chr player = world.getPlayer();
 				if (player.hasNativeWeapon1() && tryAttack(player.getNativeWeapon1(), player.getOperativeVerb1(), input)) {
@@ -756,6 +756,34 @@ public class Script {
 	
 	private void handleAttack() { // TODO:
 		callbacks.appendText("There is no one to fight.");
+	}
+
+	private void handleInventoryCommand() {
+		List<Obj> inv = world.getPlayer().getInventory();
+		if (inv.size() == 0) {
+			callbacks.appendText("Your pack is empty.");
+		} else {
+			StringBuilder sb = new StringBuilder("Your pack contains ");
+			for (int i = 0; i < inv.size(); i++) {
+				Obj obj = inv.get(i);
+				if (!obj.isNamePlural())
+					sb.append("a ");
+				sb.append(obj.getName());
+				if (i == inv.size() - 1)
+					sb.append(".");
+				else if (i == inv.size() - 2)
+					sb.append(" and ");
+				else
+					sb.append(", ");
+			}
+			callbacks.appendText(sb.toString());
+		}
+	}
+
+	private void handleStatusCommand() {
+	}
+
+	private void handleRestCommand() {
 	}
 
 	private void handleTakeCommand(String target) {
