@@ -81,7 +81,9 @@ public class GameWindow extends JFrame {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					textArea.setText("");
+					if (event.getWhat() == world.getPlayer()) {
+						textArea.setText("");
+					}
 				}
 			}
 		});
@@ -92,23 +94,20 @@ public class GameWindow extends JFrame {
 		updateSoundTimerForScene(scene);
 		viewer.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseClicked(MouseEvent e) {
-				synchronized (engine) {
-					final Object target = viewer.getClickTarget(e);
-					if (target != null) {
-						Thread thread = new Thread(new Runnable() {
-							public void run() {
+			public void mouseClicked(final MouseEvent e) {
+				Thread thread = new Thread(new Runnable() {
+					public void run() {
+						synchronized (engine) {
+							final Object target = viewer.getClickTarget(e);
+							if (target != null) {
 								engine.processTurn(null, target);
 								textArea.getOut().append("\n");
 								processEndOfTurn();
 							}
-						});
-						thread.start();
-						while (true) {
-							try { thread.join(); break; } catch (InterruptedException e1) { }
 						}
 					}
-				}
+				});
+				thread.start();
 			}
 		});
 		new Thread(new Runnable() {
