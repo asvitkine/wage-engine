@@ -48,7 +48,9 @@ public class Sound {
 				buf[i] = (byte) value;
 				prevValue = value;
 			}
-			line.write(buf, 0, buf.length);
+			// data[3] is the loop count
+			for (int i = 0; i < data[3]; i++)
+				line.write(buf, 0, buf.length);
 			line.drain();
 			line.close();
 		} catch (Exception e) {
