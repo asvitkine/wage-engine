@@ -380,6 +380,14 @@ public class Script {
 					index++;
 					return;
 				}
+			} else switch (data[index]) {
+				case (byte) 0x8B: // PRINT
+				case (byte) 0x8C: // SOUND
+				case (byte) 0x8E: // LET
+				case (byte) 0x95: // MENU
+					while (data[index] != (byte) 0xFD) {
+						index++;
+					}
 			}
 			index++;
 		}
@@ -675,6 +683,9 @@ public class Script {
 					index++;
 				} else if (data[index] == (byte) 0x88) { // END
 					index++;
+				} else {
+					System.out.println(buildStringFromOffset(index));
+					System.exit(-1);
 				}
 			}
 		} catch (Exception e) {
