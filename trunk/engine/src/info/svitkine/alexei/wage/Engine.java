@@ -79,14 +79,9 @@ public class Engine implements Script.Callbacks {
 			return;
 		if (playerScene != lastScene) {
 			lastScene = playerScene;
-			hadOutput = false;
 			if (turn != 0) {
 				loopCount = 0;
-				playerScene.getScript().execute(world, loopCount++, null, null, this);
-			}
-			if (!hadOutput) {
-				out.append(playerScene.getText());
-				out.append("\n");
+				playerScene.getScript().execute(world, loopCount++, "look", null, this);
 			}
 			if (turn == 0) {
 				out.append("\n");

@@ -793,6 +793,7 @@ public class Script {
 					callbacks.appendText("You can't move it.");
 				} else {
 					// TODO: What about limit # of objs and such.
+					callbacks.appendText("You now have the " + o.getName() + ".");
 					callbacks.appendText(o.getClickMessage());
 					world.move(o, world.getPlayer());
 				}
