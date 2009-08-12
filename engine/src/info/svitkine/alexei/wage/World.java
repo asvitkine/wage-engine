@@ -26,6 +26,7 @@ public class World {
 	private List<Obj> orderedObjs;
 	private List<Chr> orderedChrs;
 	private List<Sound> orderedSounds;
+	private List<byte[]> patterns;
 	private Scene storageScene;
 	private Chr player;
 	private Context playerContext;
@@ -41,6 +42,7 @@ public class World {
 		orderedObjs = new ArrayList<Obj>();
 		orderedChrs = new ArrayList<Chr>();
 		orderedSounds = new ArrayList<Sound>();
+		patterns = new ArrayList<byte[]>();
 		storageScene = new Scene();
 		storageScene.setName(STORAGE);
 		orderedScenes.add(storageScene);
@@ -99,6 +101,10 @@ public class World {
 		return sounds;
 	}
 
+	public List<byte[]> getPatterns() {
+		return patterns;
+	}
+	
 	public Chr getPlayer() {
 		return player;
 	}

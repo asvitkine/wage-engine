@@ -1,13 +1,16 @@
 package info.svitkine.alexei.wage;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Rectangle;
+import java.awt.TexturePaint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
+import java.awt.image.BufferedImage;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -25,12 +28,14 @@ import javax.swing.ListSelectionModel;
 public class WorldBrowser extends JPanel {
 	private static final long serialVersionUID = 4725978893229240988L;
 	private World world;
+	private TexturePaint[] patterns;
 	private JTabbedPane tabs;
 	private JList sceneList;
 	private JButton playButton;
 
 	public WorldBrowser(final World world) {
 		this.world = world;
+		patterns = loadPatterns(world);
 		tabs = new JTabbedPane();
 		setLayout(new BorderLayout());
 		add(tabs, BorderLayout.CENTER);
@@ -43,11 +48,33 @@ public class WorldBrowser extends JPanel {
 		add(playButton, BorderLayout.SOUTH);
 		playButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				new GameWindow(world).setVisible(true);
+				new GameWindow(world, patterns).setVisible(true);
 			}
 		});
 	}
 
+	private static TexturePaint[] loadPatterns(World world) {
+		int numPatterns = world.getPatterns().size();
+		TexturePaint[] patterns = new TexturePaint[numPatterns];
+		for (int i = 0; i < numPatterns; i++) {
+			byte[] pattern = world.getPatterns().get(i);
+			BufferedImage image = new BufferedImage(8, 8, BufferedImage.TYPE_BYTE_BINARY);
+			Graphics2D g2d = image.createGraphics();
+			for (int y = 0; y < 8; y++) {
+				for (int x = 0; x < 8; x++) {
+					if ((pattern[y] & (1 << (7 - x))) != 0) {
+						g2d.setColor(Color.BLACK);
+					} else {
+						g2d.setColor(Color.WHITE);
+					}
+					g2d.drawRect(x, y, 0, 0);
+				}
+			}
+			patterns[i] = new TexturePaint(image, new Rectangle(0, 0, 8, 8));
+		}
+		return patterns;
+	}
+	
 	public JPanel createSceneBrowser() {
 		JPanel panel = new JPanel();
 		panel.setLayout(new GridBagLayout());
@@ -75,12 +102,7 @@ public class WorldBrowser extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				Scene scene = (Scene) sceneList.getSelectedValue();
 				if (scene != null) {
-					try {
-						Rectangle bounds = scene.getDesignBounds();
-						createAndShowWindowWithContent(new ObjectViewer(scene.getDesign()), bounds);
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
+					createAndShowWindowWithContent(new ObjectViewer(scene.getDesign(), patterns), scene.getDesignBounds());
 				}
 			}
 		});
@@ -143,11 +165,7 @@ public class WorldBrowser extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				Obj obj = (Obj) sceneList.getSelectedValue();
 				if (obj != null) {
-					try {
-						createAndShowWindowWithContent(new ObjectViewer(obj.getDesign()), obj.getDesignBounds());
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
+					createAndShowWindowWithContent(new ObjectViewer(obj.getDesign(), patterns), obj.getDesignBounds());
 				}
 			}
 		});
@@ -157,13 +175,9 @@ public class WorldBrowser extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				Obj obj = (Obj) sceneList.getSelectedValue();
 				if (obj != null) {
-					try {
-						ObjectViewer viewer = new ObjectViewer(obj.getDesign());
-						viewer.setMaskMode(true);
-						createAndShowWindowWithContent(viewer, obj.getDesignBounds());
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
+					ObjectViewer viewer = new ObjectViewer(obj.getDesign(), patterns);
+					viewer.setMaskMode(true);
+					createAndShowWindowWithContent(viewer, obj.getDesignBounds());
 				}
 			}
 		});
@@ -200,11 +214,7 @@ public class WorldBrowser extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				Chr chr = (Chr) sceneList.getSelectedValue();
 				if (chr != null) {
-					try {
-						createAndShowWindowWithContent(new ObjectViewer(chr.getDesign()), null);
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
+					createAndShowWindowWithContent(new ObjectViewer(chr.getDesign(), patterns), null);
 				}
 			}
 		});
@@ -214,13 +224,9 @@ public class WorldBrowser extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				Chr chr = (Chr) sceneList.getSelectedValue();
 				if (chr != null) {
-					try {
-						ObjectViewer viewer = new ObjectViewer(chr.getDesign());
-						viewer.setMaskMode(true);
-						createAndShowWindowWithContent(viewer, chr.getDesignBounds());
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
+					ObjectViewer viewer = new ObjectViewer(chr.getDesign(), patterns);
+					viewer.setMaskMode(true);
+					createAndShowWindowWithContent(viewer, chr.getDesignBounds());
 				}
 			}
 		});
@@ -270,7 +276,7 @@ public class WorldBrowser extends JPanel {
 
 	public static void createAndShowWindowWithContent(JComponent content, Rectangle bounds) {
 		JFrame f = new JFrame();
-		Loader.setupCloseWindowKeyStrokes(f, f.getRootPane());
+		Utils.setupCloseWindowKeyStrokes(f, f.getRootPane());
 		content.setBorder(new WindowBorder());
 		f.setContentPane(content);
 		f.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);

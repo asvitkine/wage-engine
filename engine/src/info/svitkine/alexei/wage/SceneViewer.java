@@ -2,32 +2,16 @@ package info.svitkine.alexei.wage;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.Border;
 
 public class SceneViewer extends JPanel {
-	private static TexturePaint[] patterns;
-	static {
-		try {
-			int numPatterns = 29;
-			patterns = new TexturePaint[numPatterns];
-			for (int i = 1; i <= numPatterns; i++) {
-				BufferedImage image = ImageIO.read(new File("patterns/" + i + ".png"));
-				patterns[i - 1] = new TexturePaint(image, new Rectangle(0, 0, image.getWidth(), image.getHeight()));
-			}
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
+	private TexturePaint[] patterns;
 	private Scene scene;
 
-	public SceneViewer() {
+	public SceneViewer(TexturePaint[] patterns) {
+		this.patterns = patterns;
 		setOpaque(false);
 	}
 	
