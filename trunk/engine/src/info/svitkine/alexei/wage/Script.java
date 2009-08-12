@@ -62,18 +62,21 @@ public class Script {
 			}
 		} else if (data[index] == (byte) 0xC4) { // RANDOMSCN@
 			Scene[] scenes = world.getScenes().values().toArray(new Scene[0]);
-			result = new Operand(scenes[(int) Math.random()*scenes.length], Operand.SCENE);
+			result = new Operand(scenes[(int) (Math.random()*scenes.length)], Operand.SCENE);
 		} else if (data[index] == (byte) 0xC5) { // RANDOMCHR@
 			Chr[] chrs = world.getChrs().values().toArray(new Chr[0]);
-			result = new Operand(chrs[(int) Math.random()*chrs.length], Operand.CHR);
+			result = new Operand(chrs[(int) (Math.random()*chrs.length)], Operand.CHR);
 		} else if (data[index] == (byte) 0xC6) { // RANDOMOBJ@
 			Obj[] objs = world.getObjs().values().toArray(new Obj[0]);
-			result = new Operand(objs[(int) Math.random()*objs.length], Operand.OBJ);
-		} else if (data[index] == (byte) 0xB0 || data[index] == (byte) 0xB1) { // VISITS#
+			result = new Operand(objs[(int) (Math.random()*objs.length)], Operand.OBJ);
+		} else if (data[index] == (byte) 0xB0) { // VISITS#
 			result = new Operand(world.getPlayer().getVisits(), Operand.NUMBER);
-		} else if (data[index] == (byte) 0xB5 /* B1 */) { // RANDOM#
+		} else if (data[index] == (byte) 0xB1) {
+			// RANDOM# for Star Trek, but VISITS# for some other games?
+			result = new Operand(1 + (int) (Math.random()*100), Operand.NUMBER);
+		} else if (data[index] == (byte) 0xB5) { // RANDOM#
 			// A random number between 1 and 100.
-			result = new Operand(1 + (int) Math.random()*100, Operand.NUMBER);
+			result = new Operand(1 + (int) (Math.random()*100), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xB2) { // LOOP#
 			result = new Operand(loopCount, Operand.NUMBER);
 		} else if (data[index] == (byte) 0xB3) { // VICTORY#
@@ -629,6 +632,7 @@ public class Script {
 				Chr chr = (Chr) o1.value;
 				Scene scene = (Scene) o2.value;
 				world.move(chr, scene);
+				// TODO: if its a bad guy, he should attack etc...
 			}
 		});
 		evaluatePair(handlers, what, to);
@@ -780,15 +784,17 @@ public class Script {
 	private void appendObjNames(StringBuilder sb, List<Obj> objs) {
 		for (int i = 0; i < objs.size(); i++) {
 			Obj obj = objs.get(i);
-			if (!obj.isNamePlural())
-				sb.append("a ");
-			sb.append(obj.getName());
-			if (i == objs.size() - 1)
-				sb.append(".");
-			else if (i == objs.size() - 2)
-				sb.append(" and ");
-			else
-				sb.append(", ");
+			if (obj.getType() != Obj.IMMOBILE_OBJECT) {
+				if (!obj.isNamePlural())
+					sb.append("a ");
+				sb.append(obj.getName());
+				if (i == objs.size() - 1)
+					sb.append(".");
+				else if (i == objs.size() - 2)
+					sb.append(" and ");
+				else
+					sb.append(", ");
+			}
 		}
 	}
 
@@ -939,10 +945,12 @@ public class Script {
 				sb.append((char) ('A' + (value / 9)));
 				sb.append((value % 9) + 1);
 				sb.append("#");
-			} else if (data[i] == (byte) 0xB0 || data[i] == (byte) 0xB1) {
+			} else if (data[i] == (byte) 0xB0) {
 				// The number of scenes the player has visited, including repeated visits.
 				sb.append("VISITS#");
-			} else if (data[i] == (byte) 0xB5 /* B1 */) {
+			} else if (data[i] == (byte) 0xB1) {
+				sb.append("RANDOM#"); // RANDOM# for Star Trek, but VISITS# for some other games?
+			} else if (data[i] == (byte) 0xB5) {
 				// A random number between 1 and 100.
 				sb.append("RANDOM#");
 			} else if (data[i] == (byte) 0xB2) {
