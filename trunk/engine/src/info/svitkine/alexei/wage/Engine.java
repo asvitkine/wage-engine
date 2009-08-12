@@ -53,8 +53,7 @@ public class Engine implements Script.Callbacks {
 				// TODO: What about RANDOM@!
 				Scene scene = world.getScenes().get(chr.getInitialScene().toLowerCase());
 				if (scene != null) {
-					scene.getChrs().add(chr);
-					chr.setCurrentScene(scene);
+					world.move(chr, scene);
 				}
 			}
 		}
