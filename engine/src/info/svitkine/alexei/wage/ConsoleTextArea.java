@@ -235,9 +235,14 @@ public class ConsoleTextArea extends JTextArea implements KeyListener, CaretList
 
 	public synchronized void postUpdateUI() {
 		// this attempts to cleanup the damage done by updateComponentTreeUI
+		int start = getSelectionStart();
+		int end = getSelectionEnd();
 		requestFocus();
 		setCaret(getCaret());
-		select(outputMark, outputMark);
+		if (start < outputMark)
+			select(outputMark, outputMark);
+		else
+			select(start, end);
 	}
 
 	public synchronized void changedUpdate(DocumentEvent e) {
