@@ -175,10 +175,10 @@ public class WorldLoader {
 				world.addSound(sound);
 			}
 		}
-		if (world.getSoundLibrary1() != null) {
+		if (world.getSoundLibrary1() != null && world.getSoundLibrary1().length() > 0) {
 			loadExternalSounds(world, file, world.getSoundLibrary1());
 		}
-		if (world.getSoundLibrary2() != null) {
+		if (world.getSoundLibrary2() != null && world.getSoundLibrary2().length() > 0) {
 			loadExternalSounds(world, file, world.getSoundLibrary2());
 		}
 		return world;
@@ -186,18 +186,21 @@ public class WorldLoader {
 
 	private void loadExternalSounds(World world, File worldFile, String soundsFileName) {
 		ResourceModel soundLibraryModel = null;
-		try {
-			soundLibraryModel = loadResources(new File(worldFile.getParent() + "/" + soundsFileName));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		if (soundLibraryModel != null) {
-			ResourceType sounds = soundLibraryModel.getResourceType("ASND");
-			if (sounds != null) {
-				for (Resource r : sounds.getResArray()) {
-					Sound sound = new Sound(r.getData());
-					sound.setName(r.getName());
-					world.addSound(sound);
+		File file = new File(worldFile.getParent() + "/" + soundsFileName);
+		if (file.exists()) {
+			try {
+				soundLibraryModel = loadResources(file);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			if (soundLibraryModel != null) {
+				ResourceType sounds = soundLibraryModel.getResourceType("ASND");
+				if (sounds != null) {
+					for (Resource r : sounds.getResArray()) {
+						Sound sound = new Sound(r.getData());
+						sound.setName(r.getName());
+						world.addSound(sound);
+					}
 				}
 			}
 		}
