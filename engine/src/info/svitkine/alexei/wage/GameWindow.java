@@ -277,14 +277,30 @@ public class GameWindow extends JFrame {
 			if (item.equals("(-")) {
 				menu.addSeparator();
 			} else {
-				JMenuItem menuItem;
+				int style = 0;
+				KeyStroke shortcut = null;
 				int index = item.lastIndexOf("/");
 				if (index != -1) {
-					menuItem = new JMenuItem(item.substring(0, index));
-					menuItem.setAccelerator(KeyStroke.getKeyStroke(item.substring(index).charAt(1),
-						Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-				} else {
-					menuItem = new JMenuItem(item);
+					shortcut = KeyStroke.getKeyStroke(item.substring(index).charAt(1),
+						Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+					item = item.substring(0, index);
+				}
+				while (item.length() >= 2 && item.charAt(item.length() - 2) == '<') {
+					char c = item.charAt(item.length() - 1);
+					if (c == 'B') {
+						style |= Font.BOLD;
+					} else if (c == 'I') {
+						style |= Font.ITALIC;
+					}
+					item = item.substring(0, item.length() - 2);
+				}
+				JMenuItem menuItem = new JMenuItem(item);
+				if (style != 0) {
+					Font font = menuItem.getFont();
+					menuItem.setFont(new Font(font.getFamily(), style, font.getSize()));
+				}
+				if (shortcut != null) {
+					menuItem.setAccelerator(shortcut);
 				}
 				menuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
