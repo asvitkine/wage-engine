@@ -719,14 +719,7 @@ public class Script {
 			} else if (input.startsWith("drop ")) {
 				handleDropCommand(input.substring(5));
 			} else if (input.contains("look")) {
-				Scene playerScene = world.getPlayer().getCurrentScene();
-				callbacks.appendText(playerScene.getText());
-				List<Obj> objs = playerScene.getObjs();
-				if (objs.size() > 0) {
-					StringBuilder sb = new StringBuilder("On the ground you see ");
-					appendObjNames(sb, objs);
-					callbacks.appendText(sb.toString());
-				}
+				handleLookCommand();
 			} else if (input.contains("inventory")) {
 				handleInventoryCommand();
 			} else if (input.contains("status")) {
@@ -778,6 +771,20 @@ public class Script {
 			StringBuilder sb = new StringBuilder("Your pack contains ");
 			appendObjNames(sb, inv);
 			callbacks.appendText(sb.toString());
+		}
+	}
+	
+	private void handleLookCommand() {
+		Scene playerScene = world.getPlayer().getCurrentScene();
+		callbacks.appendText(playerScene.getText());
+		List<Obj> objs = playerScene.getObjs();
+		for (Obj o : objs) {
+			if (o.getType() != Obj.IMMOBILE_OBJECT) {
+				StringBuilder sb = new StringBuilder("On the ground you see ");
+				appendObjNames(sb, objs);
+				callbacks.appendText(sb.toString());
+				break;
+			}
 		}
 	}
 	
