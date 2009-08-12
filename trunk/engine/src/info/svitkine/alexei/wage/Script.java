@@ -712,9 +712,17 @@ public class Script {
 				handleTakeCommand(input.substring(4));
 			} else if (input.startsWith("pick up ")) {
 				handleTakeCommand(input.substring(8));
+			} else if (input.startsWith("drop ")) {
+				handleDropCommand(input.substring(5));
 			} else if (input.contains("look")) {
 				Scene playerScene = world.getPlayer().getCurrentScene();
 				callbacks.appendText(playerScene.getText());
+				List<Obj> objs = playerScene.getObjs();
+				if (objs.size() > 0) {
+					StringBuilder sb = new StringBuilder("On the ground you see ");
+					appendObjNames(sb, objs);
+					callbacks.appendText(sb.toString());
+				}
 			} else if (input.contains("inventory")) {
 				handleInventoryCommand();
 			} else if (input.contains("status")) {
@@ -764,19 +772,23 @@ public class Script {
 			callbacks.appendText("Your pack is empty.");
 		} else {
 			StringBuilder sb = new StringBuilder("Your pack contains ");
-			for (int i = 0; i < inv.size(); i++) {
-				Obj obj = inv.get(i);
-				if (!obj.isNamePlural())
-					sb.append("a ");
-				sb.append(obj.getName());
-				if (i == inv.size() - 1)
-					sb.append(".");
-				else if (i == inv.size() - 2)
-					sb.append(" and ");
-				else
-					sb.append(", ");
-			}
+			appendObjNames(sb, inv);
 			callbacks.appendText(sb.toString());
+		}
+	}
+	
+	private void appendObjNames(StringBuilder sb, List<Obj> objs) {
+		for (int i = 0; i < objs.size(); i++) {
+			Obj obj = objs.get(i);
+			if (!obj.isNamePlural())
+				sb.append("a ");
+			sb.append(obj.getName());
+			if (i == objs.size() - 1)
+				sb.append(".");
+			else if (i == objs.size() - 2)
+				sb.append(" and ");
+			else
+				sb.append(", ");
 		}
 	}
 
@@ -797,6 +809,16 @@ public class Script {
 					callbacks.appendText(o.getClickMessage());
 					world.move(o, world.getPlayer());
 				}
+				break;
+			}
+		}
+	}
+	
+	private void handleDropCommand(String target) {
+		for (Obj o : world.getPlayer().getInventory()) {
+			if (target.contains(o.getName().toLowerCase())) {
+				callbacks.appendText("You no longer have the " + o.getName() + ".");
+				world.move(o, world.getPlayer().getCurrentScene());
 				break;
 			}
 		}
