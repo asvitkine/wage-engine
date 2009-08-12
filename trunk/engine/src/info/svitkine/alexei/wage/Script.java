@@ -769,11 +769,8 @@ public class Script {
 			int destX = playerScene.getWorldX() + dx[dir];
 			int destY = playerScene.getWorldY() + dy[dir];
 			for (Scene scene : world.getScenes().values()) {
-				if (scene.getWorldX() == destX && scene.getWorldY() == destY) {
-					playerScene.getChrs().remove(player);
-					scene.getChrs().add(player);
-					player.setCurrentScene(scene);
-					player.setVisits(player.getVisits() + 1);
+				if (scene != world.getStorageScene() && scene.getWorldX() == destX && scene.getWorldY() == destY) {
+					world.move(player, scene);
 					break;
 				}
 			}
