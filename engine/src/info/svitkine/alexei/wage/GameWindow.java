@@ -62,7 +62,7 @@ public class GameWindow extends JFrame {
 				updateMenuFromString(commandsMenu, format);
 			}
 		});
-		engine.processTurn(null, null);
+		engine.processTurn("look", null);
 		Scene scene = world.getPlayer().getCurrentScene();
 		world.addMoveListener(new World.MoveListener() {
 			public void onMove(World.MoveEvent event) {
