@@ -712,10 +712,18 @@ public class Script {
 				// TODO (also check order)
 			} else {
 				Chr player = world.getPlayer();
-				if (player.hasNativeWeapon1() && input.contains(player.getNativeWeapon1()) && input.contains(player.getOperativeVerb1())) {
+				if (player.hasNativeWeapon1() && tryAttack(player.getNativeWeapon1(), player.getOperativeVerb1(), input)) {
 					handleAttack(); // FIXME: parameters
-				} else if (player.hasNativeWeapon2() && input.contains(player.getNativeWeapon2()) && input.contains(player.getOperativeVerb2())) {
+				} else if (player.hasNativeWeapon2() && tryAttack(player.getNativeWeapon2(), player.getOperativeVerb2(), input)) {
 					handleAttack(); // FIXME: parameters
+				}
+				for (Obj o : player.getInventory()) {
+					if (o.getType() == Obj.REGULAR_WEAPON || o.getType() == Obj.THROW_WEAPON) {
+						if (tryAttack(o.getName(), o.getOperativeVerb(), input)) {
+							handleAttack();
+							break;
+						}
+					}
 				}
 			}
 			// TODO: weapons, offer, etc...
@@ -731,6 +739,10 @@ public class Script {
 		}
 	}
 
+	private boolean tryAttack(String weapon, String verb, String input) {
+		return input.contains(weapon.toLowerCase()) && input.contains(verb.toLowerCase());
+	}
+	
 	private void handleAttack() { // TODO:
 		callbacks.appendText("There is no one to fight.");
 	}
