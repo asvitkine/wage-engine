@@ -42,6 +42,7 @@ import java.io.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Segment;
 
@@ -239,8 +240,16 @@ public class ConsoleTextArea extends JTextArea implements KeyListener, CaretList
 	public void changedUpdate(DocumentEvent e) {}
 
 	public synchronized void caretUpdate(CaretEvent e) {
-		if (e.getMark() == e.getDot() && e.getMark() < outputMark) {
+		if (e.getMark() == e.getDot() && e.getMark() < outputMark && outputMark < getDocument().getLength()) {
 			setCaretPosition(outputMark);
+		}
+	}
+
+	public synchronized void clear() {
+		try {
+			getDocument().remove(0, outputMark);
+		} catch (BadLocationException e) {
+			e.printStackTrace();
 		}
 	}
 
