@@ -3,7 +3,7 @@ package info.svitkine.alexei.wage;
 import java.awt.Rectangle;
 
 
-public class Obj {
+public class Obj implements Weapon {
 	// object types:
 	public static final int REGULAR_WEAPON = 1;
 	public static final int THROW_WEAPON = 2;

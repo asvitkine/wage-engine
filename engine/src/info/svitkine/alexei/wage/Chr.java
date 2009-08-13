@@ -199,11 +199,68 @@ public class Chr {
 		this.makesOfferComment = makesOfferComment;
 	}
 
+	public Weapon[] getWeapons() {
+		ArrayList<Weapon> weapons = new ArrayList<Weapon>();
+		if (hasNativeWeapon1()) {
+			weapons.add(new Weapon() {
+				public String getName() {
+					return getNativeWeapon1();
+				}
+				public String getOperativeVerb() {
+					return getOperativeVerb1();
+				}
+				public int getType() {
+					return Obj.REGULAR_WEAPON;
+				}
+				public int getAccuracy() {
+					return 0;
+				}
+				public int getDamage() {
+					return getWeaponDamage1();
+				}
+				public String getSound() {
+					return getWeaponSound1();
+				}
+			});
+		}
+		if (hasNativeWeapon2()) {
+			weapons.add(new Weapon() {
+				public String getName() {
+					return getNativeWeapon2();
+				}
+				public String getOperativeVerb() {
+					return getOperativeVerb2();
+				}
+				public int getType() {
+					return Obj.REGULAR_WEAPON;
+				}
+				public int getAccuracy() {
+					return 0;
+				}
+				public int getDamage() {
+					return getWeaponDamage2();
+				}
+				public String getSound() {
+					return getWeaponSound2();
+				}
+			});
+		}
+		for (Obj o : getInventory()) {
+			switch (o.getType()) {
+				case Obj.REGULAR_WEAPON:
+				case Obj.THROW_WEAPON:
+				case Obj.MAGICAL_OBJECT:
+					weapons.add(o);
+			}
+		}
+		return (Weapon[]) weapons.toArray(new Weapon[0]);
+	}
+
 	public boolean hasNativeWeapon1() {
 		return nativeWeapon1 != null && operativeVerb1 != null &&
 			nativeWeapon1.length() > 0 && operativeVerb1.length() > 0;
 	}
-	
+
 	public boolean hasNativeWeapon2() {
 		return nativeWeapon2 != null && operativeVerb2 != null &&
 			nativeWeapon2.length() > 0 && operativeVerb2.length() > 0;
