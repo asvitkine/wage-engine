@@ -43,7 +43,8 @@ public class SceneViewer extends JPanel {
 			for (Obj o : scene.getObjs())
 				o.getDesign().paint(g2d, patterns);
 			for (Chr c : scene.getChrs())
-				c.getDesign().paint(g2d, patterns);
+				if (!c.isPlayerCharacter())
+					c.getDesign().paint(g2d, patterns);
 			g2d.translate(-2, -2);
 			g2d.setClip(null);
 		}

@@ -25,7 +25,17 @@ public class Engine implements Script.Callbacks, MoveListener {
 		this.callbacks = callbacks;
 		world.addMoveListener(this);
 	}
-	
+
+	private Scene getSceneByName(String location) {
+		Scene scene;
+		if (location.equals("random@")) {
+			scene = world.getOrderedScenes().get((int) (Math.random() * world.getOrderedScenes().size()));
+		} else {
+			scene = world.getScenes().get(location);
+		}
+		return scene;
+	}
+
 	private void performInitialSetup() {
 		for (Obj obj : world.getOrderedObjs())
 			world.move(obj, world.getStorageScene());
@@ -33,9 +43,8 @@ public class Engine implements Script.Callbacks, MoveListener {
 			world.move(chr, world.getStorageScene());
 		for (Obj obj : world.getOrderedObjs()) {
 			if (!obj.getSceneOrOwner().equals(World.STORAGE)) {
-				// TODO: What about RANDOM@!
 				String location = obj.getSceneOrOwner().toLowerCase();
-				Scene scene = world.getScenes().get(location);
+				Scene scene = getSceneByName(location);
 				if (scene != null) {
 					scene.getObjs().add(obj);
 					obj.setCurrentScene(scene);
@@ -54,8 +63,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 		}
 		for (Chr chr : world.getOrderedChrs()) {
 			if (!chr.getInitialScene().equals(World.STORAGE)) {
-				// TODO: What about RANDOM@!
-				Scene scene = world.getScenes().get(chr.getInitialScene().toLowerCase());
+				Scene scene = getSceneByName(chr.getInitialScene().toLowerCase());
 				if (scene != null) {
 					world.move(chr, scene);
 				}

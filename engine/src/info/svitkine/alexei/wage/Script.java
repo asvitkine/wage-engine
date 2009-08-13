@@ -729,16 +729,19 @@ public class Script {
 			} else {
 				Chr player = world.getPlayer();
 				if (player.hasNativeWeapon1() && tryAttack(player.getNativeWeapon1(), player.getOperativeVerb1(), input)) {
-					handleAttack(); // FIXME: parameters
+					handleAttack(Obj.REGULAR_WEAPON); // FIXME: parameters
 				} else if (player.hasNativeWeapon2() && tryAttack(player.getNativeWeapon2(), player.getOperativeVerb2(), input)) {
-					handleAttack(); // FIXME: parameters
+					handleAttack(Obj.REGULAR_WEAPON); // FIXME: parameters
 				}
 				for (Obj o : player.getInventory()) {
-					if (o.getType() == Obj.REGULAR_WEAPON || o.getType() == Obj.THROW_WEAPON) {
-						if (tryAttack(o.getName(), o.getOperativeVerb(), input)) {
-							handleAttack();
-							break;
-						}
+					switch (o.getType()) {
+						case Obj.REGULAR_WEAPON:
+						case Obj.THROW_WEAPON:
+						case Obj.MAGICAL_OBJECT:
+							if (tryAttack(o.getName(), o.getOperativeVerb(), input)) {
+								handleAttack(o.getType());
+								break;
+							}
 					}
 				}
 			}
@@ -759,8 +762,11 @@ public class Script {
 		return input.contains(weapon.toLowerCase()) && input.contains(verb.toLowerCase());
 	}
 	
-	private void handleAttack() { // TODO:
-		callbacks.appendText("There is no one to fight.");
+	private void handleAttack(int type) { // TODO:
+		if (type == Obj.MAGICAL_OBJECT)
+			callbacks.appendText("Ther is nobody to cast a spell at.");
+		else
+			callbacks.appendText("There is no one to fight.");
 	}
 
 	private void handleInventoryCommand() {
