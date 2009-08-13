@@ -238,11 +238,7 @@ public class GameWindow extends JFrame {
 			public void menuSelected(MenuEvent e) {
 				menu.removeAll();
 				Chr player = world.getPlayer();
-				if (player.getNativeWeapon1().length() > 0)
-					menu.add(new JMenuItem(player.getOperativeVerb1() + " " + player.getNativeWeapon1()));
-				if (player.getNativeWeapon2().length() > 0)
-					menu.add(new JMenuItem(player.getOperativeVerb2() + " " + player.getNativeWeapon2()));
-				for (Obj obj : player.getInventory()) {
+				for (Weapon obj : player.getWeapons()) {
 					if (obj.getType() == Obj.REGULAR_WEAPON ||
 						obj.getType() == Obj.THROW_WEAPON ||
 						obj.getType() == Obj.MAGICAL_OBJECT) {
