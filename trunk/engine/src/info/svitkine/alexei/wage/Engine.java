@@ -46,17 +46,15 @@ public class Engine implements Script.Callbacks, MoveListener {
 				String location = obj.getSceneOrOwner().toLowerCase();
 				Scene scene = getSceneByName(location);
 				if (scene != null) {
-					scene.getObjs().add(obj);
-					obj.setCurrentScene(scene);
+					world.move(obj, scene);
 				} else {
 					Chr chr = world.getChrs().get(location);
 					if (chr == null) {
 						System.out.println(obj.getName());
 						System.out.println(obj.getSceneOrOwner());
 					} else {
-						// TODO: Add check for max items. (order of them added?)
-						chr.getInventory().add(obj);
-						obj.setCurrentOwner(chr);
+						// TODO: Add check for max items.
+						world.move(obj, chr);
 					}
 				}
 			}
@@ -125,7 +123,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 	public void onMove(MoveEvent event) {
 		Chr player = world.getPlayer();
 		if (event.getWhat() != player && event.getWhat() instanceof Chr) {
-			if (event.getTo() == player.getCurrentScene()) {
+			if (event.getTo() == player.getCurrentScene() && event.getTo() != world.getStorageScene()) {
 				Chr chr = (Chr) event.getWhat();
 				StringBuilder sb = new StringBuilder("You encounter ");
 				if (!chr.isNameProperNoun())
@@ -141,26 +139,28 @@ public class Engine implements Script.Callbacks, MoveListener {
 	}
 	
 	private void performAttack(Chr attacker, Chr victim) {
-		String verb = attacker.getOperativeVerb1();
-		String weapon = attacker.getNativeWeapon1();
-		appendText(getAttackMessage(attacker, victim, verb, weapon, "chest"));
+		Weapon[] weapons = attacker.getWeapons();
+		String[] targets = new String[] { "chest", "head", "side" };
+		appendText(getAttackMessage(attacker, victim,
+				weapons[(int) (Math.random()*weapons.length)],
+				targets[(int) (Math.random()*targets.length)]));
 		// TODO: roll some dice
 		// TODO: create interface weapon and getWeapon1() getWeapon2() adapters for chr
 		appendText("A miss!");
 	}
 
-	private String getAttackMessage(Chr attacker, Chr victim, String verb, String weapon, String target) {
+	private String getAttackMessage(Chr attacker, Chr victim, Weapon weapon, String target) {
 		StringBuilder sb = new StringBuilder();
 		if (!attacker.isNameProperNoun())
 			sb.append("The ");
-		sb.append(String.format("%s %ss ", attacker.getName(), verb));
+		sb.append(String.format("%s %ss ", attacker.getName(), weapon.getOperativeVerb()));
 		if (attacker.getGender() == Chr.GENDER_HE)
 			sb.append("his ");
 		else if (attacker.getGender() == Chr.GENDER_SHE)
 			sb.append("her ");
 		else
 			sb.append("its ");
-		sb.append(weapon);
+		sb.append(weapon.getName());
 		sb.append(" at ");
 		if (!victim.isNameProperNoun())
 			sb.append("the ");

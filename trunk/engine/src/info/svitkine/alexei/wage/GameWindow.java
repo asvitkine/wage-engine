@@ -83,7 +83,7 @@ public class GameWindow extends JFrame {
 						e.printStackTrace();
 					}
 					if (event.getWhat() == world.getPlayer()) {
-						textArea.setText("");
+						textArea.clear();
 					}
 				}
 			}
@@ -275,6 +275,7 @@ public class GameWindow extends JFrame {
 			if (item.equals("(-")) {
 				menu.addSeparator();
 			} else {
+				boolean enabled = true;
 				int style = 0;
 				KeyStroke shortcut = null;
 				int index = item.lastIndexOf("/");
@@ -292,6 +293,10 @@ public class GameWindow extends JFrame {
 					}
 					item = item.substring(0, item.length() - 2);
 				}
+				if (item.startsWith("(")) {
+					enabled = false;
+					item = item.substring(1);
+				}
 				JMenuItem menuItem = new JMenuItem(item);
 				if (style != 0) {
 					Font font = menuItem.getFont();
@@ -299,6 +304,9 @@ public class GameWindow extends JFrame {
 				}
 				if (shortcut != null) {
 					menuItem.setAccelerator(shortcut);
+				}
+				if (!enabled) {
+					menuItem.setEnabled(false);
 				}
 				menuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
