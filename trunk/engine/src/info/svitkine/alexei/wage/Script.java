@@ -806,6 +806,17 @@ public class Script {
 	}
 
 	private void handleStatusCommand() {
+		Chr player = world.getPlayer();
+		callbacks.appendText("Character name: " + player.getName());
+		callbacks.appendText("Experience: " + player.getKills());
+		int wealth = 0;
+		for (Obj o : player.getInventory())
+			wealth += o.getValue();
+		callbacks.appendText("Wealth: " + wealth);
+		String physCond = "very good"; // TODO
+		callbacks.appendText("Your physical condition is " + physCond + ".");
+		String spirCond = "very good"; // TODO
+		callbacks.appendText("Your spiritual condition is " + spirCond + ".");
 	}
 
 	private void handleRestCommand() {

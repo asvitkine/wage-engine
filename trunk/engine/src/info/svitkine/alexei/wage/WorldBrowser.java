@@ -11,6 +11,8 @@ import java.awt.TexturePaint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.beans.XMLEncoder;
+import java.io.ByteArrayOutputStream;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -145,25 +147,35 @@ public class WorldBrowser extends JPanel {
 		DefaultListModel model = new DefaultListModel();
 		for (Obj obj : world.getOrderedObjs())
 			model.addElement(obj);
-		final JList sceneList = new JList(model);
-		sceneList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		final JList list = new JList(model);
+		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		GridBagConstraints c = new GridBagConstraints();
 		c.insets.right = 10;
 		c.gridy = GridBagConstraints.RELATIVE;
 		c.weightx = 1.0;
 		c.gridheight = 6;
 		c.fill = GridBagConstraints.BOTH;
-		panel.add(new JScrollPane(sceneList), c);
+		panel.add(new JScrollPane(list), c);
 		c.insets.right = 0;
 		c.gridx = 1;
 		c.gridheight = 1;
 		c.weightx = 0;
 		c.weighty = 0;
 		c.anchor = GridBagConstraints.SOUTH;
+		JButton viewDataButton = new JButton("View Data");
+		viewDataButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Obj obj = (Obj) list.getSelectedValue();
+				if (obj != null) {
+					createAndShowWindowWithContent(new JScrollPane(new JTextArea(objectToXml(obj))), null);
+				}
+			}
+		});
+		panel.add(viewDataButton, c);
 		JButton openDesignButton = new JButton("View Design");
 		openDesignButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Obj obj = (Obj) sceneList.getSelectedValue();
+				Obj obj = (Obj) list.getSelectedValue();
 				if (obj != null) {
 					createAndShowWindowWithContent(new ObjectViewer(obj.getDesign(), patterns), obj.getDesignBounds());
 				}
@@ -173,7 +185,7 @@ public class WorldBrowser extends JPanel {
 		JButton openDesignMaskButton = new JButton("View Design Mask");
 		openDesignMaskButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Obj obj = (Obj) sceneList.getSelectedValue();
+				Obj obj = (Obj) list.getSelectedValue();
 				if (obj != null) {
 					ObjectViewer viewer = new ObjectViewer(obj.getDesign(), patterns);
 					viewer.setMaskMode(true);
@@ -187,6 +199,15 @@ public class WorldBrowser extends JPanel {
 		return panel;
 	}
 	
+	public String objectToXml(Object o) {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		XMLEncoder encoder = new XMLEncoder(out);
+		encoder.setExceptionListener(null);
+		encoder.writeObject(o);
+		encoder.close();
+		return new String(out.toByteArray());
+	}
+	
 	public JPanel createChrBrowser() {
 		JPanel panel = new JPanel();
 		panel.setLayout(new GridBagLayout());
@@ -194,25 +215,35 @@ public class WorldBrowser extends JPanel {
 		DefaultListModel model = new DefaultListModel();
 		for (Chr chr : world.getOrderedChrs())
 			model.addElement(chr);
-		final JList sceneList = new JList(model);
-		sceneList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		final JList list = new JList(model);
+		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		GridBagConstraints c = new GridBagConstraints();
 		c.insets.right = 10;
 		c.gridy = GridBagConstraints.RELATIVE;
 		c.weightx = 1.0;
 		c.gridheight = 6;
 		c.fill = GridBagConstraints.BOTH;
-		panel.add(new JScrollPane(sceneList), c);
+		panel.add(new JScrollPane(list), c);
 		c.insets.right = 0;
 		c.gridx = 1;
 		c.gridheight = 1;
 		c.weightx = 0;
 		c.weighty = 0;
 		c.anchor = GridBagConstraints.SOUTH;
+		JButton viewDataButton = new JButton("View Data");
+		viewDataButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Chr chr = (Chr) list.getSelectedValue();
+				if (chr != null) {
+					createAndShowWindowWithContent(new JScrollPane(new JTextArea(objectToXml(chr))), null);
+				}
+			}
+		});
+		panel.add(viewDataButton, c);
 		JButton openDesignButton = new JButton("View Design");
 		openDesignButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Chr chr = (Chr) sceneList.getSelectedValue();
+				Chr chr = (Chr) list.getSelectedValue();
 				if (chr != null) {
 					createAndShowWindowWithContent(new ObjectViewer(chr.getDesign(), patterns), null);
 				}
@@ -222,7 +253,7 @@ public class WorldBrowser extends JPanel {
 		JButton openDesignMaskButton = new JButton("View Design Mask");
 		openDesignMaskButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Chr chr = (Chr) sceneList.getSelectedValue();
+				Chr chr = (Chr) list.getSelectedValue();
 				if (chr != null) {
 					ObjectViewer viewer = new ObjectViewer(chr.getDesign(), patterns);
 					viewer.setMaskMode(true);
