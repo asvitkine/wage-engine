@@ -68,8 +68,28 @@ public class Engine implements Script.Callbacks, MoveListener {
 				}
 			}
 		}
-		world.getPlayer().setVisits(1);
-		System.out.println("Player begins in " + world.getPlayer().getCurrentScene().getName());
+		Chr player = world.getPlayer();
+		Context context = world.getPlayerContext();
+		context.setPlayerVariable(Context.PHYS_ACC_BAS, player.getPhysicalAccuracy());
+		context.setPlayerVariable(Context.PHYS_ACC_CUR, player.getPhysicalAccuracy());
+		context.setPlayerVariable(Context.PHYS_ARM_BAS, player.getNaturalArmor());
+		context.setPlayerVariable(Context.PHYS_ARM_CUR, player.getNaturalArmor());
+		context.setPlayerVariable(Context.PHYS_HIT_BAS, player.getPhysicalHp());
+		context.setPlayerVariable(Context.PHYS_HIT_CUR, player.getPhysicalHp());
+		context.setPlayerVariable(Context.PHYS_SPE_BAS, player.getRunningSpeed());
+		context.setPlayerVariable(Context.PHYS_SPE_CUR, player.getRunningSpeed());
+		context.setPlayerVariable(Context.PHYS_STR_BAS, player.getPhysicalStrength());
+		context.setPlayerVariable(Context.PHYS_STR_CUR, player.getPhysicalStrength());
+		context.setPlayerVariable(Context.SPIR_ACC_BAS, player.getSpiritualAccuracy());
+		context.setPlayerVariable(Context.SPIR_ACC_CUR, player.getSpiritualAccuracy());
+		context.setPlayerVariable(Context.SPIR_ARM_BAS, player.getResistanceToMagic());
+		context.setPlayerVariable(Context.SPIR_ARM_CUR, player.getResistanceToMagic());
+		context.setPlayerVariable(Context.SPIR_HIT_BAS, player.getSpiritialHp());
+		context.setPlayerVariable(Context.SPIR_HIT_CUR, player.getSpiritialHp());
+		context.setPlayerVariable(Context.SPIR_STR_BAS, player.getSpiritualStength());
+		context.setPlayerVariable(Context.SPIR_STR_CUR, player.getSpiritualStength());
+		player.setVisits(1);
+		System.out.println("Player begins in " + player.getCurrentScene().getName());
 	}
 
 	public void processTurn(String textInput, Object clickInput) {
@@ -111,15 +131,19 @@ public class Engine implements Script.Callbacks, MoveListener {
 	}
 
 	public void appendText(String text) {
-		hadOutput = true;
-		out.append(text);
-		out.append("\n");
+		if (text != null && text.length() > 0) {
+			hadOutput = true;
+			out.append(text);
+			out.append("\n");
+		}
 	}
 
 	public void playSound(String soundName) {
-		Sound sound = world.getSounds().get(soundName.toLowerCase());
-		if (sound != null)
-			sound.play();
+		if (soundName != null) {
+			Sound sound = world.getSounds().get(soundName.toLowerCase());
+			if (sound != null)
+				sound.play();
+		}
 	}
 
 	public void setMenu(String menuData) {
@@ -163,25 +187,21 @@ public class Engine implements Script.Callbacks, MoveListener {
 		String target = targets[(int) (Math.random()*targets.length)];
 		if (!attacker.isPlayerCharacter())
 			appendText(getAttackMessage(attacker, victim, weapon, target));
-		Sound sound = world.getSounds().get(weapon.getSound().toLowerCase());
-		if (sound != null) {
-			sound.play();
-		}
+		playSound(weapon.getSound());
 		// TODO: roll some dice
 		if (Math.random() > 0.5) {
 			appendText("A miss!");
 		} else {
 			appendText("A hit to the " + target + ".");
-			sound = world.getSounds().get(attacker.getScoresHitSound());
-			if (sound != null) {
-				sound.play();
-			}
+			playSound(attacker.getScoresHitSound());
+			appendText(victim.getReceivesHitComment());
+			playSound(victim.getReceivesHitSound());
 		}
 		if (attacker.isPlayerCharacter()) {
 			react(victim, attacker);
 		}
 	}
-
+	
 	private String getAttackMessage(Chr attacker, Chr victim, Weapon weapon, String target) {
 		StringBuilder sb = new StringBuilder();
 		if (!attacker.isNameProperNoun())

@@ -110,7 +110,7 @@ public class Script {
 		} else if (data[index] == (byte) 0xE0) {
 			result = new Operand(world.getPlayerContext().getPlayerVariable(Context.PHYS_STR_CUR), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xE1) {
-			result = new Operand(world.getPlayerContext().getPlayerVariable(Context.PHYS_STR_CUR), Operand.NUMBER);
+			result = new Operand(world.getPlayerContext().getPlayerVariable(Context.PHYS_HIT_CUR), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xE2) {
 			result = new Operand(world.getPlayerContext().getPlayerVariable(Context.PHYS_ARM_CUR), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xE3) {
@@ -707,9 +707,9 @@ public class Script {
 				handleMoveCommand(Scene.NORTH, "north");
 			} else if (input.equals("e") || input.contains("east")) {
 				handleMoveCommand(Scene.EAST, "east");
-			} else if (input.equals("s") || inputText.toLowerCase().contains("south")) {
+			} else if (input.equals("s") || input.contains("south")) {
 				handleMoveCommand(Scene.SOUTH, "south");
-			} else if (input.equals("w") || inputText.toLowerCase().contains("west")) {
+			} else if (input.equals("w") || input.contains("west")) {
 				handleMoveCommand(Scene.WEST, "west");
 			} else if (input.startsWith("take ")) {
 				handleTakeCommand(input.substring(5));
@@ -719,6 +719,12 @@ public class Script {
 				handleTakeCommand(input.substring(8));
 			} else if (input.startsWith("drop ")) {
 				handleDropCommand(input.substring(5));
+			} else if (input.startsWith("aim ")) {
+				handleAimCommand(input.substring(4));
+			} else if (input.startsWith("wear ")) {
+				handleWearCommand(input.substring(5));
+			} else if (input.startsWith("put on ")) {
+				handleWearCommand(input.substring(7));
 			} else if (input.contains("look")) {
 				handleLookCommand();
 			} else if (input.contains("inventory")) {
@@ -753,15 +759,34 @@ public class Script {
 		return input.contains(weapon.getName().toLowerCase()) && input.contains(weapon.getOperativeVerb().toLowerCase());
 	}
 
-	private void handleAttack(Weapon weapon) {
-		Chr player = world.getPlayer();
+	private Chr findEnemy(Chr player) {
 		for (Chr chr : player.getCurrentScene().getChrs()) {
 			if (chr != player) {
-				callbacks.performAttack(player, chr, weapon);
-				return;
+				return chr;
 			}
 		}
-		if (weapon.getType() == Obj.MAGICAL_OBJECT)
+		return null;
+	}
+
+	private void handleAimCommand(String target) {
+		// TODO:
+		if (target.contains("head")) {
+			
+		} else if (target.contains("chest")) {
+			
+		} else if (target.contains("side")) {
+			
+		} else {
+			callbacks.appendText("Please aim for the head, chest, or side.");
+		}
+	}
+
+	private void handleAttack(Weapon weapon) {
+		Chr player = world.getPlayer();
+		Chr enemy = findEnemy(player);
+		if (enemy != null)
+			callbacks.performAttack(player, enemy, weapon);
+		else if (weapon.getType() == Obj.MAGICAL_OBJECT)
 			callbacks.appendText("There is nobody to cast a spell at.");
 		else
 			callbacks.appendText("There is no one to fight.");
@@ -821,31 +846,61 @@ public class Script {
 		for (Obj o : player.getInventory())
 			wealth += o.getValue();
 		callbacks.appendText("Wealth: " + wealth);
-		String physCond = "very good"; // TODO
-		callbacks.appendText("Your physical condition is " + physCond + ".");
-		String spirCond = "very good"; // TODO
-		callbacks.appendText("Your spiritual condition is " + spirCond + ".");
+		printPlayerCondition(player);
+	}
+
+	private String getPercentMessage(int cur, int bas) {
+		Context context = world.getPlayerContext();
+		double percent = (double) context.getPlayerVariable(cur) / context.getPlayerVariable(bas);
+		if (percent < 0.2) {
+			return "very bad";
+		} else if (percent < 0.4) {
+			return "bad";
+		} else if (percent < 0.6) {
+			return "average";
+		} else if (percent < 0.8) {
+			return "good";
+		} else {
+			return "very good";
+		}
+	}
+
+	private void printPlayerCondition(Chr player) {
+		callbacks.appendText("Your physical condition is " + getPercentMessage(Context.PHYS_HIT_CUR, Context.PHYS_HIT_BAS) + ".");
+		callbacks.appendText("Your spiritual condition is " + getPercentMessage(Context.SPIR_HIT_CUR, Context.SPIR_HIT_BAS) + ".");
 	}
 
 	private void handleRestCommand() {
+		Chr player = world.getPlayer();
+		Chr enemy = findEnemy(player);
+		if (enemy != null) {
+			callbacks.appendText("This is no time to rest!");
+		} else {
+			// TODO: Increment stuff..
+			printPlayerCondition(player);
+		}
 	}
 
 	private void handleTakeCommand(String target) {
-		for (Obj o : world.getPlayer().getCurrentScene().getObjs()) {
+		Chr player = world.getPlayer();
+		for (Obj o : player.getCurrentScene().getObjs()) {
 			if (target.contains(o.getName().toLowerCase())) {
 				if (o.getType() == Obj.IMMOBILE_OBJECT) {
 					callbacks.appendText("You can't move it.");
 				} else {
-					// TODO: What about limit # of objs and such.
-					callbacks.appendText("You now have the " + o.getName() + ".");
-					callbacks.appendText(o.getClickMessage());
-					world.move(o, world.getPlayer());
+					if (player.getInventory().size() >= player.getMaximumCarriedObjects()) {
+						callbacks.appendText("Your pack is full, you must drop something.");
+					} else {
+						callbacks.appendText("You now have the " + o.getName() + ".");
+						callbacks.appendText(o.getClickMessage());
+						world.move(o, world.getPlayer());
+					}
 				}
 				break;
 			}
 		}
 	}
-	
+
 	private void handleDropCommand(String target) {
 		for (Obj o : world.getPlayer().getInventory()) {
 			if (target.contains(o.getName().toLowerCase())) {
@@ -855,7 +910,17 @@ public class Script {
 			}
 		}
 	}
-	
+
+	private void handleWearCommand(String target) {
+		for (Obj o : world.getPlayer().getInventory()) {
+			if (target.contains(o.getName().toLowerCase())) {
+				// TODO: sometimes you can wear it!!
+				callbacks.appendText("You cannot wear that object.");
+				break;
+			}
+		}
+	}
+
 	private void handleMoveCommand(int dir, String dirName) {
 		Chr player = world.getPlayer();
 		Scene playerScene = player.getCurrentScene();
