@@ -6,10 +6,6 @@ import java.util.List;
 
 
 public class Chr {
-	public static final int GENDER_HE = 0;
-	public static final int GENDER_SHE = 1;
-	public static final int GENDER_IT = 2;
-
 	public static final int RETURN_TO_STORAGE = 0;
 	public static final int RETURN_TO_RANDOM_SCENE = 1;
 	public static final int RETURN_TO_INITIAL_SCENE = 2;
