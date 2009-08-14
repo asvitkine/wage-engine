@@ -140,23 +140,46 @@ public class Engine implements Script.Callbacks, MoveListener {
 		StringBuilder sb = new StringBuilder("You encounter ");
 		if (!chr.isNameProperNoun())
 			sb.append(TextUtils.prependDefiniteArticle(chr.getName()));
-		sb.append(chr.getName());
+		else
+			sb.append(chr.getName());
 		sb.append(".");
 		appendText(sb.toString());
 		if (chr.getInitialComment() != null && chr.getInitialComment().length() > 0)
 			appendText(chr.getInitialComment());
-		performAttack(chr, player);
+		react(chr, player);
+	}
+	
+	private void react(Chr npc, Chr player) {
+		// TODO: The NPC may also decide to just move instead of attacking...
+		// "The Invisible Warrior runs west."
+		// then, when you follow it, it could escape: "The Invisible Warrior escapes!"
+		Weapon[] weapons = npc.getWeapons();
+		Weapon weapon = weapons[(int) (Math.random()*weapons.length)];
+		performAttack(npc, player, weapon);
 	}
 
-	private void performAttack(Chr attacker, Chr victim) {
-		Weapon[] weapons = attacker.getWeapons();
+	public void performAttack(Chr attacker, Chr victim, Weapon weapon) {
 		String[] targets = new String[] { "chest", "head", "side" };
-		appendText(getAttackMessage(attacker, victim,
-				weapons[(int) (Math.random()*weapons.length)],
-				targets[(int) (Math.random()*targets.length)]));
+		String target = targets[(int) (Math.random()*targets.length)];
+		if (!attacker.isPlayerCharacter())
+			appendText(getAttackMessage(attacker, victim, weapon, target));
+		Sound sound = world.getSounds().get(weapon.getSound().toLowerCase());
+		if (sound != null) {
+			sound.play();
+		}
 		// TODO: roll some dice
-		// TODO: create interface weapon and getWeapon1() getWeapon2() adapters for chr
-		appendText("A miss!");
+		if (Math.random() > 0.5) {
+			appendText("A miss!");
+		} else {
+			appendText("A hit to the " + target + ".");
+			sound = world.getSounds().get(attacker.getScoresHitSound());
+			if (sound != null) {
+				sound.play();
+			}
+		}
+		if (attacker.isPlayerCharacter()) {
+			react(victim, attacker);
+		}
 	}
 
 	private String getAttackMessage(Chr attacker, Chr victim, Weapon weapon, String target) {

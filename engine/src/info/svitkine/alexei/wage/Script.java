@@ -400,6 +400,7 @@ public class Script {
 		public void appendText(String text);
 		public void playSound(String sound);
 		public void setMenu(String menuData);
+		public void performAttack(Chr attacker, Chr victim, Weapon weapon);
 	}
 	
 	private void processIf() {
@@ -752,7 +753,14 @@ public class Script {
 		return input.contains(weapon.getName().toLowerCase()) && input.contains(weapon.getOperativeVerb().toLowerCase());
 	}
 
-	private void handleAttack(Weapon weapon) { // TODO:
+	private void handleAttack(Weapon weapon) {
+		Chr player = world.getPlayer();
+		for (Chr chr : player.getCurrentScene().getChrs()) {
+			if (chr != player) {
+				callbacks.performAttack(player, chr, weapon);
+				return;
+			}
+		}
 		if (weapon.getType() == Obj.MAGICAL_OBJECT)
 			callbacks.appendText("There is nobody to cast a spell at.");
 		else
@@ -792,12 +800,15 @@ public class Script {
 					sb.append(TextUtils.prependDefiniteArticle(obj.getName()));
 				else
 					sb.append(obj.getName());
-				if (i == objs.size() - 1)
+				if (i == objs.size() - 1) {
 					sb.append(".");
-				else if (i == objs.size() - 2)
+				} else if (i == objs.size() - 2) {
+					if (objs.size() > 2)
+						sb.append(",");
 					sb.append(" and ");
-				else
+				} else {
 					sb.append(", ");
+				}
 			}
 		}
 	}
@@ -849,27 +860,26 @@ public class Script {
 		Chr player = world.getPlayer();
 		Scene playerScene = player.getCurrentScene();
 		String msg = playerScene.getDirMessage(dir);
-		if (playerScene.isDirBlocked(dir)) {
-			if (msg != null && msg.length() > 0) {
-				callbacks.appendText(msg);
-			} else {
-				callbacks.appendText("You can't go " + dirName + ".");
-			}
-		} else {
-			if (msg != null && msg.length() > 0) {
-				callbacks.appendText(msg);
-			}
+		if (!playerScene.isDirBlocked(dir)) {
 			int dx[] = new int[] { 0, 0, 1, -1 };
 			int dy[] = new int[] { -1, 1, 0, 0 };
 			int destX = playerScene.getWorldX() + dx[dir];
 			int destY = playerScene.getWorldY() + dy[dir];
 			for (Scene scene : world.getScenes().values()) {
 				if (scene != world.getStorageScene() && scene.getWorldX() == destX && scene.getWorldY() == destY) {
+					if (msg != null && msg.length() > 0) {
+						callbacks.appendText(msg);
+					}
 					world.move(player, scene);
-					break;
+					return;
 				}
 			}
  		}
+		if (msg != null && msg.length() > 0) {
+			callbacks.appendText(msg);
+		} else {
+			callbacks.appendText("You can't go " + dirName + ".");
+		}
 	}
 	
 	private void indent(StringBuilder sb, int indentLevel) {
