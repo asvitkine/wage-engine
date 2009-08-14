@@ -22,7 +22,11 @@ public class WBGameFinder {
 				if (model.getResourceType("ASCN") != null) {
 					return true;
 				}
-			} catch (IOException e) {
+			} catch (IOException ioe) {
+			} catch (Throwable t) {
+				System.gc();
+				//System.err.println("Failed on: " + file.getAbsolutePath());
+				//t.printStackTrace();
 			}
 			return false;
 		}
