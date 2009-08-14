@@ -64,11 +64,15 @@ public class Chr {
 	private String rejectsOfferComment;
 	private String acceptsOfferComment;
 	private String dyingWords;
-	
-	private int kills;  // Number of characters killed
-	private int visits; // Number of scenes visited, including repeated visits
+
 	private Scene currentScene;
 	private List<Obj> inventory = new ArrayList<Obj>();
+	
+	private Context context = new Context();
+
+	public Context getContext() {
+		return context;
+	}
 
 	public List<Obj> getInventory() {
 		return inventory;
@@ -80,22 +84,6 @@ public class Chr {
 
 	public void setCurrentScene(Scene currentScene) {
 		this.currentScene = currentScene;
-	}
-
-	public int getKills() {
-		return kills;
-	}
-
-	public void setKills(int kills) {
-		this.kills = kills;
-	}
-
-	public int getVisits() {
-		return visits;
-	}
-
-	public void setVisits(int visits) {
-		this.visits = visits;
 	}
 
 	public Rectangle getDesignBounds() {

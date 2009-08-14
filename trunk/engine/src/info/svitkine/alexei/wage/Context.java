@@ -38,15 +38,16 @@ public class Context {
 	/** The current spiritual strength of the player. */
 	public static final int SPIR_STR_CUR = 17;
 
-	private short loopCount;
+	private short visits; // Number of scenes visited, including repeated visits
+	private short kills;  // Number of characters killed
 	private short[] userVariables;
-	private short[] playerVariables;
+	private short[] statVariables;
 
 	public Context() {
 		userVariables = new short[26 * 9];
 		for (int i = 0; i < userVariables.length; i++)
 			userVariables[i] = -1;
-		playerVariables = new short[18];
+		statVariables = new short[18];
 	}
 
 	public short getUserVariable(int index) {
@@ -57,23 +58,31 @@ public class Context {
 		userVariables[index] = value;
 	}
 
-	public short getLoopCount() {
-		return loopCount;
+	public short getVisits() {
+		return visits;
+	}
+
+	public void setVisits(int visits) {
+		this.visits = (short) visits;
+	}
+
+	public short getKills() {
+		return kills;
+	}
+
+	public void setKills(int kills) {
+		this.kills = (short) kills;
 	}
 	
-	public void resetLoopCount() {
-		loopCount = 0;
+	public short getStatVariable(int index) {
+		return statVariables[index];
 	}
 
-	public short getPlayerVariable(int index) {
-		return playerVariables[index];
+	public void setStatVariable(int index, short value) {
+		statVariables[index] = value;
 	}
 
-	public void setPlayerVariable(int index, short value) {
-		playerVariables[index] = value;
-	}
-
-	public void setPlayerVariable(int index, int value) {
-		playerVariables[index] = (short) value;
+	public void setStatVariable(int index, int value) {
+		statVariables[index] = (short) value;
 	}
 }
