@@ -68,28 +68,6 @@ public class Engine implements Script.Callbacks, MoveListener {
 				}
 			}
 		}
-		Chr player = world.getPlayer();
-		Context context = world.getPlayerContext();
-		context.setPlayerVariable(Context.PHYS_ACC_BAS, player.getPhysicalAccuracy());
-		context.setPlayerVariable(Context.PHYS_ACC_CUR, player.getPhysicalAccuracy());
-		context.setPlayerVariable(Context.PHYS_ARM_BAS, player.getNaturalArmor());
-		context.setPlayerVariable(Context.PHYS_ARM_CUR, player.getNaturalArmor());
-		context.setPlayerVariable(Context.PHYS_HIT_BAS, player.getPhysicalHp());
-		context.setPlayerVariable(Context.PHYS_HIT_CUR, player.getPhysicalHp());
-		context.setPlayerVariable(Context.PHYS_SPE_BAS, player.getRunningSpeed());
-		context.setPlayerVariable(Context.PHYS_SPE_CUR, player.getRunningSpeed());
-		context.setPlayerVariable(Context.PHYS_STR_BAS, player.getPhysicalStrength());
-		context.setPlayerVariable(Context.PHYS_STR_CUR, player.getPhysicalStrength());
-		context.setPlayerVariable(Context.SPIR_ACC_BAS, player.getSpiritualAccuracy());
-		context.setPlayerVariable(Context.SPIR_ACC_CUR, player.getSpiritualAccuracy());
-		context.setPlayerVariable(Context.SPIR_ARM_BAS, player.getResistanceToMagic());
-		context.setPlayerVariable(Context.SPIR_ARM_CUR, player.getResistanceToMagic());
-		context.setPlayerVariable(Context.SPIR_HIT_BAS, player.getSpiritialHp());
-		context.setPlayerVariable(Context.SPIR_HIT_CUR, player.getSpiritialHp());
-		context.setPlayerVariable(Context.SPIR_STR_BAS, player.getSpiritualStength());
-		context.setPlayerVariable(Context.SPIR_STR_CUR, player.getSpiritualStength());
-		player.setVisits(1);
-		System.out.println("Player begins in " + player.getCurrentScene().getName());
 	}
 
 	public void processTurn(String textInput, Object clickInput) {
@@ -104,18 +82,19 @@ public class Engine implements Script.Callbacks, MoveListener {
 			loopCount = 0;
 		}
 		hadOutput = false;
-		playerScene.getScript().execute(world, loopCount++, textInput, clickInput, this);
+		boolean handled = playerScene.getScript().execute(world, loopCount++, textInput, clickInput, this);
 		playerScene = world.getPlayer().getCurrentScene();
 		if (playerScene == world.getStorageScene())
 			return;
 		if (playerScene != lastScene) {
+			regen();
 			lastScene = playerScene;
 			if (turn != 0) {
 				loopCount = 0;
 				playerScene.getScript().execute(world, loopCount++, "look", null, this);
 				// TODO: what if the "look" script moves the player again?
 				if (playerScene.getChrs().size() == 2) {
-					Chr a = playerScene.getChrs().get(1);
+					Chr a = playerScene.getChrs().get(0);
 					Chr b = playerScene.getChrs().get(1);
 					encounter(world.getPlayer(), world.getPlayer() == a ? b : a);
 				}
@@ -123,7 +102,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 			if (turn == 0) {
 				out.append("\n");
 			}
-		} else if (!hadOutput && textInput != null) {
+		} else if (!hadOutput && textInput != null && !handled) {
 			String[] messages = { "What?", "Huh?" };
 			appendText(messages[(int) (Math.random()*messages.length)]);
 		}
@@ -182,11 +161,28 @@ public class Engine implements Script.Callbacks, MoveListener {
 		performAttack(npc, player, weapon);
 	}
 
+	public void regen() {
+		Context context = world.getPlayerContext();
+		int curHp = context.getStatVariable(Context.PHYS_HIT_CUR);
+		int maxHp = context.getStatVariable(Context.PHYS_HIT_BAS);
+		int delta = maxHp - curHp;
+		if (delta > 0) {
+			int bonus = (int) (delta / (8 + 2 * Math.random()));
+			context.setStatVariable(Context.PHYS_HIT_CUR, curHp + bonus);
+		}
+	}
+	
 	public void performAttack(Chr attacker, Chr victim, Weapon weapon) {
 		String[] targets = new String[] { "chest", "head", "side" };
 		String target = targets[(int) (Math.random()*targets.length)];
-		if (!attacker.isPlayerCharacter())
-			appendText(getAttackMessage(attacker, victim, weapon, target));
+		if (!attacker.isPlayerCharacter()) {
+			appendText(String.format("%s %ss %s at %s's %s.",
+					getNameWithDefinitePronoun(attacker, true),
+					weapon.getOperativeVerb(),
+					TextUtils.prependGenderSpecificPronoun(weapon.getName(), attacker.getGender()),
+					getNameWithDefinitePronoun(victim, false),
+					target));
+		}
 		playSound(weapon.getSound());
 		// TODO: roll some dice
 		if (Math.random() > 0.5) {
@@ -196,25 +192,30 @@ public class Engine implements Script.Callbacks, MoveListener {
 			playSound(attacker.getScoresHitSound());
 			appendText(victim.getReceivesHitComment());
 			playSound(victim.getReceivesHitSound());
+			if (victim.getPhysicalHp() < 0) {
+				appendText(String.format("%s is dead.",
+					getNameWithDefinitePronoun(victim, true)));
+				attacker.getContext().setKills(attacker.getContext().getKills() + 1);
+				world.move(victim, world.getStorageScene());
+			} else if (attacker.isPlayerCharacter()) {
+				appendText(String.format("%s's condition appears to be %s.",
+					getNameWithDefinitePronoun(victim, true),
+					Script.getPercentMessage(victim, Context.PHYS_HIT_CUR, Context.PHYS_HIT_BAS)));
+			}
 		}
-		if (attacker.isPlayerCharacter()) {
+		if (weapon instanceof Obj) {
+			((Obj) weapon).setNumberOfUses(((Obj) weapon).getNumberOfUses() - 1);
+		}
+		if (attacker.isPlayerCharacter() && victim.getCurrentScene() == attacker.getCurrentScene()) {
 			react(victim, attacker);
 		}
 	}
-	
-	private String getAttackMessage(Chr attacker, Chr victim, Weapon weapon, String target) {
+
+	private String getNameWithDefinitePronoun(Chr chr, boolean capitalize) {
 		StringBuilder sb = new StringBuilder();
-		if (!attacker.isNameProperNoun())
-			sb.append("The ");
-		sb.append(String.format("%s %ss ", attacker.getName(), weapon.getOperativeVerb()));
-		sb.append(TextUtils.prependGenderSpecificPronoun(weapon.getName(), attacker.getGender()));
-		sb.append(" at ");
-		if (!victim.isNameProperNoun())
-			sb.append("the ");
-		sb.append(victim.getName());
-		sb.append("'s ");
-		sb.append(target);
-		sb.append(".");
+		if (!chr.isNameProperNoun())
+			sb.append(capitalize ? "The " : "the ");
+		sb.append(chr.getName());
 		return sb.toString();
 	}
 }

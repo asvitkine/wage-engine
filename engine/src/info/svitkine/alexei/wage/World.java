@@ -29,7 +29,6 @@ public class World {
 	private List<byte[]> patterns;
 	private Scene storageScene;
 	private Chr player;
-	private Context playerContext;
 	private List<MoveListener> moveListeners;
 
 	public World(Script globalScript) {
@@ -47,7 +46,6 @@ public class World {
 		storageScene.setName(STORAGE);
 		orderedScenes.add(storageScene);
 		scenes.put(STORAGE, storageScene);
-		playerContext = new Context();
 		moveListeners = new LinkedList<MoveListener>();
 	}
 
@@ -78,9 +76,9 @@ public class World {
 	}
 
 	public Context getPlayerContext() {
-		return playerContext;
+		return player.getContext();
 	}
-	
+
 	public Script getGlobalScript() {
 		return globalScript;
 	}
@@ -186,6 +184,30 @@ public class World {
 		fireMoveEvent(new MoveEvent(obj, from, scene));
 	}
 
+	private void initChrContext(Chr chr) {
+		Context context = chr.getContext();
+		context.setStatVariable(Context.PHYS_ACC_BAS, player.getPhysicalAccuracy());
+		context.setStatVariable(Context.PHYS_ACC_CUR, player.getPhysicalAccuracy());
+		context.setStatVariable(Context.PHYS_ARM_BAS, player.getNaturalArmor());
+		context.setStatVariable(Context.PHYS_ARM_CUR, player.getNaturalArmor());
+		context.setStatVariable(Context.PHYS_HIT_BAS, player.getPhysicalHp());
+		context.setStatVariable(Context.PHYS_HIT_CUR, player.getPhysicalHp());
+		context.setStatVariable(Context.PHYS_SPE_BAS, player.getRunningSpeed());
+		context.setStatVariable(Context.PHYS_SPE_CUR, player.getRunningSpeed());
+		context.setStatVariable(Context.PHYS_STR_BAS, player.getPhysicalStrength());
+		context.setStatVariable(Context.PHYS_STR_CUR, player.getPhysicalStrength());
+		context.setStatVariable(Context.SPIR_ACC_BAS, player.getSpiritualAccuracy());
+		context.setStatVariable(Context.SPIR_ACC_CUR, player.getSpiritualAccuracy());
+		context.setStatVariable(Context.SPIR_ARM_BAS, player.getResistanceToMagic());
+		context.setStatVariable(Context.SPIR_ARM_CUR, player.getResistanceToMagic());
+		context.setStatVariable(Context.SPIR_HIT_BAS, player.getSpiritialHp());
+		context.setStatVariable(Context.SPIR_HIT_CUR, player.getSpiritialHp());
+		context.setStatVariable(Context.SPIR_STR_BAS, player.getSpiritualStength());
+		context.setStatVariable(Context.SPIR_STR_CUR, player.getSpiritualStength());
+		context.setVisits(1);
+		context.setKills(0);
+	}
+
 	public void move(Chr chr, Scene scene) {
 		if (chr == null)
 			return;
@@ -196,7 +218,11 @@ public class World {
 			chr.setCurrentScene(scene);
 			scene.getChrs().add(chr);
 			sortChrs(scene.getChrs());
-			chr.setVisits(chr.getVisits() + 1);
+			if (from == storageScene) {
+				initChrContext(chr);
+			} else {
+				chr.getContext().setVisits(chr.getContext().getVisits() + 1);
+			}
 			fireMoveEvent(new MoveEvent(chr, from, scene));
 		}
 	}

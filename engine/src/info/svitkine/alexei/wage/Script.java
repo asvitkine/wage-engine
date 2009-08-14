@@ -14,6 +14,7 @@ public class Script {
 	private Object inputClick;
 	private int index;
 	private Object evalResult;
+	private boolean handled;
 
 	public Script(byte[] data) {
 		this.data = data;
@@ -70,7 +71,7 @@ public class Script {
 			Obj[] objs = world.getObjs().values().toArray(new Obj[0]);
 			result = new Operand(objs[(int) (Math.random()*objs.length)], Operand.OBJ);
 		} else if (data[index] == (byte) 0xB0) { // VISITS#
-			result = new Operand(world.getPlayer().getVisits(), Operand.NUMBER);
+			result = new Operand(world.getPlayerContext().getVisits(), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xB1) {
 			// RANDOM# for Star Trek, but VISITS# for some other games?
 			result = new Operand(1 + (int) (Math.random()*100), Operand.NUMBER);
@@ -80,7 +81,7 @@ public class Script {
 		} else if (data[index] == (byte) 0xB2) { // LOOP#
 			result = new Operand(loopCount, Operand.NUMBER);
 		} else if (data[index] == (byte) 0xB3) { // VICTORY#
-			result = new Operand(world.getPlayer().getKills(), Operand.NUMBER);
+			result = new Operand(world.getPlayerContext().getKills(), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xB4) { // BADCOPY#
 			result = new Operand(0, Operand.NUMBER); // ????
 		} else if (data[index] == (byte) 0xFF) {
@@ -90,41 +91,41 @@ public class Script {
 			// TODO: Verify that we're using the right index.
 			result = new Operand(world.getPlayerContext().getUserVariable(value), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xD0) {
-			result = new Operand(world.getPlayerContext().getPlayerVariable(Context.PHYS_STR_BAS), Operand.NUMBER);
+			result = new Operand(world.getPlayerContext().getStatVariable(Context.PHYS_STR_BAS), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xD1) {
-			result = new Operand(world.getPlayerContext().getPlayerVariable(Context.PHYS_HIT_BAS), Operand.NUMBER);
+			result = new Operand(world.getPlayerContext().getStatVariable(Context.PHYS_HIT_BAS), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xD2) {
-			result = new Operand(world.getPlayerContext().getPlayerVariable(Context.PHYS_ARM_BAS), Operand.NUMBER);
+			result = new Operand(world.getPlayerContext().getStatVariable(Context.PHYS_ARM_BAS), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xD3) {
-			result = new Operand(world.getPlayerContext().getPlayerVariable(Context.PHYS_ACC_BAS), Operand.NUMBER);
+			result = new Operand(world.getPlayerContext().getStatVariable(Context.PHYS_ACC_BAS), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xD4) {
-			result = new Operand(world.getPlayerContext().getPlayerVariable(Context.SPIR_STR_BAS), Operand.NUMBER);
+			result = new Operand(world.getPlayerContext().getStatVariable(Context.SPIR_STR_BAS), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xD5) {
-			result = new Operand(world.getPlayerContext().getPlayerVariable(Context.SPIR_HIT_BAS), Operand.NUMBER);
+			result = new Operand(world.getPlayerContext().getStatVariable(Context.SPIR_HIT_BAS), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xD6) {
-			result = new Operand(world.getPlayerContext().getPlayerVariable(Context.SPIR_ARM_BAS), Operand.NUMBER);
+			result = new Operand(world.getPlayerContext().getStatVariable(Context.SPIR_ARM_BAS), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xD7) {
-			result = new Operand(world.getPlayerContext().getPlayerVariable(Context.SPIR_ACC_BAS), Operand.NUMBER);
+			result = new Operand(world.getPlayerContext().getStatVariable(Context.SPIR_ACC_BAS), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xD8) {
-			result = new Operand(world.getPlayerContext().getPlayerVariable(Context.PHYS_SPE_BAS), Operand.NUMBER);
+			result = new Operand(world.getPlayerContext().getStatVariable(Context.PHYS_SPE_BAS), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xE0) {
-			result = new Operand(world.getPlayerContext().getPlayerVariable(Context.PHYS_STR_CUR), Operand.NUMBER);
+			result = new Operand(world.getPlayerContext().getStatVariable(Context.PHYS_STR_CUR), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xE1) {
-			result = new Operand(world.getPlayerContext().getPlayerVariable(Context.PHYS_HIT_CUR), Operand.NUMBER);
+			result = new Operand(world.getPlayerContext().getStatVariable(Context.PHYS_HIT_CUR), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xE2) {
-			result = new Operand(world.getPlayerContext().getPlayerVariable(Context.PHYS_ARM_CUR), Operand.NUMBER);
+			result = new Operand(world.getPlayerContext().getStatVariable(Context.PHYS_ARM_CUR), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xE3) {
-			result = new Operand(world.getPlayerContext().getPlayerVariable(Context.PHYS_ACC_CUR), Operand.NUMBER);
+			result = new Operand(world.getPlayerContext().getStatVariable(Context.PHYS_ACC_CUR), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xE4) {
-			result = new Operand(world.getPlayerContext().getPlayerVariable(Context.SPIR_STR_CUR), Operand.NUMBER);
+			result = new Operand(world.getPlayerContext().getStatVariable(Context.SPIR_STR_CUR), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xE5) {
-			result = new Operand(world.getPlayerContext().getPlayerVariable(Context.SPIR_HIT_CUR), Operand.NUMBER);
+			result = new Operand(world.getPlayerContext().getStatVariable(Context.SPIR_HIT_CUR), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xE6) {
-			result = new Operand(world.getPlayerContext().getPlayerVariable(Context.SPIR_ARM_CUR), Operand.NUMBER);
+			result = new Operand(world.getPlayerContext().getStatVariable(Context.SPIR_ARM_CUR), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xE7) {
-			result = new Operand(world.getPlayerContext().getPlayerVariable(Context.SPIR_ACC_CUR), Operand.NUMBER);
+			result = new Operand(world.getPlayerContext().getStatVariable(Context.SPIR_ACC_CUR), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xE8) {
-			result = new Operand(world.getPlayerContext().getPlayerVariable(Context.PHYS_SPE_CUR), Operand.NUMBER);
+			result = new Operand(world.getPlayerContext().getStatVariable(Context.PHYS_SPE_CUR), Operand.NUMBER);
 		} else if (Character.isDefined(data[index])) {
 			result = readStringOperand();
 			index--;
@@ -401,6 +402,7 @@ public class Script {
 		public void playSound(String sound);
 		public void setMenu(String menuData);
 		public void performAttack(Chr attacker, Chr victim, Weapon weapon);
+		public void regen();
 	}
 	
 	private void processIf() {
@@ -446,41 +448,41 @@ public class Script {
 			if (var < 0) var += 256;
 			context.setUserVariable(var, value);
 		} else if (data[index] == (byte) 0xD0) {
-			context.setPlayerVariable(Context.PHYS_STR_BAS, value);
+			context.setStatVariable(Context.PHYS_STR_BAS, value);
 		} else if (data[index] == (byte) 0xD1) {
-			context.setPlayerVariable(Context.PHYS_HIT_BAS, value);
+			context.setStatVariable(Context.PHYS_HIT_BAS, value);
 		} else if (data[index] == (byte) 0xD2) {
-			context.setPlayerVariable(Context.PHYS_ARM_BAS, value);
+			context.setStatVariable(Context.PHYS_ARM_BAS, value);
 		} else if (data[index] == (byte) 0xD3) {
-			context.setPlayerVariable(Context.PHYS_ACC_BAS, value);
+			context.setStatVariable(Context.PHYS_ACC_BAS, value);
 		} else if (data[index] == (byte) 0xD4) {
-			context.setPlayerVariable(Context.SPIR_STR_BAS, value);
+			context.setStatVariable(Context.SPIR_STR_BAS, value);
 		} else if (data[index] == (byte) 0xD5) {
-			context.setPlayerVariable(Context.SPIR_HIT_BAS, value);
+			context.setStatVariable(Context.SPIR_HIT_BAS, value);
 		} else if (data[index] == (byte) 0xD6) {
-			context.setPlayerVariable(Context.SPIR_ARM_BAS, value);
+			context.setStatVariable(Context.SPIR_ARM_BAS, value);
 		} else if (data[index] == (byte) 0xD7) {
-			context.setPlayerVariable(Context.SPIR_ACC_BAS, value);
+			context.setStatVariable(Context.SPIR_ACC_BAS, value);
 		} else if (data[index] == (byte) 0xD8) {
-			context.setPlayerVariable(Context.PHYS_SPE_BAS, value);
+			context.setStatVariable(Context.PHYS_SPE_BAS, value);
 		} else if (data[index] == (byte) 0xE0) {
-			context.setPlayerVariable(Context.PHYS_STR_CUR, value);
+			context.setStatVariable(Context.PHYS_STR_CUR, value);
 		} else if (data[index] == (byte) 0xE1) {
-			context.setPlayerVariable(Context.PHYS_STR_CUR, value);
+			context.setStatVariable(Context.PHYS_STR_CUR, value);
 		} else if (data[index] == (byte) 0xE2) {
-			context.setPlayerVariable(Context.PHYS_ARM_CUR, value);
+			context.setStatVariable(Context.PHYS_ARM_CUR, value);
 		} else if (data[index] == (byte) 0xE3) {
-			context.setPlayerVariable(Context.PHYS_ACC_CUR, value);
+			context.setStatVariable(Context.PHYS_ACC_CUR, value);
 		} else if (data[index] == (byte) 0xE4) {
-			context.setPlayerVariable(Context.SPIR_STR_CUR, value);
+			context.setStatVariable(Context.SPIR_STR_CUR, value);
 		} else if (data[index] == (byte) 0xE5) {
-			context.setPlayerVariable(Context.SPIR_HIT_CUR, value);
+			context.setStatVariable(Context.SPIR_HIT_CUR, value);
 		} else if (data[index] == (byte) 0xE6) {
-			context.setPlayerVariable(Context.SPIR_ARM_CUR, value);
+			context.setStatVariable(Context.SPIR_ARM_CUR, value);
 		} else if (data[index] == (byte) 0xE7) {
-			context.setPlayerVariable(Context.SPIR_ACC_CUR, value);
+			context.setStatVariable(Context.SPIR_ACC_CUR, value);
 		} else if (data[index] == (byte) 0xE8) {
-			context.setPlayerVariable(Context.PHYS_SPE_CUR, value);
+			context.setStatVariable(Context.PHYS_SPE_CUR, value);
 		} else {
 			System.err.printf("No idea what I'm supposed to assign! (%x at %d)!\n", data[index], index);
 		}
@@ -639,7 +641,7 @@ public class Script {
 		evaluatePair(handlers, what, to);
 	}
 	
-	public void execute(World world, int loopCount,
+	public boolean execute(World world, int loopCount,
 			String inputText, Object inputClick,
 			Callbacks callbacks)
 	{
@@ -648,6 +650,7 @@ public class Script {
 		this.inputText = inputText;
 		this.inputClick = inputClick;
 		this.callbacks = callbacks;
+		this.handled = false;
 		try {
 			index = 12;
 			while (index < data.length) {
@@ -655,13 +658,13 @@ public class Script {
 					index++;
 					processIf();
 				} else if (data[index] == (byte) 0x87) { // EXIT
-					return;
+					return handled;
 				} else if (data[index] == (byte) 0x89) { // MOVE
 					index++;
 					Scene currentScene = world.getPlayer().getCurrentScene();
 					processMove();
 					if (world.getPlayer().getCurrentScene() != currentScene)
-						return;
+						return true;
 				} else if (data[index] == (byte) 0x8B) { // PRINT
 					index++;
 					Operand op = readOperand();
@@ -696,11 +699,13 @@ public class Script {
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println(buildStringFromOffset(index));
-			return;
+			return true;
 		}
 		if (world.getGlobalScript() != this) {
 			System.out.println("Executing global script...");
-			world.getGlobalScript().execute(world, loopCount, inputText, inputClick, callbacks);
+			boolean globalHandled = world.getGlobalScript().execute(world, loopCount, inputText, inputClick, callbacks);
+			if (globalHandled)
+				handled = true;
 		} else if (inputText != null) {
 			String input = inputText.toLowerCase();
 			if (input.equals("n") || input.contains("north")) {
@@ -725,6 +730,8 @@ public class Script {
 				handleWearCommand(input.substring(5));
 			} else if (input.startsWith("put on ")) {
 				handleWearCommand(input.substring(7));
+			} else if (input.startsWith("offer ")) {
+				handleOfferCommand(input.substring(6));
 			} else if (input.contains("look")) {
 				handleLookCommand();
 			} else if (input.contains("inventory")) {
@@ -753,6 +760,7 @@ public class Script {
 				callbacks.appendText(obj.getClickMessage());
 			}
 		}
+		return handled;
 	}
 
 	private boolean tryAttack(Weapon weapon, String input) {
@@ -771,13 +779,27 @@ public class Script {
 	private void handleAimCommand(String target) {
 		// TODO:
 		if (target.contains("head")) {
-			
+			handled = true;
 		} else if (target.contains("chest")) {
-			
+			handled = true;
 		} else if (target.contains("side")) {
-			
+			handled = true;
 		} else {
 			callbacks.appendText("Please aim for the head, chest, or side.");
+		}
+	}
+
+	private void handleOfferCommand(String target) {
+		Chr player = world.getPlayer();
+		Chr enemy = findEnemy(player);
+		if (enemy != null) {
+			for (Obj o : player.getInventory()) {
+				if (target.contains(o.getName().toLowerCase())) {
+					// TODO
+					callbacks.appendText("Your offer is rejected.");
+					break;
+				}
+			}
 		}
 	}
 
@@ -841,24 +863,29 @@ public class Script {
 	private void handleStatusCommand() {
 		Chr player = world.getPlayer();
 		callbacks.appendText("Character name: " + player.getName());
-		callbacks.appendText("Experience: " + player.getKills());
+		callbacks.appendText("Experience: " + player.getContext().getKills());
 		int wealth = 0;
 		for (Obj o : player.getInventory())
 			wealth += o.getValue();
 		callbacks.appendText("Wealth: " + wealth);
+		for (Obj o : player.getInventory()) {
+			if (o.getNumberOfUses() > 0) {
+				callbacks.appendText(String.format("Your %s has %d uses left.", o.getName(), o.getNumberOfUses()));
+			}
+		}
 		printPlayerCondition(player);
 	}
-
-	private String getPercentMessage(int cur, int bas) {
-		Context context = world.getPlayerContext();
-		double percent = (double) context.getPlayerVariable(cur) / context.getPlayerVariable(bas);
-		if (percent < 0.2) {
+	
+	public static String getPercentMessage(Chr chr, int cur, int bas) {
+		Context context = chr.getContext();
+		double percent = (double) context.getStatVariable(cur) / context.getStatVariable(bas);
+		if (percent < 0.40) {
 			return "very bad";
-		} else if (percent < 0.4) {
+		} else if (percent < 0.55) {
 			return "bad";
-		} else if (percent < 0.6) {
+		} else if (percent < 0.7) {
 			return "average";
-		} else if (percent < 0.8) {
+		} else if (percent < 0.85) {
 			return "good";
 		} else {
 			return "very good";
@@ -866,8 +893,8 @@ public class Script {
 	}
 
 	private void printPlayerCondition(Chr player) {
-		callbacks.appendText("Your physical condition is " + getPercentMessage(Context.PHYS_HIT_CUR, Context.PHYS_HIT_BAS) + ".");
-		callbacks.appendText("Your spiritual condition is " + getPercentMessage(Context.SPIR_HIT_CUR, Context.SPIR_HIT_BAS) + ".");
+		callbacks.appendText("Your physical condition is " + getPercentMessage(player, Context.PHYS_HIT_CUR, Context.PHYS_HIT_BAS) + ".");
+		callbacks.appendText("Your spiritual condition is " + getPercentMessage(player, Context.SPIR_HIT_CUR, Context.SPIR_HIT_BAS) + ".");
 	}
 
 	private void handleRestCommand() {
@@ -876,7 +903,7 @@ public class Script {
 		if (enemy != null) {
 			callbacks.appendText("This is no time to rest!");
 		} else {
-			// TODO: Increment stuff..
+			callbacks.regen();
 			printPlayerCondition(player);
 		}
 	}
