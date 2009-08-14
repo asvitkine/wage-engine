@@ -93,6 +93,12 @@ public class Engine implements Script.Callbacks, MoveListener {
 			if (turn != 0) {
 				loopCount = 0;
 				playerScene.getScript().execute(world, loopCount++, "look", null, this);
+				// TODO: what if the "look" script moves the player again?
+				if (playerScene.getChrs().size() == 2) {
+					Chr a = playerScene.getChrs().get(1);
+					Chr b = playerScene.getChrs().get(1);
+					encounter(world.getPlayer(), world.getPlayer() == a ? b : a);
+				}
 			}
 			if (turn == 0) {
 				out.append("\n");
@@ -125,19 +131,23 @@ public class Engine implements Script.Callbacks, MoveListener {
 		if (event.getWhat() != player && event.getWhat() instanceof Chr) {
 			if (event.getTo() == player.getCurrentScene() && event.getTo() != world.getStorageScene()) {
 				Chr chr = (Chr) event.getWhat();
-				StringBuilder sb = new StringBuilder("You encounter ");
-				if (!chr.isNameProperNoun())
-					sb.append("a ");
-				sb.append(chr.getName());
-				sb.append(".");
-				appendText(sb.toString());
-				if (chr.getInitialComment() != null && chr.getInitialComment().length() > 0)
-					appendText(chr.getInitialComment());
-				performAttack(chr, player);
+				encounter(player, chr);
 			}
 		}
 	}
-	
+
+	private void encounter(Chr player, Chr chr) {
+		StringBuilder sb = new StringBuilder("You encounter ");
+		if (!chr.isNameProperNoun())
+			sb.append(TextUtils.prependDefiniteArticle(chr.getName()));
+		sb.append(chr.getName());
+		sb.append(".");
+		appendText(sb.toString());
+		if (chr.getInitialComment() != null && chr.getInitialComment().length() > 0)
+			appendText(chr.getInitialComment());
+		performAttack(chr, player);
+	}
+
 	private void performAttack(Chr attacker, Chr victim) {
 		Weapon[] weapons = attacker.getWeapons();
 		String[] targets = new String[] { "chest", "head", "side" };
@@ -154,13 +164,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 		if (!attacker.isNameProperNoun())
 			sb.append("The ");
 		sb.append(String.format("%s %ss ", attacker.getName(), weapon.getOperativeVerb()));
-		if (attacker.getGender() == Chr.GENDER_HE)
-			sb.append("his ");
-		else if (attacker.getGender() == Chr.GENDER_SHE)
-			sb.append("her ");
-		else
-			sb.append("its ");
-		sb.append(weapon.getName());
+		sb.append(TextUtils.prependGenderSpecificPronoun(weapon.getName(), attacker.getGender()));
 		sb.append(" at ");
 		if (!victim.isNameProperNoun())
 			sb.append("the ");

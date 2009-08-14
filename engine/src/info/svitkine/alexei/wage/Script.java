@@ -789,8 +789,9 @@ public class Script {
 			Obj obj = objs.get(i);
 			if (obj.getType() != Obj.IMMOBILE_OBJECT) {
 				if (!obj.isNamePlural())
-					sb.append("a ");
-				sb.append(obj.getName());
+					sb.append(TextUtils.prependDefiniteArticle(obj.getName()));
+				else
+					sb.append(obj.getName());
 				if (i == objs.size() - 1)
 					sb.append(".");
 				else if (i == objs.size() - 2)
