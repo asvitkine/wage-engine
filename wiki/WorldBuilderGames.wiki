@@ -8,7 +8,7 @@
 || <a href="http://macintoshgarden.org/games/little-pythagoras">Little Pythagoras</a> || 1987 || Unknown ||
 || <a href="http://macintoshgarden.org/games/mountain-of-mayhem">Mountain Of Mayhem</a> || 1987 || Unknown ||
 || <a href="http://macintoshgarden.org/games/psychotic-one-the-escape">Psychotic!</a> || 1987 || Unknown ||
-|| <a href="http://macintoshgarden.org/games/dungeonworld-ii">DungeonWorld II</a> || 1987 || Unknown ||
+|| <a href="http://macintoshgarden.org/games/dungeonworld-ii">Dungeon World II</a> || 1987 || Unknown ||
 || <a href="http://macintoshgarden.org/games/swamp-witch">Swamp Witch</a> || 1988 || Unknown ||
 || <a href="http://macintoshgarden.org/games/mikes-house">Mike's House</a> || 1989 || Unknown ||
 || <a href="http://www.semitech.com/marc/ray.html">Ray's Maze</a> || 1990 || Unknown ||
