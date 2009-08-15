@@ -10,8 +10,12 @@
 || <a href="http://macintoshgarden.org/games/psychotic-one-the-escape">Psychotic!</a> || 1987 || Unknown ||
 || <a href="http://macintoshgarden.org/games/swamp-witch">Swamp Witch</a> || 1988 || Unknown ||
 || <a href="http://macintoshgarden.org/games/mikes-house">Mike's House</a> || 1989 || Unknown ||
+|| <a href="http://www.semitech.com/marc/ray.html">Ray's Maze</a> || 1990 || Unknown ||
 || <a href="http://macintoshgarden.org/games/pyramid-of-ert">Pyramid of Ert</a> || 1990 || Unknown ||
 || <a href="http://macintoshgarden.org/games/space-adventure">Space Adventure</a> || 1990 || Unknown ||
 || <a href="http://macintoshgarden.org/games/drakmyth-castle">Drakmyth Castle</a> || 1991 || Unknown ||
 || <a href="http://macintoshgarden.org/games/pyramid-of-no-return">Pyramid of No Return</a> || 1992 || Unknown ||
 || <a href="http://macintoshgarden.org/games/lost-crystal">Lost Crystal</a> || 1994 || Unknown ||
+|| <a href="http://www.semitech.com/marc/ray.html">Another Fine Mess</a> || 1997 || Unknown ||
+|| <a href="http://www.semitech.com/marc/ray.html">A Mess O’ Trouble</a> || 1997 || Unknown ||
+|| <a href="http://www.semitech.com/marc/ray.html">Twisted</a> || 1999 || Unknown ||
