@@ -1,5 +1,5 @@
 #summary List of currently known games created with World Builder
 
-|| *Name* || || *Year Released* || *Status* ||
+|| *Name* || *Year Released* || *Status* ||
 || <a href="http://macintoshgarden.org/games/star-trek-game">Star Trek Game</a> || 1986 || Partial ||
 || <a href="http://macintoshgarden.org/games/wishing-well">Wishing Well</a> || 1987|| Partial ||
