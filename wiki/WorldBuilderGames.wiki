@@ -1,5 +1,7 @@
 #summary List of currently known games created with World Builder
 
+It is suspected that over 100 games have been made using World Builder. Here is a list of just some of them.
+
 || *Name* || *Year Released* || *Status* ||
 || <a href="http://macintoshgarden.org/games/enchanted-scepters">Enchanted Scepters</a> || 1984 || Unknown ||
 || <a href="http://macintoshgarden.org/games/star-trek-game">Star Trek Game</a> || 1986 || Partial ||
