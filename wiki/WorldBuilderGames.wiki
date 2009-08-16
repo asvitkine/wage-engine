@@ -9,7 +9,6 @@ It is suspected that over 100 games have been made using World Builder. Here is 
 || <a href="http://macintoshgarden.org/games/wishing-well">Wishing Well</a> || 1987 || Partial ||
 || <a href="http://macintoshgarden.org/games/little-pythagoras">Little Pythagoras</a> || 1987 || Unknown ||
 || <a href="http://macintoshgarden.org/games/bug-hunt">Bug Hunt</a> || 1987 || Unknown ||
-
 || <a href="http://macintoshgarden.org/games/mountain-of-mayhem">Mountain Of Mayhem</a> || 1987 || Unknown ||
 || <a href="http://macintoshgarden.org/games/schmoozer">Schmoozer</a> || 1987 || Unknown ||
 || <a href="http://macintoshgarden.org/games/3rd-floor">3rd Floor</a> || 1987 || Unknown ||
