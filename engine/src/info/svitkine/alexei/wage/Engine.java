@@ -14,6 +14,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 	private int turn;
 	private boolean hadOutput;
 	private Callbacks callbacks;
+	private Obj offer;
 
 	public interface Callbacks {
 		public void setCommandsMenu(String format);
@@ -81,6 +82,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 		if (playerScene != lastScene) {
 			loopCount = 0;
 		}
+		offer = null;
 		hadOutput = false;
 		boolean handled = playerScene.getScript().execute(world, loopCount++, textInput, clickInput, this);
 		playerScene = world.getPlayer().getCurrentScene();
@@ -91,6 +93,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 			lastScene = playerScene;
 			if (turn != 0) {
 				loopCount = 0;
+				offer = null;
 				playerScene.getScript().execute(world, loopCount++, "look", null, this);
 				// TODO: what if the "look" script moves the player again?
 				if (playerScene.getChrs().size() == 2) {
@@ -109,6 +112,11 @@ public class Engine implements Script.Callbacks, MoveListener {
 		turn++;
 	}
 
+
+	public void appendText(String text, Object... args) {
+		appendText(String.format(text, args));
+	}
+
 	public void appendText(String text) {
 		if (text != null && text.length() > 0) {
 			hadOutput = true;
@@ -117,6 +125,10 @@ public class Engine implements Script.Callbacks, MoveListener {
 		}
 	}
 
+	public Obj getOffer() {
+		return offer;
+	}
+	
 	public void playSound(String soundName) {
 		if (soundName != null) {
 			Sound sound = world.getSounds().get(soundName.toLowerCase());
@@ -142,23 +154,54 @@ public class Engine implements Script.Callbacks, MoveListener {
 	private void encounter(Chr player, Chr chr) {
 		StringBuilder sb = new StringBuilder("You encounter ");
 		if (!chr.isNameProperNoun())
-			sb.append(TextUtils.prependDefiniteArticle(chr.getName()));
+			sb.append(TextUtils.prependIndefiniteArticle(chr.getName()));
 		else
 			sb.append(chr.getName());
 		sb.append(".");
 		appendText(sb.toString());
 		if (chr.getInitialComment() != null && chr.getInitialComment().length() > 0)
 			appendText(chr.getInitialComment());
-		react(chr, player);
+		performCombatAction(chr, player);
 	}
 	
-	private void react(Chr npc, Chr player) {
-		// TODO: The NPC may also decide to just move instead of attacking...
-		// "The Invisible Warrior runs west."
-		// then, when you follow it, it could escape: "The Invisible Warrior escapes!"
-		Weapon[] weapons = npc.getWeapons();
-		Weapon weapon = weapons[(int) (Math.random()*weapons.length)];
-		performAttack(npc, player, weapon);
+	public void performCombatAction(Chr npc, Chr player) {
+		RandomHat<Integer> hat = new RandomHat<Integer>();
+		boolean winning = npc.getContext().getStatVariable(Context.PHYS_HIT_CUR) >
+			player.getContext().getStatVariable(Context.PHYS_HIT_CUR);
+		int validMoves = getValidMoveDirections(npc);
+		if (winning) {
+			hat.addTokens(0, npc.getWinningWeapons() + 1);
+			if (hasMagic(npc))
+				hat.addTokens(1, npc.getWinningMagic() + 1);
+			if (validMoves != 0)
+				hat.addTokens(2, npc.getWinningRun() + 1);
+			if (!npc.getInventory().isEmpty())
+				hat.addTokens(3, npc.getWinningOffer() + 1);
+		} else {
+			hat.addTokens(0, npc.getLosingWeapons() + 1);
+			if (hasMagic(npc))
+				hat.addTokens(1, npc.getLosingMagic() + 1);
+			if (validMoves != 0)
+				hat.addTokens(2, npc.getLosingRun() + 1);
+			if (!npc.getInventory().isEmpty())
+				hat.addTokens(3, npc.getLosingOffer() + 1);
+		}
+		switch (hat.drawToken()) {
+			case 0:
+				Weapon[] weapons = npc.getWeapons();
+				Weapon weapon = weapons[(int) (Math.random()*weapons.length)];
+				performAttack(npc, player, weapon);
+				break;
+			case 1:
+				performMagic(npc, player);
+				break;
+			case 2:
+				performMove(npc, validMoves);
+				break;
+			case 3:
+				performOffer(npc, player);
+				break;
+		}
 	}
 
 	public void regen() {
@@ -172,46 +215,95 @@ public class Engine implements Script.Callbacks, MoveListener {
 		}
 	}
 	
+	private void performOffer(Chr attacker, Chr victim) {
+		for (Obj o : attacker.getInventory()) {
+			appendText("%s offers %s.",
+				getNameWithDefiniteArticle(attacker, true),
+				TextUtils.prependIndefiniteArticle(o.getName()));
+			offer = o;
+			return;
+		}
+	}
+
+	private boolean hasMagic(Chr chr) {
+		return false;
+	}
+
+	private void performMagic(Chr attacker, Chr victim) {
+	}
+	
+	private int getValidMoveDirections(Chr npc) {
+		int directions = 0;
+		Scene currentScene = npc.getCurrentScene();
+		int dx[] = new int[] { 0, 0, 1, -1 };
+		int dy[] = new int[] { -1, 1, 0, 0 };
+		for (int dir = 0; dir < 4; dir++) {
+			if (!currentScene.isDirBlocked(dir)) {
+				int destX = currentScene.getWorldX() + dx[dir];
+				int destY = currentScene.getWorldY() + dy[dir];
+				Scene scene = world.getSceneAt(destX, destY);
+				if (scene != null && scene.getChrs().size() == 0) {
+					directions |= (1 << dir);
+				}
+			}
+ 		}
+		return directions;
+	}
+
+	private void performMove(Chr chr, int validMoves) {
+		int[] moves = new int[4];
+		int numValidMoves = 0;
+		for (int dir = 0; dir < 4; dir++)
+			if ((validMoves & (1 << dir)) != 0)
+				moves[numValidMoves++] = dir;
+		int dir = moves[(int) (Math.random() * numValidMoves)];
+		appendText("%s runs %s.", getNameWithDefiniteArticle(chr, true),
+			new String[] {"north", "south", "east", "west"}[dir]);
+		int dx[] = new int[] { 0, 0, 1, -1 };
+		int dy[] = new int[] { -1, 1, 0, 0 };
+		Scene currentScene = chr.getCurrentScene();
+		int destX = currentScene.getWorldX() + dx[dir];
+		int destY = currentScene.getWorldY() + dy[dir];
+		world.move(chr, world.getSceneAt(destX, destY));
+	}
+
 	public void performAttack(Chr attacker, Chr victim, Weapon weapon) {
 		String[] targets = new String[] { "chest", "head", "side" };
 		String target = targets[(int) (Math.random()*targets.length)];
 		if (!attacker.isPlayerCharacter()) {
-			appendText(String.format("%s %ss %s at %s's %s.",
-					getNameWithDefinitePronoun(attacker, true),
+			appendText("%s %ss %s at %s's %s.",
+					getNameWithDefiniteArticle(attacker, true),
 					weapon.getOperativeVerb(),
 					TextUtils.prependGenderSpecificPronoun(weapon.getName(), attacker.getGender()),
-					getNameWithDefinitePronoun(victim, false),
-					target));
+					getNameWithDefiniteArticle(victim, false),
+					target);
 		}
 		playSound(weapon.getSound());
 		// TODO: roll some dice
 		if (Math.random() > 0.5) {
 			appendText("A miss!");
 		} else {
-			appendText("A hit to the " + target + ".");
+			appendText("A hit to the %s.", target);
 			playSound(attacker.getScoresHitSound());
 			appendText(victim.getReceivesHitComment());
 			playSound(victim.getReceivesHitSound());
 			if (victim.getPhysicalHp() < 0) {
-				appendText(String.format("%s is dead.",
-					getNameWithDefinitePronoun(victim, true)));
+				appendText("%s is dead.", getNameWithDefiniteArticle(victim, true));
 				attacker.getContext().setKills(attacker.getContext().getKills() + 1);
 				world.move(victim, world.getStorageScene());
 			} else if (attacker.isPlayerCharacter()) {
-				appendText(String.format("%s's condition appears to be %s.",
-					getNameWithDefinitePronoun(victim, true),
-					Script.getPercentMessage(victim, Context.PHYS_HIT_CUR, Context.PHYS_HIT_BAS)));
+				appendText("%s's condition appears to be %s.",
+					getNameWithDefiniteArticle(victim, true),
+					Script.getPercentMessage(victim, Context.PHYS_HIT_CUR, Context.PHYS_HIT_BAS));
 			}
 		}
-		if (weapon instanceof Obj) {
-			((Obj) weapon).setNumberOfUses(((Obj) weapon).getNumberOfUses() - 1);
-		}
+		weapon.decrementNumberOfUses();
 		if (attacker.isPlayerCharacter() && victim.getCurrentScene() == attacker.getCurrentScene()) {
-			react(victim, attacker);
+			performCombatAction(victim, attacker);
 		}
 	}
 
-	private String getNameWithDefinitePronoun(Chr chr, boolean capitalize) {
+	public static String getNameWithDefiniteArticle(Chr chr, boolean capitalize) {
 		StringBuilder sb = new StringBuilder();
 		if (!chr.isNameProperNoun())
 			sb.append(capitalize ? "The " : "the ");

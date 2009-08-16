@@ -205,6 +205,7 @@ public class Chr {
 				public String getSound() {
 					return getWeaponSound1();
 				}
+				public void decrementNumberOfUses() {}
 			});
 		}
 		if (hasNativeWeapon2()) {
@@ -227,6 +228,7 @@ public class Chr {
 				public String getSound() {
 					return getWeaponSound2();
 				}
+				public void decrementNumberOfUses() {}
 			});
 		}
 		for (Obj o : getInventory()) {

@@ -110,6 +110,15 @@ public class World {
 	public void setPlayer(Chr player) {
 		this.player = player;
 	}
+	
+	public Scene getSceneAt(int x, int y) {
+		for (Scene scene : scenes.values()) {
+			if (scene != storageScene && scene.getWorldX() == x && scene.getWorldY() == y) {
+				return scene;
+			}
+		}
+		return null;
+	}
 
 	public class MoveEvent {
 		private Object what;

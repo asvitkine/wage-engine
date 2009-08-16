@@ -396,15 +396,16 @@ public class Script {
 			index++;
 		}
 	}
-	
+
 	public static interface Callbacks {
-		public void appendText(String text);
+		public void appendText(String text, Object... args);
 		public void playSound(String sound);
 		public void setMenu(String menuData);
 		public void performAttack(Chr attacker, Chr victim, Weapon weapon);
 		public void regen();
+		public Obj getOffer();
 	}
-	
+
 	private void processIf() {
 		System.out.println("I love conditionals!");
 		int logicalOp = 0; // 0 => initial, 1 => and, 2 => or 
@@ -740,6 +741,8 @@ public class Script {
 				handleStatusCommand();
 			} else if (input.contains("rest")) {
 				handleRestCommand();
+			} else if (callbacks.getOffer() != null && input.contains("accept")) {
+				handleAcceptCommand();
 			} else {
 				Chr player = world.getPlayer();
 				for (Weapon weapon : player.getWeapons()) {
@@ -802,6 +805,15 @@ public class Script {
 			}
 		}
 	}
+	
+	private void handleAcceptCommand() {
+		Obj offer = callbacks.getOffer();
+		Chr chr = offer.getCurrentOwner();
+		callbacks.appendText("%s lays the %s on the ground and departs peacefully.",
+			Engine.getNameWithDefiniteArticle(chr, true), offer.getName());
+		world.move(offer, chr.getCurrentScene());
+		world.move(chr, world.getStorageScene());
+	}
 
 	private void handleAttack(Weapon weapon) {
 		Chr player = world.getPlayer();
@@ -844,7 +856,7 @@ public class Script {
 			Obj obj = objs.get(i);
 			if (obj.getType() != Obj.IMMOBILE_OBJECT) {
 				if (!obj.isNamePlural())
-					sb.append(TextUtils.prependDefiniteArticle(obj.getName()));
+					sb.append(TextUtils.prependIndefiniteArticle(obj.getName()));
 				else
 					sb.append(obj.getName());
 				if (i == objs.size() - 1) {
@@ -957,14 +969,12 @@ public class Script {
 			int dy[] = new int[] { -1, 1, 0, 0 };
 			int destX = playerScene.getWorldX() + dx[dir];
 			int destY = playerScene.getWorldY() + dy[dir];
-			for (Scene scene : world.getScenes().values()) {
-				if (scene != world.getStorageScene() && scene.getWorldX() == destX && scene.getWorldY() == destY) {
-					if (msg != null && msg.length() > 0) {
-						callbacks.appendText(msg);
-					}
-					world.move(player, scene);
-					return;
+			Scene scene = world.getSceneAt(destX, destY);
+			if (scene != null) {
+				if (msg != null && msg.length() > 0) {
+					callbacks.appendText(msg);
 				}
+				world.move(player, scene);
 			}
  		}
 		if (msg != null && msg.length() > 0) {

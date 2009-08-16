@@ -13,8 +13,8 @@ public class TextUtils {
 		else
 			return "its " + word;
 	}
-	
-	public static String prependDefiniteArticle(String word) {
+
+	public static String prependIndefiniteArticle(String word) {
 		switch (word.charAt(0)) {
 			case 'a': case 'A':
 			case 'e': case 'E':
