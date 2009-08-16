@@ -143,6 +143,12 @@ public class Obj implements Weapon {
 		this.numberOfUses = numberOfUses;
 	}
 
+	public void decrementNumberOfUses() {
+		if (numberOfUses != -1) {
+			numberOfUses--;
+		}
+	}
+
 	public int getType() {
 		return type;
 	}

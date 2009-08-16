@@ -7,4 +7,5 @@ public interface Weapon {
 	public int getAccuracy();
 	public int getDamage();
 	public String getSound();
+	public void decrementNumberOfUses();
 }
