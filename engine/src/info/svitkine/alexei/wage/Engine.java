@@ -14,6 +14,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 	private int turn;
 	private boolean hadOutput;
 	private Callbacks callbacks;
+	private Chr monster;
 	private Obj offer;
 
 	public interface Callbacks {
@@ -71,16 +72,25 @@ public class Engine implements Script.Callbacks, MoveListener {
 		}
 	}
 
-	public void processTurn(String textInput, Object clickInput) {
-		System.out.println("processTurn");
-		if (turn == 0) {
-			performInitialSetup();
-		}
+	private void processTurnInternal(String textInput, Object clickInput) {
 		Scene playerScene = world.getPlayer().getCurrentScene();
 		if (playerScene == world.getStorageScene())
 			return;
+		boolean escaped = false;
+		Chr prevMonster = null;
 		if (playerScene != lastScene) {
 			loopCount = 0;
+			lastScene = playerScene;
+			prevMonster = monster;
+			escaped = (monster != null);
+			monster = null;
+			offer = null;
+			for (Chr chr : playerScene.getChrs()) {
+				if (!chr.isPlayerCharacter()) {
+					monster = chr;
+					break;
+				}
+			}
 		}
 		hadOutput = false;
 		boolean handled = playerScene.getScript().execute(world, loopCount++, textInput, clickInput, this);
@@ -89,27 +99,29 @@ public class Engine implements Script.Callbacks, MoveListener {
 			return;
 		if (playerScene != lastScene) {
 			regen();
-			lastScene = playerScene;
-			if (turn != 0) {
-				loopCount = 0;
-				playerScene.getScript().execute(world, loopCount++, "look", null, this);
-				// TODO: what if the "look" script moves the player again?
-				if (playerScene.getChrs().size() == 2) {
-					Chr a = playerScene.getChrs().get(0);
-					Chr b = playerScene.getChrs().get(1);
-					encounter(world.getPlayer(), world.getPlayer() == a ? b : a);
-				}
+			processTurnInternal("look", null);
+			if (escaped) {
+				// TODO: Monsters can follow!
+				appendText("You escape %s.", getNameWithDefiniteArticle(prevMonster, false));
 			}
-			if (turn == 0) {
-				out.append("\n");
+		} else if (loopCount == 1) {
+			if (monster != null) {
+				encounter(world.getPlayer(), monster);
 			}
 		} else if (!hadOutput && textInput != null && !handled) {
 			String[] messages = { "What?", "Huh?" };
 			appendText(messages[(int) (Math.random()*messages.length)]);
 		}
-		turn++;
 	}
 
+	public void processTurn(String textInput, Object clickInput) {
+		System.out.println("processTurn");
+		if (turn == 0) {
+			performInitialSetup();
+		}
+		processTurnInternal(textInput, clickInput);
+		turn++;
+	}
 
 	public void appendText(String text, Object... args) {
 		appendText(String.format(text, args));
@@ -121,6 +133,13 @@ public class Engine implements Script.Callbacks, MoveListener {
 			out.append(text);
 			out.append("\n");
 		}
+	}
+
+	public Chr getMonster() {
+		if (monster != null && monster.getCurrentScene() != world.getPlayer().getCurrentScene()) {
+			monster = null;
+		}
+		return monster;
 	}
 
 	public Obj getOffer() {
@@ -159,15 +178,16 @@ public class Engine implements Script.Callbacks, MoveListener {
 						returnToSceneName = "random@";
 					}
 					Scene scene = getSceneByName(returnToSceneName);
-					// TODO: We can't put two monsters in the same scene.
 					if (scene != null && scene != world.getStorageScene()) {
-						System.err.println("moved " + chr.getName() + " to " + scene.getName());
 						world.move(chr, scene);
 						return;
 					}
 				}
 			} else if (event.getTo() == player.getCurrentScene()) {
-				encounter(player, chr);
+				if (getMonster() == null) {
+					monster = chr;
+					encounter(player, chr);
+				}
 			}
 		}
 	}
@@ -207,6 +227,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 			if (!npc.getInventory().isEmpty())
 				hat.addTokens(3, npc.getLosingOffer() + 1);
 		}
+		// TODO: npcs can also pick stuff up
 		switch (hat.drawToken()) {
 			case 0:
 				Weapon[] weapons = npc.getWeapons();
@@ -308,6 +329,8 @@ public class Engine implements Script.Callbacks, MoveListener {
 			playSound(attacker.getScoresHitSound());
 			appendText(victim.getReceivesHitComment());
 			playSound(victim.getReceivesHitSound());
+			// TODO: Armor can absorb some of the damage, I think.
+			victim.setPhysicalHp(victim.getPhysicalAccuracy() - weapon.getDamage());
 			if (victim.getPhysicalHp() < 0) {
 				appendText("%s is dead.", getNameWithDefiniteArticle(victim, true));
 				attacker.getContext().setKills(attacker.getContext().getKills() + 1);
