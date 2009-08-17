@@ -82,7 +82,6 @@ public class Engine implements Script.Callbacks, MoveListener {
 		if (playerScene != lastScene) {
 			loopCount = 0;
 		}
-		offer = null;
 		hadOutput = false;
 		boolean handled = playerScene.getScript().execute(world, loopCount++, textInput, clickInput, this);
 		playerScene = world.getPlayer().getCurrentScene();
@@ -93,7 +92,6 @@ public class Engine implements Script.Callbacks, MoveListener {
 			lastScene = playerScene;
 			if (turn != 0) {
 				loopCount = 0;
-				offer = null;
 				playerScene.getScript().execute(world, loopCount++, "look", null, this);
 				// TODO: what if the "look" script moves the player again?
 				if (playerScene.getChrs().size() == 2) {
@@ -126,6 +124,12 @@ public class Engine implements Script.Callbacks, MoveListener {
 	}
 
 	public Obj getOffer() {
+		if (offer != null) {
+			Chr owner = offer.getCurrentOwner();
+			if (owner == null || owner.isPlayerCharacter() || owner.getCurrentScene() != world.getPlayer().getCurrentScene()) {
+				offer = null;
+			}
+		}
 		return offer;
 	}
 	
@@ -144,8 +148,25 @@ public class Engine implements Script.Callbacks, MoveListener {
 	public void onMove(MoveEvent event) {
 		Chr player = world.getPlayer();
 		if (event.getWhat() != player && event.getWhat() instanceof Chr) {
-			if (event.getTo() == player.getCurrentScene() && event.getTo() != world.getStorageScene()) {
-				Chr chr = (Chr) event.getWhat();
+			Chr chr = (Chr) event.getWhat();
+			if (event.getTo() == world.getStorageScene()) {
+				int returnTo = chr.getReturnTo();
+				if (returnTo != Chr.RETURN_TO_STORAGE) {
+					String returnToSceneName;
+					if (returnTo == Chr.RETURN_TO_INITIAL_SCENE) {
+						returnToSceneName = chr.getInitialScene().toLowerCase();
+					} else {
+						returnToSceneName = "random@";
+					}
+					Scene scene = getSceneByName(returnToSceneName);
+					// TODO: We can't put two monsters in the same scene.
+					if (scene != null && scene != world.getStorageScene()) {
+						System.err.println("moved " + chr.getName() + " to " + scene.getName());
+						world.move(chr, scene);
+						return;
+					}
+				}
+			} else if (event.getTo() == player.getCurrentScene()) {
 				encounter(player, chr);
 			}
 		}

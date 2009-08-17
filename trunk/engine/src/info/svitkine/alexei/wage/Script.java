@@ -799,7 +799,14 @@ public class Script {
 			for (Obj o : player.getInventory()) {
 				if (target.contains(o.getName().toLowerCase())) {
 					// TODO
-					callbacks.appendText("Your offer is rejected.");
+					if (true) {
+						callbacks.appendText("Your offer is rejected.");
+					} else {
+						callbacks.appendText("Your offer is accepted.");
+						callbacks.appendText(enemy.getAcceptsOfferComment());
+						world.move(o, enemy);
+						world.move(enemy, world.getStorageScene());
+					}
 					break;
 				}
 			}
