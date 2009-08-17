@@ -52,15 +52,7 @@ public class Script {
 		} else if (data[index] == (byte) 0xC2) { // PLAYER@
 			result = new Operand(world.getPlayer(), Operand.CHR);
 		} else if (data[index] == (byte) 0xC3) { // MONSTER@
-			for (Chr chr : world.getPlayer().getCurrentScene().getChrs()) {
-				if (!chr.isPlayerCharacter()) {
-					result = new Operand(chr, Operand.CHR);
-					break;
-				}
-			}
-			if (result == null) {
-				result = new Operand(null, Operand.CHR);
-			}
+			result = new Operand(callbacks.getMonster(), Operand.CHR);
 		} else if (data[index] == (byte) 0xC4) { // RANDOMSCN@
 			Scene[] scenes = world.getScenes().values().toArray(new Scene[0]);
 			result = new Operand(scenes[(int) (Math.random()*scenes.length)], Operand.SCENE);
@@ -403,6 +395,7 @@ public class Script {
 		public void setMenu(String menuData);
 		public void performAttack(Chr attacker, Chr victim, Weapon weapon);
 		public void regen();
+		public Chr getMonster();
 		public Obj getOffer();
 	}
 
@@ -770,15 +763,6 @@ public class Script {
 		return input.contains(weapon.getName().toLowerCase()) && input.contains(weapon.getOperativeVerb().toLowerCase());
 	}
 
-	private Chr findEnemy(Chr player) {
-		for (Chr chr : player.getCurrentScene().getChrs()) {
-			if (chr != player) {
-				return chr;
-			}
-		}
-		return null;
-	}
-
 	private void handleAimCommand(String target) {
 		// TODO:
 		if (target.contains("head")) {
@@ -794,7 +778,7 @@ public class Script {
 
 	private void handleOfferCommand(String target) {
 		Chr player = world.getPlayer();
-		Chr enemy = findEnemy(player);
+		Chr enemy = callbacks.getMonster();
 		if (enemy != null) {
 			for (Obj o : player.getInventory()) {
 				if (target.contains(o.getName().toLowerCase())) {
@@ -824,7 +808,7 @@ public class Script {
 
 	private void handleAttack(Weapon weapon) {
 		Chr player = world.getPlayer();
-		Chr enemy = findEnemy(player);
+		Chr enemy = callbacks.getMonster();
 		if (enemy != null)
 			callbacks.performAttack(player, enemy, weapon);
 		else if (weapon.getType() == Obj.MAGICAL_OBJECT)
@@ -918,7 +902,7 @@ public class Script {
 
 	private void handleRestCommand() {
 		Chr player = world.getPlayer();
-		Chr enemy = findEnemy(player);
+		Chr enemy = callbacks.getMonster();
 		if (enemy != null) {
 			callbacks.appendText("This is no time to rest!");
 		} else {
@@ -982,6 +966,7 @@ public class Script {
 					callbacks.appendText(msg);
 				}
 				world.move(player, scene);
+				return;
 			}
  		}
 		if (msg != null && msg.length() > 0) {

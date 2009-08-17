@@ -64,6 +64,7 @@ public class GameWindow extends JFrame {
 			}
 		});
 		engine.processTurn("look", null);
+		textArea.getOut().append("\n");
 		Scene scene = world.getPlayer().getCurrentScene();
 		world.addMoveListener(new World.MoveListener() {
 			public void onMove(World.MoveEvent event) {
