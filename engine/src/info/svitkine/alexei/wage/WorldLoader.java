@@ -246,19 +246,20 @@ public class WorldLoader {
 			chr.setRunningSpeed(readUnsignedByte(in));
 			chr.setRejectsOffers(readUnsignedByte(in));
 			chr.setFollowsOpponent(readUnsignedByte(in));
+
 			in.readByte(); // TODO: ???
-			
 			in.readInt(); // TODO: ???
-			
+
 			chr.setWeaponDamage1(readUnsignedByte(in));
 			chr.setWeaponDamage2(readUnsignedByte(in));
 			
 			in.readByte(); // TODO: ???
+
 			if (in.readByte() == 1)
 				chr.setPlayerCharacter(true);
 			chr.setMaximumCarriedObjects(readUnsignedByte(in));
-			in.readByte(); // TODO: ???
-			
+			chr.setReturnTo(in.readByte());
+
 			chr.setWinningWeapons(readUnsignedByte(in));
 			chr.setWinningMagic(readUnsignedByte(in));
 			chr.setWinningRun(readUnsignedByte(in));
