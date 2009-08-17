@@ -105,7 +105,6 @@ public class ResourceType
                       ResourceMap rmap, long seekSet) throws IOException
    {
       Resource currentRes;
-      Enumeration resEnum;
 
       inraf.seek(seekSet + rhdr.mapOffset + rmap.typeOffset + offset);
       for(int i = 0; i < numItems; i++)
@@ -116,14 +115,11 @@ public class ResourceType
          resArray[i] = currentRes; // Keep array for backward compat
       }
 
-      resEnum = resHash.keys();
-      while(resEnum.hasMoreElements())
+      for(int i = 0; i < numItems; i++)
       {
-         currentRes = (Resource)resHash.get(resEnum.nextElement());
          // Use existing 'offset' param to carry seekSet displacement
-         currentRes.readName(inraf, seekSet + rhdr.mapOffset +
-                             rmap.nameOffset);
-         currentRes.readData(inraf, seekSet + rhdr.dataOffset);
+         resArray[i].readName(inraf, seekSet + rhdr.mapOffset + rmap.nameOffset);
+         resArray[i].readData(inraf, seekSet + rhdr.dataOffset);
       }
    }
 
