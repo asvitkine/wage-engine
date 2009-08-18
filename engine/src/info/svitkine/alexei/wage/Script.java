@@ -371,7 +371,9 @@ public class Script {
 			}
 		}
 		if (result == null) {
-			System.err.println("OMG UNHANDLED CASE FIXME (op is " + op + ")");
+			System.err.printf("OMG UNHANDLED CASE FIXME (op is %s, lhs.type is %d, rhs.type is %d)\n", op, lhs.type, rhs.type);
+			System.err.println("LHS IS " + lhs.value);
+			System.err.println("RHS IS " + rhs.value);
 			result = false;
 		}
 		return result;
@@ -1145,5 +1147,15 @@ public class Script {
 	
 	public String toString() {
 		return buildStringFromOffset(12);
+	}
+	
+	public int countLines() {
+		int loc = 0;
+		for (int i = 12; i < data.length; i++) {
+			if (data[i] == (byte) 0xFD || data[i] == (byte) 0xFE || data[i] == (byte) 0x87 || data[i] == (byte) 0x88) {
+				loc++;
+			}
+		}
+		return loc;
 	}
 }

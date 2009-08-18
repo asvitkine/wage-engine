@@ -64,7 +64,6 @@ public class Engine implements Script.Callbacks, MoveListener {
 		for (Chr chr : world.getOrderedChrs()) {
 			if (!chr.getInitialScene().equals(World.STORAGE)) {
 				Scene scene = getSceneByName(chr.getInitialScene().toLowerCase());
-				// TODO: We can't put two monsters in the same scene.
 				if (scene != null) {
 					world.move(chr, scene);
 				}
