@@ -161,6 +161,8 @@ public class Script {
 			op = "+";
 		} else if (data[index] == (byte) 0x90) {
 			op = "-";
+		} else if (data[index] == (byte) 0x91) {
+			op = "*";
 		} else if (data[index] == (byte) 0x92) {
 			op = "/";
 		} else if (data[index] == (byte) 0x93) {
@@ -1052,6 +1054,8 @@ public class Script {
 				sb.append("+");
 			} else if (data[i] == (byte) 0x90) {
 				sb.append("-");
+			} else if (data[i] == (byte) 0x91) {
+				sb.append("*");
 			} else if (data[i] == (byte) 0x92) {
 				sb.append("/");
 			} else if (data[i] == (byte) 0x93) {
