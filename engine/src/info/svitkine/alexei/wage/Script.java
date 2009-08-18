@@ -262,13 +262,23 @@ public class Script {
 					evalResult = (left < right);
 				}
 			});
-			handlers.add(new PairEvaluator(Operand.STRING, Operand.STRING) {
+			handlers.add(new PairEvaluator(Operand.STRING, Operand.TEXT_INPUT) {
 				@Override
 				public void evaluatePair(Operand o1, Operand o2) {
-					if (o1.value == null || o2.value == null) {
-						evalResult = (o1.value == o2.value);
+					if (inputText != null) {
+						evalResult = !inputText.toLowerCase().contains(((String) o1.value).toLowerCase());
 					} else {
-						evalResult = o1.value.equals(o2.value);
+						evalResult = false;
+					}
+				}
+			});
+			handlers.add(new PairEvaluator(Operand.TEXT_INPUT, Operand.STRING) {
+				@Override
+				public void evaluatePair(Operand o1, Operand o2) {
+					if (inputText != null) {
+						evalResult = !inputText.toLowerCase().contains(((String) o2.value).toLowerCase());
+					} else {
+						evalResult = false;
 					}
 				}
 			});
