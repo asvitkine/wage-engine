@@ -2,10 +2,12 @@ package info.svitkine.alexei.wage;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.TexturePaint;
 import java.awt.event.ActionEvent;
@@ -15,6 +17,7 @@ import java.beans.XMLEncoder;
 import java.io.ByteArrayOutputStream;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -46,6 +49,7 @@ public class WorldBrowser extends JPanel {
 		tabs.add("Characters", createChrBrowser());
 		tabs.add("Sounds", createSoundBrowser());
 		tabs.add("Global Code", new JScrollPane(new JTextArea(world.getGlobalScript().toString())));
+		tabs.add("World Info", createInfoPanel());
 		playButton = new JButton("Play!");
 		add(playButton, BorderLayout.SOUTH);
 		playButton.addActionListener(new ActionListener() {
@@ -53,6 +57,34 @@ public class WorldBrowser extends JPanel {
 				new GameWindow(world, patterns).setVisible(true);
 			}
 		});
+	}
+
+	private void addField(JPanel info, String name, int value) {
+		JLabel label = new JLabel(name);
+		label.setHorizontalAlignment(JLabel.RIGHT);
+		info.add(label);
+		info.add(new JLabel("" + value));
+	}
+	
+	private Component createInfoPanel() {
+		JPanel info = new JPanel();
+		info.setLayout(new GridLayout(0, 2));
+		addField(info, "Scenes: ", world.getScenes().size());
+		addField(info, "Objects: ", world.getObjs().size());
+		addField(info, "Characters: ", world.getChrs().size());
+		addField(info, "Sounds: ", world.getSounds().size());
+		int loc = world.getGlobalScript().countLines();
+		for (Scene scene : world.getScenes().values()) {
+			if (scene.getScript() != null) {
+				loc += scene.getScript().countLines();
+			}
+		}
+		addField(info, "Lines of Script: ", loc);
+		JPanel blah = new JPanel();
+		blah.setLayout(new BorderLayout());
+		blah.add(info, BorderLayout.NORTH);
+		blah.add(new JPanel(), BorderLayout.CENTER);
+		return blah;
 	}
 
 	private static TexturePaint[] loadPatterns(World world) {
