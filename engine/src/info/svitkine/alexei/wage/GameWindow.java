@@ -68,11 +68,12 @@ public class GameWindow extends JFrame {
 		Scene scene = world.getPlayer().getCurrentScene();
 		world.addMoveListener(new World.MoveListener() {
 			public void onMove(World.MoveEvent event) {
-				Scene currentScene = world.getPlayer().getCurrentScene();
+				final Scene currentScene = world.getPlayer().getCurrentScene();
 				if (event.getTo() == currentScene || event.getFrom() == currentScene) {
 					Runnable repainter = new Runnable() {
 						public void run() {
-							viewer.repaint();
+							updateSceneViewerForScene(viewer, currentScene);
+							viewer.paintImmediately(viewer.getBounds());
 							getContentPane().repaint();
 						}
 					};

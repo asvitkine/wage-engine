@@ -76,6 +76,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 		if (playerScene == world.getStorageScene())
 			return;
 		boolean escaped = false;
+		boolean shouldEncounter = false;
 		Chr prevMonster = null;
 		if (playerScene != lastScene) {
 			loopCount = 0;
@@ -87,6 +88,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 			for (Chr chr : playerScene.getChrs()) {
 				if (!chr.isPlayerCharacter()) {
 					monster = chr;
+					shouldEncounter = true;
 					break;
 				}
 			}
@@ -104,7 +106,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 				appendText("You escape %s.", getNameWithDefiniteArticle(prevMonster, false));
 			}
 		} else if (loopCount == 1) {
-			if (monster != null) {
+			if (shouldEncounter && monster != null) {
 				encounter(world.getPlayer(), monster);
 			}
 		} else if (!hadOutput && textInput != null && !handled) {

@@ -17,7 +17,6 @@ import java.beans.XMLEncoder;
 import java.io.ByteArrayOutputStream;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComponent;
