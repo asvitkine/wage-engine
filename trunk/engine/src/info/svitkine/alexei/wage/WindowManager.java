@@ -4,16 +4,20 @@ import java.awt.Container;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
+import javax.swing.Timer;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
 
 public class WindowManager extends JPanel {
 
-	// TODO: z-order!
 	public WindowManager() {
 		setLayout(null);
 	}
@@ -37,19 +41,41 @@ public class WindowManager extends JPanel {
 	
 	private static class WindowDragListener extends MouseInputAdapter {
 		private Point startPos = null; 
+		private Timer scrollTimer;
 
 		@Override
 		public void mousePressed(MouseEvent event) {
 			Point p = event.getPoint();
 			JComponent c = (JComponent) event.getComponent();
 			WindowBorder border = (WindowBorder) c.getBorder();
-			Shape shape = border.getBorderShapes(c)[WindowBorder.BORDER_SHAPE];
+			Shape[] borderShapes = border.getBorderShapes(c);
+			Shape shape = borderShapes[WindowBorder.BORDER_SHAPE];
 			if (shape != null && shape.contains(p)) {
-				Shape closeBoxShape = border.getBorderShapes(c)[WindowBorder.CLOSE_BOX];
+				Shape closeBoxShape = borderShapes[WindowBorder.CLOSE_BOX];
 				if (closeBoxShape == null || !closeBoxShape.contains(p)) {
 					startPos = event.getPoint();
 				}
+				if (border.isScrollable()) {
+					if (borderShapes[WindowBorder.SCROLL_UP].contains(p)) {
+						scroll(c, -10);
+					} else if (borderShapes[WindowBorder.SCROLL_DOWN].contains(p)) { 
+						scroll(c, 10);
+					}
+				}
 			}
+		}
+
+		private void scroll(JComponent c, final int amount) {
+			while (!(c instanceof JScrollPane)) {
+				c = (JComponent) c.getComponent(0);
+			}
+			final JScrollBar bar = ((JScrollPane) c).getVerticalScrollBar();
+			scrollTimer = new Timer(100, new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					bar.setValue(bar.getValue() + amount);
+				}
+			});
+			scrollTimer.start();
 		}
 
 		@Override
@@ -71,6 +97,10 @@ public class WindowManager extends JPanel {
 		@Override
 		public void mouseReleased(MouseEvent event) { 
 			startPos = null;
+			if (scrollTimer != null) {
+				scrollTimer.stop();
+				scrollTimer = null;
+			}
 		}
 	}
 

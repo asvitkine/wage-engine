@@ -157,7 +157,12 @@ public class WindowBorder extends AbstractBorder {
 		if (closeable) {
 			shapes[CLOSE_BOX] = new Rectangle(5, 5, 9, 9);
 		}
-		shapes[BORDER_SHAPE] = getBorderShape(c);
+		if (scrollable) {
+			final int size = 17;
+			shapes[SCROLL_UP] = new Rectangle(c.getWidth() - 16, size + 1, 13, 12);
+			shapes[SCROLL_DOWN] = new Rectangle(c.getWidth() - 16, c.getHeight() - size - 14, 13, 12);
+		}
+ 		shapes[BORDER_SHAPE] = getBorderShape(c);
 		return shapes;
 	}
 

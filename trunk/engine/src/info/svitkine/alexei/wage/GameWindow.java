@@ -94,6 +94,7 @@ public class GameWindow extends JFrame {
 		wm.add(viewer);
 		wm.setComponentZOrder(viewer, 0);
 		wm.add(panel);
+		((WindowBorder) panel.getBorder()).setScrollable(true);
 		wm.setComponentZOrder(viewer, 1);
 		updateSceneViewerForScene(viewer, scene);
 		updateTextAreaForScene(textArea, panel, scene);
@@ -138,7 +139,6 @@ public class GameWindow extends JFrame {
 		setVisible(true);
 	}
 
-	
 	private static void runOnEventDispatchThread(Runnable runnable) {
 		if (SwingUtilities.isEventDispatchThread()) {
 			runnable.run();
