@@ -57,9 +57,9 @@ public class WindowManager extends JPanel {
 				}
 				if (border.isScrollable()) {
 					if (borderShapes[WindowBorder.SCROLL_UP].contains(p)) {
-						scroll(c, -10);
+						scroll(c, -1);
 					} else if (borderShapes[WindowBorder.SCROLL_DOWN].contains(p)) { 
-						scroll(c, 10);
+						scroll(c, 1);
 					}
 				}
 			}
@@ -70,7 +70,7 @@ public class WindowManager extends JPanel {
 				c = (JComponent) c.getComponent(0);
 			}
 			final JScrollBar bar = ((JScrollPane) c).getVerticalScrollBar();
-			scrollTimer = new Timer(100, new ActionListener() {
+			scrollTimer = new Timer(3, new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					bar.setValue(bar.getValue() + amount);
 				}
