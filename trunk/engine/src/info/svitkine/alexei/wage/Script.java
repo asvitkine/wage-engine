@@ -839,6 +839,7 @@ public class Script {
 			appendText("There is nobody to cast a spell at.");
 		else
 			appendText("There is no one to fight.");
+		handled = true;
 	}
 
 	private void handleInventoryCommand() {

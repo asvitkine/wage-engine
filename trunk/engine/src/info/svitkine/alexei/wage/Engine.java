@@ -347,6 +347,8 @@ public class Engine implements Script.Callbacks, MoveListener {
 			// TODO: Armor can absorb some of the damage, I think.
 			victim.setPhysicalHp(victim.getPhysicalAccuracy() - weapon.getDamage());
 			if (victim.getPhysicalHp() < 0) {
+				playSound(victim.getDyingSound());
+				appendText(victim.getDyingWords());
 				appendText("%s is dead.", getNameWithDefiniteArticle(victim, true));
 				attacker.getContext().setKills(attacker.getContext().getKills() + 1);
 				world.move(victim, world.getStorageScene());
