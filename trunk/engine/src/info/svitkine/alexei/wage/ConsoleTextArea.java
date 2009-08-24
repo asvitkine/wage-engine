@@ -57,6 +57,7 @@ class ConsoleWrite implements Runnable {
 
 	public void run() {
 		textArea.write(str);
+		textArea.paintImmediately(textArea.getBounds());
 	}
 }
 
@@ -81,7 +82,12 @@ class ConsoleWriter extends java.io.OutputStream {
 		if (data.length > 0) {
 			String str = new String(buffer.toByteArray());
 			buffer = new ByteArrayOutputStream();
-			SwingUtilities.invokeLater(new ConsoleWrite(textArea, str));
+			ConsoleWrite write = new ConsoleWrite(textArea, str);
+			if (SwingUtilities.isEventDispatchThread()) {
+				write.run();
+			} else {
+				SwingUtilities.invokeLater(write);
+			}
 		}
 	}
 

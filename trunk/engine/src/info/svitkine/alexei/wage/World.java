@@ -157,14 +157,24 @@ public class World {
 		moveListeners.remove(ml);
 	}
 
+	private Chr removeFromChr(Obj obj) {
+		Chr owner = obj.getCurrentOwner();
+		if (owner != null) {
+			owner.getInventory().remove(obj);
+			Obj[] armor = obj.getCurrentOwner().getArmor();
+			for (int i = 0; i < armor.length; i++) {
+				if (armor[i] == obj) {
+					armor[i] = null;
+				}
+			}
+		}
+		return owner;
+	}
+	
 	public void move(Obj obj, Chr chr) {
 		if (obj == null)
 			return;
-		Object from = null;
-		if (obj.getCurrentOwner() != null) {
-			obj.getCurrentOwner().getInventory().remove(obj);
-			from = obj.getCurrentOwner();
-		}
+		Object from = removeFromChr(obj);
 		if (obj.getCurrentScene() != null) {
 			obj.getCurrentScene().getObjs().remove(obj);
 			from = obj.getCurrentScene();
@@ -178,11 +188,7 @@ public class World {
 	public void move(Obj obj, Scene scene) {
 		if (obj == null)
 			return;
-		Object from = null;
-		if (obj.getCurrentOwner() != null) {
-			obj.getCurrentOwner().getInventory().remove(obj);
-			from = obj.getCurrentOwner();
-		}
+		Object from = removeFromChr(obj);
 		if (obj.getCurrentScene() != null) {
 			obj.getCurrentScene().getObjs().remove(obj);
 			from = obj.getCurrentScene();

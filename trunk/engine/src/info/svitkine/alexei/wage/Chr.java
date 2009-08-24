@@ -71,7 +71,13 @@ public class Chr {
 
 	private Scene currentScene;
 	private List<Obj> inventory = new ArrayList<Obj>();
+
+	public static final int HEAD_ARMOR = 0;
+	public static final int BODY_ARMOR = 1;
+	public static final int SHIELD_ARMOR = 2;
 	
+	private Obj[] armor = new Obj[3];
+
 	private Context context = new Context();
 
 	public Context getContext() {
@@ -185,6 +191,10 @@ public class Chr {
 
 	public void setMakesOfferComment(String makesOfferComment) {
 		this.makesOfferComment = makesOfferComment;
+	}
+
+	public Obj[] getArmor() {
+		return armor;
 	}
 
 	public Weapon[] getWeapons() {
