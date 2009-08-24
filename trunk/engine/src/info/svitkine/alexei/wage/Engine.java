@@ -345,12 +345,19 @@ public class Engine implements Script.Callbacks, MoveListener {
 			playSound(victim.getReceivesHitSound());
 			appendText(victim.getReceivesHitComment());
 			// TODO: Armor can absorb some of the damage, I think.
-			victim.setPhysicalHp(victim.getPhysicalAccuracy() - weapon.getDamage());
-			if (victim.getPhysicalHp() < 0) {
+			Context victimContext = victim.getContext();
+			int victimHp = victim.getContext().getStatVariable(Context.PHYS_HIT_CUR);
+			victimHp -= weapon.getDamage();
+			victimContext.setStatVariable(Context.PHYS_HIT_CUR, victimHp);
+			if (victimHp < 0) {
 				playSound(victim.getDyingSound());
 				appendText(victim.getDyingWords());
 				appendText("%s is dead.", getNameWithDefiniteArticle(victim, true));
-				attacker.getContext().setKills(attacker.getContext().getKills() + 1);
+				Context attackerContext = attacker.getContext();
+				attackerContext.setKills(attackerContext.getKills() + 1);
+				attackerContext.setExperience(attackerContext.getExperience() + 1 + victim.getPhysicalHp());
+				for (int i = victim.getInventory().size() - 1; i >= 0; i--)
+					world.move(victim.getInventory().get(i), victim.getCurrentScene());
 				world.move(victim, world.getStorageScene());
 			} else if (attacker.isPlayerCharacter()) {
 				appendText("%s's condition appears to be %s.",
@@ -359,9 +366,6 @@ public class Engine implements Script.Callbacks, MoveListener {
 			}
 		}
 		weapon.decrementNumberOfUses();
-		if (attacker.isPlayerCharacter() && victim.getCurrentScene() == attacker.getCurrentScene()) {
-			performCombatAction(victim, attacker);
-		}
 	}
 
 	public static String getNameWithDefiniteArticle(Chr chr, boolean capitalize) {
