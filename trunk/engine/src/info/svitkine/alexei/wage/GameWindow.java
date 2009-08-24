@@ -72,10 +72,16 @@ public class GameWindow extends JFrame {
 				if (event.getTo() == currentScene || event.getFrom() == currentScene) {
 					Runnable repainter = new Runnable() {
 						public void run() {
-							updateTextAreaForScene(textArea, panel, currentScene);
-							updateSceneViewerForScene(viewer, currentScene);
-							viewer.paintImmediately(viewer.getBounds());
-							getContentPane().repaint();
+							if (currentScene == world.getStorageScene()) {
+								JOptionPane.showMessageDialog(GameWindow.this, "Game over!");
+								setVisible(false);
+								dispose();
+							} else {
+								updateTextAreaForScene(textArea, panel, currentScene);
+								updateSceneViewerForScene(viewer, currentScene);
+								viewer.paintImmediately(viewer.getBounds());
+								getContentPane().repaint();
+							}
 						}
 					};
 					runOnEventDispatchThread(repainter);
