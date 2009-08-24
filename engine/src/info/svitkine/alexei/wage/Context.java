@@ -82,8 +82,7 @@ public class Context {
 	public void setExperience(int experience) {
 		this.experience = (short) experience;
 	}
-	
-	
+
 	public short getStatVariable(int index) {
 		return statVariables[index];
 	}
