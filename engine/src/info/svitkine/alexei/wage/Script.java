@@ -954,9 +954,8 @@ public class Script {
 		if (player.getInventory().size() >= player.getMaximumCarriedObjects()) {
 			appendText("Your pack is full, you must drop something.");
 		} else {
-			appendText("You now have the " + obj.getName() + ".");
-			appendText(obj.getClickMessage());
 			world.move(obj, world.getPlayer());
+			appendText("You now have the " + obj.getName() + ".");
 			if (obj.getType() == Obj.HELMET) {
 				if (player.getArmor()[Chr.HEAD_ARMOR] == null) {
 					player.getArmor()[Chr.HEAD_ARMOR] = obj;
@@ -973,6 +972,7 @@ public class Script {
 					appendText("You are now wearing the " + obj.getName() + ".");
 				}
 			}
+			appendText(obj.getClickMessage());
 		}
 	}
 	

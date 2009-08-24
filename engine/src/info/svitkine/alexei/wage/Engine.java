@@ -76,14 +76,10 @@ public class Engine implements Script.Callbacks, MoveListener {
 		Scene playerScene = world.getPlayer().getCurrentScene();
 		if (playerScene == world.getStorageScene())
 			return;
-		boolean escaped = false;
 		boolean shouldEncounter = false;
-		Chr prevMonster = null;
 		if (playerScene != lastScene) {
 			loopCount = 0;
 			lastScene = playerScene;
-			prevMonster = monster;
-			escaped = (monster != null);
 			monster = null;
 			offer = null;
 			for (Chr chr : playerScene.getChrs()) {
@@ -101,10 +97,6 @@ public class Engine implements Script.Callbacks, MoveListener {
 		if (playerScene != lastScene) {
 			regen();
 			processTurnInternal("look", null);
-			if (escaped) {
-				// TODO: Monsters can follow!
-				appendText("You escape %s.", getNameWithDefiniteArticle(prevMonster, false));
-			}
 		} else if (loopCount == 1) {
 			if (shouldEncounter && monster != null) {
 				encounter(world.getPlayer(), monster);
@@ -122,7 +114,21 @@ public class Engine implements Script.Callbacks, MoveListener {
 			performInitialSetup();
 		}
 		commandWasQuick = false;
+		Scene prevScene = world.getPlayer().getCurrentScene();
+		Chr prevMonster = getMonster();
 		processTurnInternal(textInput, clickInput);
+		Scene playerScene = world.getPlayer().getCurrentScene();
+		if (prevScene != playerScene && playerScene != world.getStorageScene()) {
+			if (prevMonster != null) {
+				if (getMonster() == null && (int) (Math.random() * 255) < prevMonster.getFollowsOpponent()) {
+					// TODO: monsters shouldn't be able to follow you if you moved via script (i.e. teleport out?)
+					appendText("%s follows you.", getNameWithDefiniteArticle(prevMonster, true));
+					world.move(prevMonster, playerScene);
+				} else {
+					appendText("You escape %s.", getNameWithDefiniteArticle(prevMonster, false));
+				}
+			}
+		}
 		if (!commandWasQuick && getMonster() != null) {
 			performCombatAction(getMonster(), world.getPlayer());
 		}
@@ -356,8 +362,10 @@ public class Engine implements Script.Callbacks, MoveListener {
 				Context attackerContext = attacker.getContext();
 				attackerContext.setKills(attackerContext.getKills() + 1);
 				attackerContext.setExperience(attackerContext.getExperience() + 1 + victim.getPhysicalHp());
-				for (int i = victim.getInventory().size() - 1; i >= 0; i--)
-					world.move(victim.getInventory().get(i), victim.getCurrentScene());
+				if (!victim.isPlayerCharacter()) {
+					for (int i = victim.getInventory().size() - 1; i >= 0; i--)
+						world.move(victim.getInventory().get(i), victim.getCurrentScene());
+				}
 				world.move(victim, world.getStorageScene());
 			} else if (attacker.isPlayerCharacter()) {
 				appendText("%s's condition appears to be %s.",
