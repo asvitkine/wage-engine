@@ -12,10 +12,11 @@ public class Engine implements Script.Callbacks, MoveListener {
 	private PrintStream out;
 	private int loopCount;
 	private int turn;
-	private boolean hadOutput;
 	private Callbacks callbacks;
 	private Chr monster;
 	private Obj offer;
+	private boolean commandWasQuick;
+	private int aim = -1;
 
 	public interface Callbacks {
 		public void setCommandsMenu(String format);
@@ -93,7 +94,6 @@ public class Engine implements Script.Callbacks, MoveListener {
 				}
 			}
 		}
-		hadOutput = false;
 		boolean handled = playerScene.getScript().execute(world, loopCount++, textInput, clickInput, this);
 		playerScene = world.getPlayer().getCurrentScene();
 		if (playerScene == world.getStorageScene())
@@ -109,9 +109,10 @@ public class Engine implements Script.Callbacks, MoveListener {
 			if (shouldEncounter && monster != null) {
 				encounter(world.getPlayer(), monster);
 			}
-		} else if (!hadOutput && textInput != null && !handled) {
+		} else if (textInput != null && !handled) {
 			String[] messages = { "What?", "Huh?" };
 			appendText(messages[(int) (Math.random()*messages.length)]);
+			commandWasQuick = true;
 		}
 	}
 
@@ -120,17 +121,24 @@ public class Engine implements Script.Callbacks, MoveListener {
 		if (turn == 0) {
 			performInitialSetup();
 		}
+		commandWasQuick = false;
 		processTurnInternal(textInput, clickInput);
+		if (!commandWasQuick && getMonster() != null) {
+			performCombatAction(getMonster(), world.getPlayer());
+		}
 		turn++;
 	}
 
 	public void appendText(String text, Object... args) {
 		appendText(String.format(text, args));
 	}
+	
+	public void setCommandWasQuick() {
+		commandWasQuick = true;
+	}
 
 	public void appendText(String text) {
 		if (text != null && text.length() > 0) {
-			hadOutput = true;
 			out.append(text);
 			out.append("\n");
 		}
@@ -203,7 +211,11 @@ public class Engine implements Script.Callbacks, MoveListener {
 		appendText(sb.toString());
 		if (chr.getInitialComment() != null && chr.getInitialComment().length() > 0)
 			appendText(chr.getInitialComment());
-		performCombatAction(chr, player);
+	}
+
+
+	public void setAim(int aim) {
+		this.aim = aim;
 	}
 	
 	public void performCombatAction(Chr npc, Chr player) {
@@ -312,7 +324,8 @@ public class Engine implements Script.Callbacks, MoveListener {
 
 	public void performAttack(Chr attacker, Chr victim, Weapon weapon) {
 		String[] targets = new String[] { "chest", "head", "side" };
-		String target = targets[(int) (Math.random()*targets.length)];
+		int targetIndex = (attacker.isPlayerCharacter() && aim != -1 ? aim : (int) (Math.random()*targets.length));
+		String target = targets[targetIndex];
 		if (!attacker.isPlayerCharacter()) {
 			appendText("%s %ss %s at %s's %s.",
 					getNameWithDefiniteArticle(attacker, true),
@@ -328,8 +341,9 @@ public class Engine implements Script.Callbacks, MoveListener {
 		} else {
 			appendText("A hit to the %s.", target);
 			playSound(attacker.getScoresHitSound());
-			appendText(victim.getReceivesHitComment());
+			appendText(attacker.getScoresHitComment());
 			playSound(victim.getReceivesHitSound());
+			appendText(victim.getReceivesHitComment());
 			// TODO: Armor can absorb some of the damage, I think.
 			victim.setPhysicalHp(victim.getPhysicalAccuracy() - weapon.getDamage());
 			if (victim.getPhysicalHp() < 0) {
