@@ -72,6 +72,7 @@ public class GameWindow extends JFrame {
 				if (event.getTo() == currentScene || event.getFrom() == currentScene) {
 					Runnable repainter = new Runnable() {
 						public void run() {
+							updateTextAreaForScene(textArea, panel, currentScene);
 							updateSceneViewerForScene(viewer, currentScene);
 							viewer.paintImmediately(viewer.getBounds());
 							getContentPane().repaint();
@@ -91,7 +92,9 @@ public class GameWindow extends JFrame {
 			}
 		});
 		wm.add(viewer);
+		wm.setComponentZOrder(viewer, 0);
 		wm.add(panel);
+		wm.setComponentZOrder(viewer, 1);
 		updateSceneViewerForScene(viewer, scene);
 		updateTextAreaForScene(textArea, panel, scene);
 		updateSoundTimerForScene(scene);
