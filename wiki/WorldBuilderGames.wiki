@@ -16,6 +16,7 @@ It is suspected that over 100 games have been made using World Builder. Here is 
 || <a href="http://macintoshgarden.org/games/zikturia">!ZikTuria</a> || 1987 || Partial ||
 || <a href="http://macintoshgarden.org/games/dungeonworld-ii">Dungeon World II</a> || 1987 || Unknown ||
 || <a href="http://macintoshgarden.org/games/swamp-witch">Swamp Witch</a> || 1988 || Unknown ||
+|| Everyman || 1988 || Unknown ||
 || <a href="http://macintoshgarden.org/games/mikes-house">Mike's House</a> || 1989 || Unknown ||
 || <a href="http://www.semitech.com/marc/ray.html">Ray's Maze</a> || 1990 || Unknown ||
 || <a href="http://macintoshgarden.org/games/pyramid-of-ert">Pyramid of Ert</a> || 1990 || Unknown ||
