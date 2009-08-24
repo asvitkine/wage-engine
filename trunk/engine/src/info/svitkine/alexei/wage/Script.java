@@ -411,6 +411,8 @@ public class Script {
 		public void regen();
 		public Chr getMonster();
 		public Obj getOffer();
+		public void setAim(int aim);
+		public void setCommandWasQuick();
 	}
 
 	private void processIf() {
@@ -648,6 +650,11 @@ public class Script {
 		});
 		evaluatePair(handlers, what, to);
 	}
+
+	private void appendText(String str, Object... args) {
+		handled = true;
+		callbacks.appendText(str, args);
+	}
 	
 	public boolean execute(World world, int loopCount,
 			String inputText, Object inputClick,
@@ -677,7 +684,7 @@ public class Script {
 					index++;
 					Operand op = readOperand();
 					// TODO check op type is string or number, or something good...
-					callbacks.appendText(op.value.toString());
+					appendText(op.value.toString());
 					// TODO check data[index] == 0xFD
 					index++;
 				} else if (data[index] == (byte) 0x8C) { // SOUND
@@ -694,6 +701,7 @@ public class Script {
 					index++;
 					Operand op = readStringOperand(); // allows empty menu
 					// TODO check op type is string.
+					handled = true;
 					callbacks.setMenu(op.value.toString());
 					// TODO check data[index] == 0xFD
 					index++;
@@ -764,11 +772,9 @@ public class Script {
 			Obj obj = (Obj) inputClick;
 			if (obj.getType() != Obj.IMMOBILE_OBJECT) {
 				world.move(obj, world.getPlayer());
-				callbacks.appendText("You now have the " + obj.getName() + ".");
+				appendText("You now have the " + obj.getName() + ".");
 			}
-			if (obj.getClickMessage() != null) {
-				callbacks.appendText(obj.getClickMessage());
-			}
+			appendText(obj.getClickMessage());
 		}
 		return handled;
 	}
@@ -778,16 +784,20 @@ public class Script {
 	}
 
 	private void handleAimCommand(String target) {
-		// TODO:
+		boolean wasHandled = true;
 		if (target.contains("head")) {
-			handled = true;
+			callbacks.setAim(Chr.HEAD);
 		} else if (target.contains("chest")) {
-			handled = true;
+			callbacks.setAim(Chr.CHEST);
 		} else if (target.contains("side")) {
-			handled = true;
+			callbacks.setAim(Chr.SIDE);
 		} else {
-			callbacks.appendText("Please aim for the head, chest, or side.");
+			wasHandled = false;
+			appendText("Please aim for the head, chest, or side.");
 		}
+		if (wasHandled)
+			handled = true;
+		callbacks.setCommandWasQuick();
 	}
 
 	private void handleOfferCommand(String target) {
@@ -798,10 +808,10 @@ public class Script {
 				if (target.contains(o.getName().toLowerCase())) {
 					// TODO
 					if (true) {
-						callbacks.appendText("Your offer is rejected.");
+						appendText("Your offer is rejected.");
 					} else {
-						callbacks.appendText("Your offer is accepted.");
-						callbacks.appendText(enemy.getAcceptsOfferComment());
+						appendText("Your offer is accepted.");
+						appendText(enemy.getAcceptsOfferComment());
 						world.move(o, enemy);
 						world.move(enemy, world.getStorageScene());
 					}
@@ -814,7 +824,7 @@ public class Script {
 	private void handleAcceptCommand() {
 		Obj offer = callbacks.getOffer();
 		Chr chr = offer.getCurrentOwner();
-		callbacks.appendText("%s lays the %s on the ground and departs peacefully.",
+		appendText("%s lays the %s on the ground and departs peacefully.",
 			Engine.getNameWithDefiniteArticle(chr, true), offer.getName());
 		world.move(offer, chr.getCurrentScene());
 		world.move(chr, world.getStorageScene());
@@ -826,31 +836,31 @@ public class Script {
 		if (enemy != null)
 			callbacks.performAttack(player, enemy, weapon);
 		else if (weapon.getType() == Obj.MAGICAL_OBJECT)
-			callbacks.appendText("There is nobody to cast a spell at.");
+			appendText("There is nobody to cast a spell at.");
 		else
-			callbacks.appendText("There is no one to fight.");
+			appendText("There is no one to fight.");
 	}
 
 	private void handleInventoryCommand() {
 		List<Obj> inv = world.getPlayer().getInventory();
 		if (inv.size() == 0) {
-			callbacks.appendText("Your pack is empty.");
+			appendText("Your pack is empty.");
 		} else {
 			StringBuilder sb = new StringBuilder("Your pack contains ");
 			appendObjNames(sb, inv);
-			callbacks.appendText(sb.toString());
+			appendText(sb.toString());
 		}
 	}
 	
 	private void handleLookCommand() {
 		Scene playerScene = world.getPlayer().getCurrentScene();
-		callbacks.appendText(playerScene.getText());
+		appendText(playerScene.getText());
 		List<Obj> objs = playerScene.getObjs();
 		for (Obj o : objs) {
 			if (o.getType() != Obj.IMMOBILE_OBJECT) {
 				StringBuilder sb = new StringBuilder("On the ground you see ");
 				appendObjNames(sb, objs);
-				callbacks.appendText(sb.toString());
+				appendText(sb.toString());
 				break;
 			}
 		}
@@ -879,18 +889,19 @@ public class Script {
 
 	private void handleStatusCommand() {
 		Chr player = world.getPlayer();
-		callbacks.appendText("Character name: " + player.getName());
-		callbacks.appendText("Experience: " + player.getContext().getKills());
+		appendText("Character name: " + player.getName());
+		appendText("Experience: " + player.getContext().getKills());
 		int wealth = 0;
 		for (Obj o : player.getInventory())
 			wealth += o.getValue();
-		callbacks.appendText("Wealth: " + wealth);
+		appendText("Wealth: " + wealth);
 		for (Obj o : player.getInventory()) {
 			if (o.getNumberOfUses() > 0) {
-				callbacks.appendText(String.format("Your %s has %d uses left.", o.getName(), o.getNumberOfUses()));
+				appendText(String.format("Your %s has %d uses left.", o.getName(), o.getNumberOfUses()));
 			}
 		}
 		printPlayerCondition(player);
+		callbacks.setCommandWasQuick();
 	}
 	
 	public static String getPercentMessage(Chr chr, int cur, int bas) {
@@ -910,15 +921,16 @@ public class Script {
 	}
 
 	private void printPlayerCondition(Chr player) {
-		callbacks.appendText("Your physical condition is " + getPercentMessage(player, Context.PHYS_HIT_CUR, Context.PHYS_HIT_BAS) + ".");
-		callbacks.appendText("Your spiritual condition is " + getPercentMessage(player, Context.SPIR_HIT_CUR, Context.SPIR_HIT_BAS) + ".");
+		appendText("Your physical condition is " + getPercentMessage(player, Context.PHYS_HIT_CUR, Context.PHYS_HIT_BAS) + ".");
+		appendText("Your spiritual condition is " + getPercentMessage(player, Context.SPIR_HIT_CUR, Context.SPIR_HIT_BAS) + ".");
 	}
 
 	private void handleRestCommand() {
 		Chr player = world.getPlayer();
 		Chr enemy = callbacks.getMonster();
 		if (enemy != null) {
-			callbacks.appendText("This is no time to rest!");
+			appendText("This is no time to rest!");
+			callbacks.setCommandWasQuick();
 		} else {
 			callbacks.regen();
 			printPlayerCondition(player);
@@ -930,13 +942,13 @@ public class Script {
 		for (Obj o : player.getCurrentScene().getObjs()) {
 			if (target.contains(o.getName().toLowerCase())) {
 				if (o.getType() == Obj.IMMOBILE_OBJECT) {
-					callbacks.appendText("You can't move it.");
+					appendText("You can't move it.");
 				} else {
 					if (player.getInventory().size() >= player.getMaximumCarriedObjects()) {
-						callbacks.appendText("Your pack is full, you must drop something.");
+						appendText("Your pack is full, you must drop something.");
 					} else {
-						callbacks.appendText("You now have the " + o.getName() + ".");
-						callbacks.appendText(o.getClickMessage());
+						appendText("You now have the " + o.getName() + ".");
+						appendText(o.getClickMessage());
 						world.move(o, world.getPlayer());
 					}
 				}
@@ -948,7 +960,7 @@ public class Script {
 	private void handleDropCommand(String target) {
 		for (Obj o : world.getPlayer().getInventory()) {
 			if (target.contains(o.getName().toLowerCase())) {
-				callbacks.appendText("You no longer have the " + o.getName() + ".");
+				appendText("You no longer have the " + o.getName() + ".");
 				world.move(o, world.getPlayer().getCurrentScene());
 				break;
 			}
@@ -959,7 +971,7 @@ public class Script {
 		for (Obj o : world.getPlayer().getInventory()) {
 			if (target.contains(o.getName().toLowerCase())) {
 				// TODO: sometimes you can wear it!!
-				callbacks.appendText("You cannot wear that object.");
+				appendText("You cannot wear that object.");
 				break;
 			}
 		}
@@ -977,16 +989,16 @@ public class Script {
 			Scene scene = world.getSceneAt(destX, destY);
 			if (scene != null) {
 				if (msg != null && msg.length() > 0) {
-					callbacks.appendText(msg);
+					appendText(msg);
 				}
 				world.move(player, scene);
 				return;
 			}
  		}
 		if (msg != null && msg.length() > 0) {
-			callbacks.appendText(msg);
+			appendText(msg);
 		} else {
-			callbacks.appendText("You can't go " + dirName + ".");
+			appendText("You can't go " + dirName + ".");
 		}
 	}
 	

@@ -10,6 +10,10 @@ public class Chr {
 	public static final int RETURN_TO_RANDOM_SCENE = 1;
 	public static final int RETURN_TO_INITIAL_SCENE = 2;
 
+	public static final int HEAD = 0;
+	public static final int CHEST = 1;
+	public static final int SIDE = 2;
+	
 	private int index;
 	private String name;
 	private Design design;
