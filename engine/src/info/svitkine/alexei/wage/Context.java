@@ -40,6 +40,7 @@ public class Context {
 
 	private short visits; // Number of scenes visited, including repeated visits
 	private short kills;  // Number of characters killed
+	private short experience;
 	private short[] userVariables;
 	private short[] statVariables;
 
@@ -73,6 +74,15 @@ public class Context {
 	public void setKills(int kills) {
 		this.kills = (short) kills;
 	}
+	
+	public short getExperience() {
+		return experience;
+	}
+
+	public void setExperience(int experience) {
+		this.experience = (short) experience;
+	}
+	
 	
 	public short getStatVariable(int index) {
 		return statVariables[index];

@@ -771,10 +771,10 @@ public class Script {
 		} else if (inputClick instanceof Obj) {
 			Obj obj = (Obj) inputClick;
 			if (obj.getType() != Obj.IMMOBILE_OBJECT) {
-				world.move(obj, world.getPlayer());
-				appendText("You now have the " + obj.getName() + ".");
+				takeObj(obj);
+			} else {
+				appendText(obj.getClickMessage());
 			}
-			appendText(obj.getClickMessage());
 		}
 		return handled;
 	}
@@ -848,7 +848,7 @@ public class Script {
 			appendText("Your pack is empty.");
 		} else {
 			StringBuilder sb = new StringBuilder("Your pack contains ");
-			appendObjNames(sb, inv);
+			appendObjNames(sb, inv, world.getPlayer().getArmor());
 			appendText(sb.toString());
 		}
 	}
@@ -860,17 +860,23 @@ public class Script {
 		for (Obj o : objs) {
 			if (o.getType() != Obj.IMMOBILE_OBJECT) {
 				StringBuilder sb = new StringBuilder("On the ground you see ");
-				appendObjNames(sb, objs);
+				appendObjNames(sb, objs, new Obj[0]);
 				appendText(sb.toString());
 				break;
 			}
 		}
 	}
 	
-	private void appendObjNames(StringBuilder sb, List<Obj> objs) {
+	private void appendObjNames(StringBuilder sb, List<Obj> objs, Obj[] exclude) {
+		objs_loop:
 		for (int i = 0; i < objs.size(); i++) {
 			Obj obj = objs.get(i);
 			if (obj.getType() != Obj.IMMOBILE_OBJECT) {
+				for (int j = 0; j < exclude.length; j++) {
+					if (obj == exclude[j]) {
+						continue objs_loop;
+					}
+				}
 				if (!obj.isNamePlural())
 					sb.append(TextUtils.prependIndefiniteArticle(obj.getName()));
 				else
@@ -891,7 +897,12 @@ public class Script {
 	private void handleStatusCommand() {
 		Chr player = world.getPlayer();
 		appendText("Character name: " + player.getName());
-		appendText("Experience: " + player.getContext().getKills());
+		appendText("Experience: " + player.getContext().getExperience());
+		Obj[] armor = player.getArmor();
+		if (armor[Chr.HEAD_ARMOR] != null)
+			appendText("Head protection: " + armor[Chr.HEAD_ARMOR].getName());
+		if (armor[Chr.BODY_ARMOR] != null)
+			appendText("Body protection: " + armor[Chr.BODY_ARMOR].getName());
 		int wealth = 0;
 		for (Obj o : player.getInventory())
 			wealth += o.getValue();
@@ -938,20 +949,40 @@ public class Script {
 		}
 	}
 
-	private void handleTakeCommand(String target) {
+	private void takeObj(Obj obj) {
 		Chr player = world.getPlayer();
-		for (Obj o : player.getCurrentScene().getObjs()) {
+		if (player.getInventory().size() >= player.getMaximumCarriedObjects()) {
+			appendText("Your pack is full, you must drop something.");
+		} else {
+			appendText("You now have the " + obj.getName() + ".");
+			appendText(obj.getClickMessage());
+			world.move(obj, world.getPlayer());
+			if (obj.getType() == Obj.HELMET) {
+				if (player.getArmor()[Chr.HEAD_ARMOR] == null) {
+					player.getArmor()[Chr.HEAD_ARMOR] = obj;
+					appendText("You are now wearing the " + obj.getName() + ".");
+				}
+			} else if (obj.getType() == Obj.CHEST_ARMOR) {
+				if (player.getArmor()[Chr.BODY_ARMOR] == null) {
+					player.getArmor()[Chr.BODY_ARMOR] = obj;
+					appendText("You are now wearing the " + obj.getName() + ".");
+				}
+			} else if (obj.getType() == Obj.SHIELD) {
+				if (player.getArmor()[Chr.SHIELD_ARMOR] == null) {
+					player.getArmor()[Chr.SHIELD_ARMOR] = obj;
+					appendText("You are now wearing the " + obj.getName() + ".");
+				}
+			}
+		}
+	}
+	
+	private void handleTakeCommand(String target) {
+		for (Obj o : world.getPlayer().getCurrentScene().getObjs()) {
 			if (target.contains(o.getName().toLowerCase())) {
 				if (o.getType() == Obj.IMMOBILE_OBJECT) {
 					appendText("You can't move it.");
 				} else {
-					if (player.getInventory().size() >= player.getMaximumCarriedObjects()) {
-						appendText("Your pack is full, you must drop something.");
-					} else {
-						appendText("You now have the " + o.getName() + ".");
-						appendText(o.getClickMessage());
-						world.move(o, world.getPlayer());
-					}
+					takeObj(o);
 				}
 				break;
 			}
@@ -968,11 +999,32 @@ public class Script {
 		}
 	}
 
+	private void wearObj(Obj o, int pos) {
+		Chr player = world.getPlayer();
+		if (player.getArmor()[pos] == o) {
+			appendText("You are already wearing the " + o.getName() + ".");
+		} else {
+			if (player.getArmor()[pos] != null) {
+				appendText("You are no longer wearing the " + player.getArmor()[pos].getName() + ".");
+			}
+			player.getArmor()[pos] = o;
+			appendText("You are now wearing the " + o.getName() + ".");
+		}
+	}
+	
 	private void handleWearCommand(String target) {
-		for (Obj o : world.getPlayer().getInventory()) {
+		Chr player = world.getPlayer();
+		for (Obj o : player.getInventory()) {
 			if (target.contains(o.getName().toLowerCase())) {
-				// TODO: sometimes you can wear it!!
-				appendText("You cannot wear that object.");
+				if (o.getType() == Obj.HELMET) {
+					wearObj(o, Chr.HEAD_ARMOR);
+				} else if (o.getType() == Obj.CHEST_ARMOR) {
+					wearObj(o, Chr.BODY_ARMOR);
+				} else if (o.getType() == Obj.SHIELD) {
+					wearObj(o, Chr.SHIELD_ARMOR);
+				} else {
+					appendText("You cannot wear that object.");
+				}
 				break;
 			}
 		}
