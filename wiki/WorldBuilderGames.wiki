@@ -22,6 +22,7 @@ It is suspected that over 100 games have been made using World Builder. Here is 
 || Edg's World || 1987 || Unknown ||
 || <a href="http://macintoshgarden.org/games/swamp-witch">Swamp Witch</a> || 1988 || Unknown ||
 || Everyman || 1988 || Unknown ||
+|| Volcano || 1988 || Unknown ||
 || <a href="http://macintoshgarden.org/games/mikes-house">Mike's House</a> || 1989 || Unknown ||
 || Haunted House  || 1990 || Unknown ||
 || <a href="http://www.semitech.com/marc/ray.html">Ray's Maze</a> || 1990 || Unknown ||
