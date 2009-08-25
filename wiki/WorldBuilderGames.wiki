@@ -18,7 +18,8 @@ It is suspected that over 100 games have been made using World Builder. Here is 
 || The Village || 1987 || Unknown ||
 || <a href="http://macintoshgarden.org/games/dungeonworld-ii">Dungeon World II</a> || 1987 || Unknown ||
 || The Hotel Caper || 1987 || Unknown ||
-|| Edg's World|| 1987 || Unknown ||
+|| Sands of Time || 1987 || Unknown ||
+|| Edg's World || 1987 || Unknown ||
 || <a href="http://macintoshgarden.org/games/swamp-witch">Swamp Witch</a> || 1988 || Unknown ||
 || Everyman || 1988 || Unknown ||
 || <a href="http://macintoshgarden.org/games/mikes-house">Mike's House</a> || 1989 || Unknown ||
@@ -27,6 +28,7 @@ It is suspected that over 100 games have been made using World Builder. Here is 
 || <a href="http://macintoshgarden.org/games/pyramid-of-ert">Pyramid of Ert</a> || 1990 || Unknown ||
 || <a href="http://macintoshgarden.org/games/space-adventure">Space Adventure</a> || 1990 || Unknown ||
 || Dynasty of Dar  || 1990 || Unknown ||
+|| Eidisi I || 1990 || Unknown ||
 || Mac Spud  || 1990 || Unknown ||
 || <a href="http://macintoshgarden.org/games/drakmyth-castle">Drakmyth Castle</a> || 1991 || Unknown ||
 || <a href="http://macintoshgarden.org/games/pyramid-of-no-return">Pyramid of No Return</a> || 1992 || Unknown ||
