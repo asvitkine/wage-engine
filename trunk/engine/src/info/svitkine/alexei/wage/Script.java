@@ -691,6 +691,7 @@ public class Script {
 					index++;
 					Operand op = readOperand();
 					// TODO check op type is string.
+					handled = true;
 					callbacks.playSound(op.value.toString());
 					// TODO check data[index] == 0xFD
 					index++;
