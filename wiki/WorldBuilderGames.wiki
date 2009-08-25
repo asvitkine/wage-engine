@@ -4,7 +4,7 @@ It is suspected that over 100 games have been made using World Builder. Here is 
 
 || *Name* || *Year Released* || *Status* ||
 || <a href="http://macintoshgarden.org/games/enchanted-scepters">Enchanted Scepters</a> || 1984 || Unknown ||
-|| <a href="http://macintoshgarden.org/games/star-trek-game">Star Trek Game</a> || 1986 || Partial ||
+|| <a href="http://macintoshgarden.org/games/star-trek-game">Star Trek Game</a> || 1986 || 90% ||
 || <a href="http://macintoshgarden.org/games/radical-castle">Radical Castle</a> || 1986 || Unknown ||
 || <a href="http://macintoshgarden.org/games/wishing-well">Wishing Well</a> || 1987 || Partial ||
 || <a href="http://macintoshgarden.org/games/little-pythagoras">Little Pythagoras</a> || 1987 || Unknown ||
