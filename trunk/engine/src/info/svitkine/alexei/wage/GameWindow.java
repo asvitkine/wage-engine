@@ -73,9 +73,7 @@ public class GameWindow extends JFrame {
 					Runnable repainter = new Runnable() {
 						public void run() {
 							if (currentScene == world.getStorageScene()) {
-								JOptionPane.showMessageDialog(GameWindow.this, "Game over!");
-								setVisible(false);
-								dispose();
+								gameOver();
 							} else {
 								updateTextAreaForScene(textArea, panel, currentScene);
 								updateSceneViewerForScene(viewer, currentScene);
@@ -183,15 +181,21 @@ public class GameWindow extends JFrame {
 		}
 	}
 	
+	private void gameOver() {
+		if (isVisible()) {
+			JOptionPane.showMessageDialog(GameWindow.this, "Game over!");
+			setVisible(false);
+			dispose();
+		}
+	}
+	
 	private void processEndOfTurn() {
 		final Scene scene = world.getPlayer().getCurrentScene();
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				if (scene != viewer.getScene()) {
 					if (scene == world.getStorageScene()) {
-						JOptionPane.showMessageDialog(GameWindow.this, "Game over!");
-						setVisible(false);
-						dispose();
+						gameOver();
 					} else {
 						updateSceneViewerForScene(viewer, scene);
 						updateTextAreaForScene(textArea, panel, scene);
