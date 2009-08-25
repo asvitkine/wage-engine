@@ -4,6 +4,7 @@ import info.svitkine.alexei.wage.World.MoveEvent;
 import info.svitkine.alexei.wage.World.MoveListener;
 
 import java.io.PrintStream;
+import java.util.List;
 
 
 public class Engine implements Script.Callbacks, MoveListener {
@@ -225,44 +226,69 @@ public class Engine implements Script.Callbacks, MoveListener {
 	}
 	
 	public void performCombatAction(Chr npc, Chr player) {
+		final int WEAPONS = -400;
+		final int MAGIC = -300;
+		final int RUN = -200;
+		final int OFFER = -100;
 		RandomHat<Integer> hat = new RandomHat<Integer>();
 		boolean winning = npc.getContext().getStatVariable(Context.PHYS_HIT_CUR) >
 			player.getContext().getStatVariable(Context.PHYS_HIT_CUR);
 		int validMoves = getValidMoveDirections(npc);
 		if (winning) {
-			hat.addTokens(0, npc.getWinningWeapons() + 1);
+			hat.addTokens(WEAPONS, npc.getWinningWeapons() + 1);
 			if (hasMagic(npc))
-				hat.addTokens(1, npc.getWinningMagic() + 1);
+				hat.addTokens(MAGIC, npc.getWinningMagic() + 1);
 			if (validMoves != 0)
-				hat.addTokens(2, npc.getWinningRun() + 1);
+				hat.addTokens(RUN, npc.getWinningRun() + 1);
 			if (!npc.getInventory().isEmpty())
 				hat.addTokens(3, npc.getWinningOffer() + 1);
 		} else {
-			hat.addTokens(0, npc.getLosingWeapons() + 1);
+			hat.addTokens(WEAPONS, npc.getLosingWeapons() + 1);
 			if (hasMagic(npc))
-				hat.addTokens(1, npc.getLosingMagic() + 1);
+				hat.addTokens(MAGIC, npc.getLosingMagic() + 1);
 			if (validMoves != 0)
-				hat.addTokens(2, npc.getLosingRun() + 1);
+				hat.addTokens(RUN, npc.getLosingRun() + 1);
 			if (!npc.getInventory().isEmpty())
-				hat.addTokens(3, npc.getLosingOffer() + 1);
+				hat.addTokens(OFFER, npc.getLosingOffer() + 1);
 		}
-		// TODO: npcs can also pick stuff up
-		switch (hat.drawToken()) {
-			case 0:
+		List<Obj> objs = npc.getCurrentScene().getObjs();
+		if (npc.getInventory().size() < npc.getMaximumCarriedObjects()) {
+			for (int i = 0; i < objs.size(); i++) {
+				Obj o = objs.get(i);
+				if (o.getType() != Obj.IMMOBILE_OBJECT) {
+					// TODO: I'm not sure what the chance should be here.
+					hat.addTokens(i, 123);
+				}
+			}
+		}
+		int token = hat.drawToken();
+		switch (token) {
+			case WEAPONS:
 				Weapon[] weapons = npc.getWeapons();
 				Weapon weapon = weapons[(int) (Math.random()*weapons.length)];
+				// TODO: I think the monster should choose the "best" weapon.
 				performAttack(npc, player, weapon);
 				break;
-			case 1:
+			case MAGIC:
 				performMagic(npc, player);
 				break;
-			case 2:
+			case RUN:
 				performMove(npc, validMoves);
 				break;
-			case 3:
+			case OFFER:
 				performOffer(npc, player);
 				break;
+			default:
+				performTake(npc, objs.get(token));
+				break;
 		}
+	}
+
+	private void performTake(Chr npc, Obj obj) {
+		appendText("%s picks up the %s.",
+			getNameWithDefiniteArticle(npc, true),
+			TextUtils.prependIndefiniteArticle(obj.getName()));
+		world.move(obj, npc);
 	}
 
 	public void regen() {
@@ -275,7 +301,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 			context.setStatVariable(Context.PHYS_HIT_CUR, curHp + bonus);
 		}
 	}
-	
+
 	private void performOffer(Chr attacker, Chr victim) {
 		for (Obj o : attacker.getInventory()) {
 			appendText("%s offers %s.",
@@ -292,7 +318,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 
 	private void performMagic(Chr attacker, Chr victim) {
 	}
-	
+
 	private int getValidMoveDirections(Chr npc) {
 		int directions = 0;
 		Scene currentScene = npc.getCurrentScene();
@@ -350,6 +376,9 @@ public class Engine implements Script.Callbacks, MoveListener {
 			appendText(attacker.getScoresHitComment());
 			playSound(victim.getReceivesHitSound());
 			appendText(victim.getReceivesHitComment());
+			if (weapon.getType() == Obj.THROW_WEAPON) {
+				world.move((Obj) weapon, victim.getCurrentScene());
+			}
 			// TODO: Armor can absorb some of the damage, I think.
 			Context victimContext = victim.getContext();
 			int victimHp = victim.getContext().getStatVariable(Context.PHYS_HIT_CUR);
