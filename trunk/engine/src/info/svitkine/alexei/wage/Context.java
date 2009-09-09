@@ -46,8 +46,6 @@ public class Context {
 
 	public Context() {
 		userVariables = new short[26 * 9];
-		for (int i = 0; i < userVariables.length; i++)
-			userVariables[i] = -1;
 		statVariables = new short[18];
 	}
 
