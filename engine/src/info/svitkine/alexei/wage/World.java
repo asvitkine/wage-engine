@@ -54,7 +54,8 @@ public class World {
 	}
 	
 	public void addScene(Scene room) {
-		scenes.put(room.getName().toLowerCase(), room);
+		if (room.getName() != null)
+			scenes.put(room.getName().toLowerCase(), room);
 		orderedScenes.add(room);
 	}
 

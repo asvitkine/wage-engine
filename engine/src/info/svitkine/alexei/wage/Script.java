@@ -346,7 +346,7 @@ public class Script {
 				public void evaluatePair(Operand o1, Operand o2) {
 					Chr c = (Chr) o1.value;
 					Scene s = (Scene) o2.value;
-					evalResult = (c.getCurrentScene() != s);
+					evalResult = (c == null || c.getCurrentScene() != s);
 				}
 			});
 			evaluatePair(handlers, lhs, rhs);
@@ -379,15 +379,28 @@ public class Script {
 		return result;
 	}
 
+	private void skipIf() {
+		do {
+			readOperand();
+			readOperator();
+			readOperand();
+		} while (data[index++] != (byte) 0xFE);
+	}
+	
 	private void skipBlock() {
+		int fromIndex = index;
 		int nesting = 1;
 		while (index < data.length) {
 			if (data[index] == (byte) 0x80) { // IF
 				nesting++;
+				index++;
+				skipIf();
+				index--;
 			} else if (data[index] == (byte) 0x88 || data[index] == (byte) 0x87) { // END or EXIT
 				nesting--;
 				if (nesting == 0) {
 					index++;
+					System.out.println("Skipped lines " + indexToLine(fromIndex) + " to " + indexToLine(index));
 					return;
 				}
 			} else switch (data[index]) {
@@ -416,7 +429,10 @@ public class Script {
 	}
 
 	private void processIf() {
-		System.out.println("I love conditionals!");
+		int then = index;
+		while (data[then] != (byte) 0xFE)
+			then++;
+		System.out.println("I love conditionals! " + buildStringFromOffset(index - 1, then - index) + "}");
 		int logicalOp = 0; // 0 => initial, 1 => and, 2 => or 
 		boolean result = true;
 		boolean done = false;
@@ -524,6 +540,7 @@ public class Script {
 				break;
 			lastOp = readOperator();
 		} while (true);
+		System.out.println("processLet " + buildStringFromOffset(oldIndex - 1, index - oldIndex + 1) + "}");
 		assign(oldIndex, result);
 		index++;
 	}
@@ -673,6 +690,7 @@ public class Script {
 					index++;
 					processIf();
 				} else if (data[index] == (byte) 0x87) { // EXIT
+					System.err.println("exit at line " + indexToLine(index));
 					return handled;
 				} else if (data[index] == (byte) 0x89) { // MOVE
 					index++;
@@ -1061,10 +1079,10 @@ public class Script {
 			sb.append(' ');
 	}
 
-	private String buildStringFromOffset(int offset) {
+	private String buildStringFromOffset(int offset, int length) {
 		StringBuilder sb = new StringBuilder();
 		int indentLevel = 0;
-		for (int i = offset; i < data.length; i++) {
+		for (int i = offset; i - offset < length && i < data.length; i++) {
 			if (data[i] == (byte) 0x80) {
 				indent(sb, indentLevel);
 				sb.append("IF{");
@@ -1210,18 +1228,36 @@ public class Script {
 		}
 		return sb.toString();
 	}
+
+	private String buildStringFromOffset(int offset) {
+		return buildStringFromOffset(offset, data.length - offset);
+	}
 	
 	public String toString() {
-		return buildStringFromOffset(12);
+		String s = buildStringFromOffset(12);
+		StringBuilder sb = new StringBuilder("  0: ");
+		int lineno = 1;
+		for (int i = 0; i < s.length(); i++) {
+			sb.append(s.charAt(i));
+			if (s.charAt(i) == '\n')
+				sb.append(String.format("%3d: ", lineno++));
+		} 
+		return sb.toString();
+	}
+	
+	private int indexToLine(int index) {
+		int loc = 0;
+		for (char c : buildStringFromOffset(12, index).toCharArray())
+			if (c == '\n')
+				loc++;
+		return loc - 1;
 	}
 	
 	public int countLines() {
 		int loc = 0;
-		for (int i = 12; i < data.length; i++) {
-			if (data[i] == (byte) 0xFD || data[i] == (byte) 0xFE || data[i] == (byte) 0x87 || data[i] == (byte) 0x88) {
+		for (char c : toString().toCharArray())
+			if (c == '\n')
 				loc++;
-			}
-		}
 		return loc;
 	}
 }
