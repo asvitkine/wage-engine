@@ -91,6 +91,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 				}
 			}
 		}
+		boolean monsterWasNull = (monster == null);
 		boolean handled = playerScene.getScript().execute(world, loopCount++, textInput, clickInput, this);
 		playerScene = world.getPlayer().getCurrentScene();
 		if (playerScene == world.getStorageScene())
@@ -103,6 +104,8 @@ public class Engine implements Script.Callbacks, MoveListener {
 				encounter(world.getPlayer(), monster);
 			}
 		} else if (textInput != null && !handled) {
+			if (monsterWasNull && monster != null)
+				return;
 			String[] messages = { "What?", "Huh?" };
 			appendText(messages[(int) (Math.random()*messages.length)]);
 			commandWasQuick = true;
@@ -367,10 +370,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 					target);
 		}
 		playSound(weapon.getSound());
-		// TODO: roll some dice
-		if (Math.random() > 0.5) {
-			appendText("A miss!");
-		} else {
+		if ((int) (Math.random() * 255) < attacker.getPhysicalAccuracy()) {
 			appendText("A hit to the %s.", target);
 			playSound(attacker.getScoresHitSound());
 			appendText(attacker.getScoresHitComment());
@@ -401,6 +401,8 @@ public class Engine implements Script.Callbacks, MoveListener {
 					getNameWithDefiniteArticle(victim, true),
 					Script.getPercentMessage(victim, Context.PHYS_HIT_CUR, Context.PHYS_HIT_BAS));
 			}
+		} else {
+			appendText("A miss!");
 		}
 		weapon.decrementNumberOfUses();
 	}
