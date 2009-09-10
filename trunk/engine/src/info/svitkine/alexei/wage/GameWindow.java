@@ -62,39 +62,36 @@ public class GameWindow extends JFrame {
 			public void setCommandsMenu(String format) {
 				updateMenuFromString(commandsMenu, format);
 			}
+			public void redrawScene() {
+				final Scene currentScene = world.getPlayer().getCurrentScene();
+				if (currentScene != null) {
+					Runnable repainter = new Runnable() {
+						public void run() {
+							updateTextAreaForScene(textArea, panel, currentScene);
+							updateSceneViewerForScene(viewer, currentScene);
+							viewer.paintImmediately(viewer.getBounds());
+							getContentPane().validate();
+							getContentPane().repaint();
+							textArea.postUpdateUI();
+						}
+					};
+					runOnEventDispatchThread(repainter);
+				}
+			}
+			public void clearOutput() {
+				textArea.clear();
+			}
+			public void gameOver() {
+				runOnEventDispatchThread(new Runnable() {
+					public void run() {
+						GameWindow.this.gameOver();
+					}
+				});
+			}
 		});
 		engine.processTurn("look", null);
 		textArea.getOut().append("\n");
 		Scene scene = world.getPlayer().getCurrentScene();
-		world.addMoveListener(new World.MoveListener() {
-			public void onMove(World.MoveEvent event) {
-				final Scene currentScene = world.getPlayer().getCurrentScene();
-				if (event.getTo() == currentScene || event.getFrom() == currentScene) {
-					Runnable repainter = new Runnable() {
-						public void run() {
-							if (currentScene == world.getStorageScene()) {
-								gameOver();
-							} else {
-								updateTextAreaForScene(textArea, panel, currentScene);
-								updateSceneViewerForScene(viewer, currentScene);
-								viewer.paintImmediately(viewer.getBounds());
-								getContentPane().repaint();
-							}
-						}
-					};
-					runOnEventDispatchThread(repainter);
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					if (event.getWhat() == world.getPlayer()) {
-						textArea.clear();
-					}
-				}
-			}
-		});
 		wm.add(viewer);
 		wm.setComponentZOrder(viewer, 0);
 		wm.add(panel);
@@ -113,7 +110,6 @@ public class GameWindow extends JFrame {
 							if (target != null) {
 								engine.processTurn(null, target);
 								textArea.getOut().append("\n");
-								processEndOfTurn();
 							}
 						}
 					}
@@ -177,7 +173,6 @@ public class GameWindow extends JFrame {
 		synchronized (engine) {
 			engine.processTurn(line, null);
 			textArea.getOut().append("\n");
-			processEndOfTurn();
 		}
 	}
 	
@@ -188,27 +183,7 @@ public class GameWindow extends JFrame {
 			dispose();
 		}
 	}
-	
-	private void processEndOfTurn() {
-		final Scene scene = world.getPlayer().getCurrentScene();
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				if (scene != viewer.getScene()) {
-					if (scene == world.getStorageScene()) {
-						gameOver();
-					} else {
-						updateSceneViewerForScene(viewer, scene);
-						updateTextAreaForScene(textArea, panel, scene);
-						updateSoundTimerForScene(scene);
-					}
-				}
-				getContentPane().validate();
-				getContentPane().repaint();
-				textArea.postUpdateUI();
-			}
-		});
-	}
-	
+
 	private JMenu createAppleMenu() {
 		// TODO: extract info (such as about name), out of the MENU resource
 		JMenu menu = new JMenu("\uF8FF");
