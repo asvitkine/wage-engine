@@ -18,11 +18,15 @@ public class Engine implements Script.Callbacks, MoveListener {
 	private Obj offer;
 	private boolean commandWasQuick;
 	private int aim = -1;
+	private boolean temporarilyHidden;
 
 	public interface Callbacks {
 		public void setCommandsMenu(String format);
+		public void redrawScene();
+		public void clearOutput();
+		public void gameOver();
 	}
-	
+
 	public Engine(World world, PrintStream out, Callbacks callbacks) {
 		this.world = world;
 		this.out = out;
@@ -99,8 +103,12 @@ public class Engine implements Script.Callbacks, MoveListener {
 		if (playerScene == world.getStorageScene())
 			return;
 		if (playerScene != lastScene) {
+			temporarilyHidden = true;
+			callbacks.clearOutput();
 			regen();
 			processTurnInternal("look", null);
+			callbacks.redrawScene();
+			temporarilyHidden = false;
 		} else if (loopCount == 1) {
 			if (shouldEncounter && monster != null) {
 				encounter(world.getPlayer(), monster);
@@ -187,6 +195,11 @@ public class Engine implements Script.Callbacks, MoveListener {
 
 	public void onMove(MoveEvent event) {
 		Chr player = world.getPlayer();
+		Scene currentScene = player.getCurrentScene();
+		if (currentScene == world.getStorageScene()) {
+			callbacks.gameOver();
+			return;
+		}
 		if (event.getWhat() != player && event.getWhat() instanceof Chr) {
 			Chr chr = (Chr) event.getWhat();
 			if (event.getTo() == world.getStorageScene()) {
@@ -208,6 +221,16 @@ public class Engine implements Script.Callbacks, MoveListener {
 				if (getMonster() == null) {
 					monster = chr;
 					encounter(player, chr);
+				}
+			}
+		}
+		if (!temporarilyHidden) {
+			if (event.getTo() == currentScene || event.getFrom() == currentScene) {
+				callbacks.redrawScene();
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
 				}
 			}
 		}
