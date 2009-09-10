@@ -346,28 +346,35 @@ public class Script {
 				public void evaluatePair(Operand o1, Operand o2) {
 					Chr c = (Chr) o1.value;
 					Scene s = (Scene) o2.value;
-					evalResult = (c == null || c.getCurrentScene() != s);
+					evalResult = (c != null && c.getCurrentScene() != s);
 				}
 			});
 			evaluatePair(handlers, lhs, rhs);
 			result = (Boolean) evalResult;
 		} else if (op.equals("==") || op.equals(">>")) {
-			// exact string match
-			if (lhs.type == Operand.TEXT_INPUT) {
-				if (rhs.type != Operand.STRING || inputText == null) {
-					result = false;
-				} else {
-					result = inputText.toLowerCase().equals(((String) rhs.value).toLowerCase());
+			// TODO: check if >> can be used for click inputs and if == can be used for other things
+			if (op.equals("==") && lhs.type == Operand.CLICK_INPUT) {
+				result = evalClickEquality(lhs, rhs);
+			} else if (op.equals("==") && rhs.type == Operand.CLICK_INPUT) {
+				result = evalClickEquality(rhs, lhs);
+			} else {
+				// exact string match
+				if (lhs.type == Operand.TEXT_INPUT) {
+					if (rhs.type != Operand.STRING || inputText == null) {
+						result = false;
+					} else {
+						result = inputText.toLowerCase().equals(((String) rhs.value).toLowerCase());
+					}
+				} else if (rhs.type == Operand.TEXT_INPUT) {
+					if (lhs.type != Operand.STRING || inputText == null) {
+						result = false;
+					} else {
+						result = ((String) lhs.value).toLowerCase().equals(inputText.toLowerCase());
+					}
 				}
-			} else if (rhs.type == Operand.TEXT_INPUT) {
-				if (lhs.type != Operand.STRING || inputText == null) {
-					result = false;
-				} else {
-					result = ((String) lhs.value).toLowerCase().equals(inputText.toLowerCase());
+				if (op.equals(">>")) {
+					result = !result;
 				}
-			}
-			if (op.equals(">>")) {
-				result = !result;
 			}
 		}
 		if (result == null) {
