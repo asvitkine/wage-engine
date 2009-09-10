@@ -21,7 +21,7 @@ It is suspected that over 100 games have been made using World Builder. Here is 
 || Sands of Time || 1987 || Unknown ||
 || Edg's World || 1987 || Unknown ||
 || <a href="http://macintoshgarden.org/games/swamp-witch">Swamp Witch</a> || 1988 || Unknown ||
-|| Everyman || 1988 || Unknown ||
+|| Everyman || 1988 || 80% ||
 || Volcano || 1988 || Unknown ||
 || <a href="http://macintoshgarden.org/games/mikes-house">Mike's House</a> || 1989 || Unknown ||
 || Haunted House  || 1990 || Unknown ||
@@ -39,5 +39,5 @@ It is suspected that over 100 games have been made using World Builder. Here is 
 || <a href="http://www.semitech.com/marc/ray.html">Another Fine Mess</a> || 1997 || Unknown ||
 || <a href="http://www.semitech.com/marc/ray.html">A Mess O’ Trouble</a> || 1997 || Unknown ||
 || The Axe-orcist || 1998 || Unknown ||
-|| Fantasy Quest || 1998 || Unknown ||
+|| <a href="http://macintoshgarden.org/games/fantasy-quest">Fantasy Quest</a> || 1998 || Unknown ||
 || <a href="http://www.semitech.com/marc/ray.html">Twisted</a> || 1999 || Unknown ||
