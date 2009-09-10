@@ -386,6 +386,7 @@ public class WorldLoader {
 	}
 	
 	private static String readPascalString(DataInputStream in) throws IOException {
+		if (in.available() == 0) return "";
 		int length = in.readByte();
 		if (length < 0)
 			length += 256;

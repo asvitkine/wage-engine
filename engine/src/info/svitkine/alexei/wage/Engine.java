@@ -68,6 +68,8 @@ public class Engine implements Script.Callbacks, MoveListener {
 				Scene scene = getSceneByName(chr.getInitialScene().toLowerCase());
 				if (scene != null) {
 					world.move(chr, scene);
+				} else {
+					world.move(chr, getSceneByName("random@"));
 				}
 			}
 		}
