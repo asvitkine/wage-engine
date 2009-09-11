@@ -111,9 +111,12 @@ public class WorldLoader {
 			byte[] data = r.getData();
 			try {
 				DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
-				// TODO: set weapons menu disabled based on data (Everyman)
-				// Also, when disabled, "swing fist" does nothing! (no-op)
-				in.skip(14);
+				in.skip(10);
+				byte b = in.readByte();
+				world.setWeaponsMenuDisabled(b != 0);
+				if (b != 1 && b != 0)
+					System.err.println("Unexpected value for weapons menu!");
+				in.skip(3);
 				String about = readPascalString(in);
 				about.replace((char) 0x0D, '\n');
 				world.setAboutMessage(about);

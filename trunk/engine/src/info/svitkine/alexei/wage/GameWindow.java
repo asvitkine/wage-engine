@@ -46,12 +46,12 @@ public class GameWindow extends JFrame {
 		JMenu fileMenu = createFileMenu();
 		JMenu editMenu = createEditMenu();
 		final JMenu commandsMenu = createCommandsMenu();
-		JMenu weaponsMenu = createWeaponsMenu();
 		menubar.add(createAppleMenu());
 		menubar.add(fileMenu);
 		menubar.add(editMenu);
 		menubar.add(commandsMenu);
-		menubar.add(weaponsMenu);
+		if (!world.isWeaponsMenuDisabled())
+			menubar.add(createWeaponsMenu());
 		Utils.setupCloseWindowKeyStrokes(this, getRootPane());
 		WindowManager wm = new WindowManager();
 		viewer = new SceneViewer(patterns);
