@@ -79,6 +79,7 @@ public class WorldBrowser extends JPanel {
 			}
 		}
 		addField(info, "Lines of Script: ", loc);
+		addField(info, "Weapons Menu Disabled: ", world.isWeaponsMenuDisabled() ? 1 : 0);
 		JPanel blah = new JPanel();
 		blah.setLayout(new BorderLayout());
 		blah.add(info, BorderLayout.NORTH);

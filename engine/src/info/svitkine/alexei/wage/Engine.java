@@ -263,17 +263,21 @@ public class Engine implements Script.Callbacks, MoveListener {
 			player.getContext().getStatVariable(Context.PHYS_HIT_CUR);
 		int validMoves = getValidMoveDirections(npc);
 		if (winning) {
-			hat.addTokens(WEAPONS, npc.getWinningWeapons() + 1);
-			if (hasMagic(npc))
-				hat.addTokens(MAGIC, npc.getWinningMagic() + 1);
+			if (!world.isWeaponsMenuDisabled()) {
+				hat.addTokens(WEAPONS, npc.getWinningWeapons() + 1);
+				if (hasMagic(npc))
+					hat.addTokens(MAGIC, npc.getWinningMagic() + 1);
+			}
 			if (validMoves != 0)
 				hat.addTokens(RUN, npc.getWinningRun() + 1);
 			if (!npc.getInventory().isEmpty())
 				hat.addTokens(3, npc.getWinningOffer() + 1);
 		} else {
-			hat.addTokens(WEAPONS, npc.getLosingWeapons() + 1);
-			if (hasMagic(npc))
-				hat.addTokens(MAGIC, npc.getLosingMagic() + 1);
+			if (!world.isWeaponsMenuDisabled()) {
+				hat.addTokens(WEAPONS, npc.getLosingWeapons() + 1);
+				if (hasMagic(npc))
+					hat.addTokens(MAGIC, npc.getLosingMagic() + 1);
+			}
 			if (validMoves != 0)
 				hat.addTokens(RUN, npc.getLosingRun() + 1);
 			if (!npc.getInventory().isEmpty())
@@ -383,6 +387,8 @@ public class Engine implements Script.Callbacks, MoveListener {
 	}
 
 	public void performAttack(Chr attacker, Chr victim, Weapon weapon) {
+		if (world.isWeaponsMenuDisabled())
+			return;
 		String[] targets = new String[] { "chest", "head", "side" };
 		int targetIndex = (attacker.isPlayerCharacter() && aim != -1 ? aim : (int) (Math.random()*targets.length));
 		String target = targets[targetIndex];
