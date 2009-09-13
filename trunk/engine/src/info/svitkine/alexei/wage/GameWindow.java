@@ -268,12 +268,6 @@ public class GameWindow extends JFrame {
 				boolean enabled = true;
 				int style = 0;
 				KeyStroke shortcut = null;
-				int index = item.lastIndexOf("/");
-				if (index != -1) {
-					shortcut = KeyStroke.getKeyStroke(item.substring(index).charAt(1),
-						Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
-					item = item.substring(0, index);
-				}
 				while (item.length() >= 2 && item.charAt(item.length() - 2) == '<') {
 					char c = item.charAt(item.length() - 1);
 					if (c == 'B') {
@@ -282,6 +276,12 @@ public class GameWindow extends JFrame {
 						style |= Font.ITALIC;
 					}
 					item = item.substring(0, item.length() - 2);
+				}
+				int index = item.lastIndexOf("/");
+				if (index != -1) {
+					shortcut = KeyStroke.getKeyStroke(item.substring(index).charAt(1),
+						Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+					item = item.substring(0, index);
 				}
 				if (item.startsWith("(")) {
 					enabled = false;
