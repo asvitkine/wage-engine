@@ -780,7 +780,7 @@ public class Script {
 				handleInventoryCommand();
 			} else if (input.contains("status")) {
 				handleStatusCommand();
-			} else if (input.contains("rest")) {
+			} else if (input.contains("rest") || input.equals("wait")) {
 				handleRestCommand();
 			} else if (callbacks.getOffer() != null && input.contains("accept")) {
 				handleAcceptCommand();
