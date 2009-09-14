@@ -67,6 +67,7 @@ public class GameWindow extends JFrame {
 				if (currentScene != null) {
 					Runnable repainter = new Runnable() {
 						public void run() {
+							updateSoundTimerForScene(currentScene);
 							updateTextAreaForScene(textArea, panel, currentScene);
 							updateSceneViewerForScene(viewer, currentScene);
 							viewer.paintImmediately(viewer.getBounds());
