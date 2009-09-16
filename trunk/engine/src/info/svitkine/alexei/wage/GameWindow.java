@@ -38,7 +38,7 @@ public class GameWindow extends JFrame {
 	private SceneViewer viewer;
 	private ConsoleTextArea textArea;
 	private JPanel panel;
-	private Timer randomSoundTimer;
+	private Timer soundTimer;
 	
 	public GameWindow(final World world, TexturePaint[] patterns) {
 		this.world = world;
@@ -67,13 +67,13 @@ public class GameWindow extends JFrame {
 				if (currentScene != null) {
 					Runnable repainter = new Runnable() {
 						public void run() {
-							updateSoundTimerForScene(currentScene);
 							updateTextAreaForScene(textArea, panel, currentScene);
 							updateSceneViewerForScene(viewer, currentScene);
 							viewer.paintImmediately(viewer.getBounds());
 							getContentPane().validate();
 							getContentPane().repaint();
 							textArea.postUpdateUI();
+							updateSoundTimerForScene(currentScene, true);
 						}
 					};
 					runOnEventDispatchThread(repainter);
@@ -92,15 +92,11 @@ public class GameWindow extends JFrame {
 		});
 		engine.processTurn("look", null);
 		textArea.getOut().append("\n");
-		Scene scene = world.getPlayer().getCurrentScene();
 		wm.add(viewer);
 		wm.setComponentZOrder(viewer, 0);
 		wm.add(panel);
 		((WindowBorder) panel.getBorder()).setScrollable(true);
 		wm.setComponentZOrder(viewer, 1);
-		updateSceneViewerForScene(viewer, scene);
-		updateTextAreaForScene(textArea, panel, scene);
-		updateSoundTimerForScene(scene);
 		viewer.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(final MouseEvent e) {
@@ -320,15 +316,19 @@ public class GameWindow extends JFrame {
 		viewer.setBounds(scene.getDesignBounds());
 	}
 
-	private static class PlaySoundTask extends TimerTask {
+	private class PlaySoundTask extends TimerTask {
+		private Scene scene;
 		private Sound sound;
 
-		public PlaySoundTask(Sound sound) {
+		public PlaySoundTask(Scene scene, Sound sound) {
+			this.scene = scene;
 			this.sound = sound;
 		}
 
 		public void run() {
-			sound.play();
+			if (world.getPlayer().getCurrentScene() == scene) {
+				sound.play();
+			}
 		}
 	}
 
@@ -340,33 +340,34 @@ public class GameWindow extends JFrame {
 		}
 
 		public void run() {
-			synchronized (engine) {
-				if (world.getPlayer().getCurrentScene() == scene) {
-					updateSoundTimerForScene(scene);
-				}
-			}
+			updateSoundTimerForScene(scene, false);
 		}
 	}
 
-	private void updateSoundTimerForScene(final Scene scene) {
-		if (randomSoundTimer != null) {
-			randomSoundTimer.cancel();
-			randomSoundTimer = null;
+	private void updateSoundTimerForScene(Scene scene, boolean firstTime) {
+		if (soundTimer != null) {
+			soundTimer.cancel();
+			soundTimer = null;
 		}
+		if (world.getPlayer().getCurrentScene() != scene)
+			return;
 		if (scene.getSoundFrequency() > 0 && scene.getSoundName() != null && scene.getSoundName().length() > 0) {
 			final Sound sound = world.getSounds().get(scene.getSoundName().toLowerCase());
 			if (sound != null) {
-				randomSoundTimer = new Timer();
+				sound.play();
+				soundTimer = new Timer();
 				switch (scene.getSoundType()) {
 					case Scene.PERIODIC:
+						if (firstTime)
+							soundTimer.schedule(new PlaySoundTask(sound), 0);
 						int delay = 60000 / scene.getSoundFrequency();
-						randomSoundTimer.schedule(new PlaySoundTask(sound), delay);
-						randomSoundTimer.schedule(new UpdateSoundTimerTask(scene), delay + 1);
+						soundTimer.schedule(new PlaySoundTask(sound), delay);
+						soundTimer.schedule(new UpdateSoundTimerTask(scene), delay + 1);
 						break;
 					case Scene.RANDOM:
 						for (int i = 0; i < scene.getSoundFrequency(); i++)
-							randomSoundTimer.schedule(new PlaySoundTask(sound), (int) (Math.random() * 60000));
-						randomSoundTimer.schedule(new UpdateSoundTimerTask(scene), 60000);
+							soundTimer.schedule(new PlaySoundTask(sound), (int) (Math.random() * 60000));
+						soundTimer.schedule(new UpdateSoundTimerTask(scene), 60000);
 						break;
 				}
 			}
