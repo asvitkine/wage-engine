@@ -116,6 +116,7 @@ public class WorldBrowser extends JPanel {
 		DefaultListModel model = new DefaultListModel();
 		for (Scene scene : world.getOrderedScenes())
 			model.addElement(scene);
+		model.removeElement(world.getStorageScene());
 		sceneList = new JList(model);
 		sceneList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		GridBagConstraints c = new GridBagConstraints();

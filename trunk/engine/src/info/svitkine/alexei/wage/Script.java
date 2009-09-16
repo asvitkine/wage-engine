@@ -653,6 +653,7 @@ public class Script {
 				Obj obj = (Obj) o1.value;
 				Chr chr = (Chr) o2.value;
 				world.move(obj, chr);
+				handled = true;
 			}
 		});
 		handlers.add(new PairEvaluator(Operand.OBJ, Operand.SCENE) {
@@ -661,6 +662,7 @@ public class Script {
 				Obj obj = (Obj) o1.value;
 				Scene scene = (Scene) o2.value;
 				world.move(obj, scene);
+				handled = true;
 			}
 		});
 		handlers.add(new PairEvaluator(Operand.CHR, Operand.SCENE) {
@@ -669,7 +671,7 @@ public class Script {
 				Chr chr = (Chr) o1.value;
 				Scene scene = (Scene) o2.value;
 				world.move(chr, scene);
-				// TODO: if its a bad guy, he should attack etc...
+				handled = true;
 			}
 		});
 		evaluatePair(handlers, what, to);
