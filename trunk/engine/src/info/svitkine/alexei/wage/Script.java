@@ -727,7 +727,6 @@ public class Script {
 					index++;
 					Operand op = readStringOperand(); // allows empty menu
 					// TODO check op type is string.
-					handled = true;
 					callbacks.setMenu(op.value.toString());
 					// TODO check data[index] == 0xFD
 					index++;
