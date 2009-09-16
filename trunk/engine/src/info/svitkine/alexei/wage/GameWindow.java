@@ -359,14 +359,14 @@ public class GameWindow extends JFrame {
 				switch (scene.getSoundType()) {
 					case Scene.PERIODIC:
 						if (firstTime)
-							soundTimer.schedule(new PlaySoundTask(sound), 0);
+							soundTimer.schedule(new PlaySoundTask(scene, sound), 0);
 						int delay = 60000 / scene.getSoundFrequency();
-						soundTimer.schedule(new PlaySoundTask(sound), delay);
+						soundTimer.schedule(new PlaySoundTask(scene, sound), delay);
 						soundTimer.schedule(new UpdateSoundTimerTask(scene), delay + 1);
 						break;
 					case Scene.RANDOM:
 						for (int i = 0; i < scene.getSoundFrequency(); i++)
-							soundTimer.schedule(new PlaySoundTask(sound), (int) (Math.random() * 60000));
+							soundTimer.schedule(new PlaySoundTask(scene, sound), (int) (Math.random() * 60000));
 						soundTimer.schedule(new UpdateSoundTimerTask(scene), 60000);
 						break;
 				}
