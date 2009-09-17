@@ -700,7 +700,7 @@ public class Script {
 					processIf();
 				} else if (data[index] == (byte) 0x87) { // EXIT
 					System.err.println("exit at line " + indexToLine(index));
-					return handled;
+					return true;
 				} else if (data[index] == (byte) 0x89) { // MOVE
 					index++;
 					Scene currentScene = world.getPlayer().getCurrentScene();

@@ -354,7 +354,6 @@ public class GameWindow extends JFrame {
 		if (scene.getSoundFrequency() > 0 && scene.getSoundName() != null && scene.getSoundName().length() > 0) {
 			final Sound sound = world.getSounds().get(scene.getSoundName().toLowerCase());
 			if (sound != null) {
-				sound.play();
 				soundTimer = new Timer();
 				switch (scene.getSoundType()) {
 					case Scene.PERIODIC:
