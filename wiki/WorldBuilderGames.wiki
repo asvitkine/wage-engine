@@ -23,6 +23,7 @@ It is suspected that over 100 games have been made using World Builder. Here is 
 || <a href="http://macintoshgarden.org/games/swamp-witch">Swamp Witch</a> || 1988 || Unknown ||
 || Everyman || 1988 || 80% ||
 || Volcano || 1988 || Unknown ||
+|| Ashland Revolution Demo  || 1988 || 95%l ||
 || <a href="http://macintoshgarden.org/games/mikes-house">Mike's House</a> || 1989 || Unknown ||
 || Haunted House  || 1990 || Unknown ||
 || <a href="http://www.semitech.com/marc/ray.html">Ray's Maze</a> || 1990 || Unknown ||
@@ -31,7 +32,6 @@ It is suspected that over 100 games have been made using World Builder. Here is 
 || Dynasty of Dar  || 1990 || Unknown ||
 || Eidisi I || 1990 || Unknown ||
 || Mac Spud  || 1990 || Unknown ||
-|| Ashland  || 1990 || Partial ||
 || <a href="http://macintoshgarden.org/games/drakmyth-castle">Drakmyth Castle</a> || 1991 || Unknown ||
 || <a href="http://macintoshgarden.org/games/pyramid-of-no-return">Pyramid of No Return</a> || 1992 || Unknown ||
 || <a href="http://macintoshgarden.org/games/swamp-witch">Swamp Witch</a> || 1994 || Unknown ||
