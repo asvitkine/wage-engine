@@ -32,6 +32,7 @@ It is suspected that over 100 games have been made using World Builder. Here is 
 || Dynasty of Dar  || 1990 || Unknown ||
 || Eidisi I || 1990 || Unknown ||
 || Mac Spud  || 1990 || Unknown ||
+|| The Wizard's Adventure || 1990 || Unknown ||
 || <a href="http://macintoshgarden.org/games/drakmyth-castle">Drakmyth Castle</a> || 1991 || Unknown ||
 || <a href="http://macintoshgarden.org/games/pyramid-of-no-return">Pyramid of No Return</a> || 1992 || Unknown ||
 || <a href="http://macintoshgarden.org/games/swamp-witch">Swamp Witch</a> || 1994 || Unknown ||
@@ -39,6 +40,10 @@ It is suspected that over 100 games have been made using World Builder. Here is 
 || The Journey || 1996 || Unknown ||
 || <a href="http://www.semitech.com/marc/ray.html">Another Fine Mess</a> || 1997 || Unknown ||
 || <a href="http://www.semitech.com/marc/ray.html">A Mess O’ Trouble</a> || 1997 || Unknown ||
+|| <a href="http://www.lucysworlds.com/games/LucysDownloads.html">The Tower</a> || 1997 || Unknown ||
+|| <a href="http://www.lucysworlds.com/games/LucysDownloads.html">Sultan's Palace</a> || 1997 || Unknown ||
+|| <a href="http://www.lucysworlds.com/games/LucysDownloads.html">Canal District</a> || 1997 || Unknown ||
+|| <a href="http://www.lucysworlds.com/games/LucysDownloads.html">Double Trouble</a> || 1997 || Unknown ||
 || The Axe-orcist || 1998 || Unknown ||
 || <a href="http://macintoshgarden.org/games/fantasy-quest">Fantasy Quest</a> || 1998 || Unknown ||
 || <a href="http://www.semitech.com/marc/ray.html">Twisted</a> || 1999 || Unknown ||
