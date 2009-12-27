@@ -27,6 +27,7 @@ It is suspected that over 100 games have been made using World Builder. Here is 
 || <a href="http://macintoshgarden.org/games/spear-of-destiny">Spear of Destiny</a> || 1988 || Unknown ||
 || <a href="http://macintoshgarden.org/games/strange-disappearance">Strange Disappearance</a> || 1988 || Unknown ||
 || <a href="http://macintoshgarden.org/games/mikes-house">Mike's House</a> || 1989 || Unknown ||
+|| <a href="http://macintoshgarden.org/games/lost-princess">Lost Princess</a> || 1989 || Unknown ||
 || Haunted House  || 1990 || Unknown ||
 || <a href="http://www.semitech.com/marc/ray.html">Ray's Maze</a> || 1990 || Unknown ||
 || <a href="http://macintoshgarden.org/games/pyramid-of-ert">Pyramid of Ert</a> || 1990 || Unknown ||
