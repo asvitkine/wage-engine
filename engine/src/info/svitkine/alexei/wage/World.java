@@ -246,7 +246,12 @@ public class World {
 	private void sortObjs(List<Obj> objs) {
 		Collections.sort(objs, new Comparator<Obj>() {
 			public int compare(Obj o1, Obj o2) {
-				return o1.getIndex() - o2.getIndex();
+				boolean o1Immobile = (o1.getType() == Obj.IMMOBILE_OBJECT);
+				boolean o2Immobile = (o2.getType() == Obj.IMMOBILE_OBJECT);
+				if (o1Immobile == o2Immobile) {
+					return o1.getIndex() - o2.getIndex();					
+				}
+				return (o1Immobile ? -1 : 1);
 			}
 		});
 	}
