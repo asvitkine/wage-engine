@@ -125,7 +125,10 @@ public class Engine implements Script.Callbacks, MoveListener {
 	public void processTurn(String textInput, Object clickInput) {
 		System.out.println("processTurn");
 		if (turn == 0) {
+			temporarilyHidden = true;
 			performInitialSetup();
+			callbacks.redrawScene();
+			temporarilyHidden = false;
 		}
 		commandWasQuick = false;
 		Scene prevScene = world.getPlayer().getCurrentScene();
