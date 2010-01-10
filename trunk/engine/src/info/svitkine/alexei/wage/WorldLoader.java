@@ -151,7 +151,7 @@ public class WorldLoader {
 					for (int i = 12; i < data.length; i++)
 						if (data[i] == (byte) 0x0D)
 							data[i] = '\n';
-					scene.setText(new String(data, 12, data.length-12, "MacRoman"));
+					scene.setText(MacRoman.toString(data, 12, data.length-12));
 				}
 				world.addScene(scene);
 			}
@@ -399,6 +399,6 @@ public class WorldLoader {
 		for (int i = 0; i < data.length; i++)
 			if (data[i] == (byte) 0x0D)
 				data[i] = '\n';
-		return new String(data, "MacRoman");
+		return MacRoman.toString(data);
 	}
 }
