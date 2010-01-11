@@ -139,8 +139,8 @@ public abstract class MacRoman {
 
 	public static String toString(byte[] data, int offset, int length) {
 		char[] chars = new char[length];
-		for (int i = offset; i < length; i++) {
-			chars[i] = byteToChar(data[i]);
+		for (int i = 0; i < length; i++) {
+			chars[i] = byteToChar(data[i + offset]);
 		}
 		return new String(chars);
 	}
