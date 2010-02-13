@@ -80,7 +80,7 @@ public class Script {
 			// user variable
 			int value = data[++index];
 			if (value < 0) value += 256;
-			// TODO: Verify that we're using the right index.
+			value -= 1;
 			result = new Operand(world.getPlayerContext().getUserVariable(value), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xD0) {
 			result = new Operand(world.getPlayerContext().getStatVariable(Context.PHYS_STR_BAS), Operand.NUMBER);
@@ -479,6 +479,7 @@ public class Script {
 		if (data[index] == (byte) 0xFF) { // user variable
 			int var = data[++index];
 			if (var < 0) var += 256;
+			var -= 1;
 			context.setUserVariable(var, value);
 		} else if (data[index] == (byte) 0xD0) {
 			context.setStatVariable(Context.PHYS_STR_BAS, value);
