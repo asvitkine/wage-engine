@@ -267,7 +267,8 @@ public class Engine implements Script.Callbacks, MoveListener {
 		int validMoves = getValidMoveDirections(npc);
 		if (winning) {
 			if (!world.isWeaponsMenuDisabled()) {
-				hat.addTokens(WEAPONS, npc.getWinningWeapons() + 1);
+				if (npc.getWeapons().length > 0)
+					hat.addTokens(WEAPONS, npc.getWinningWeapons() + 1);
 				if (hasMagic(npc))
 					hat.addTokens(MAGIC, npc.getWinningMagic() + 1);
 			}
@@ -277,7 +278,8 @@ public class Engine implements Script.Callbacks, MoveListener {
 				hat.addTokens(3, npc.getWinningOffer() + 1);
 		} else {
 			if (!world.isWeaponsMenuDisabled()) {
-				hat.addTokens(WEAPONS, npc.getLosingWeapons() + 1);
+				if (npc.getWeapons().length > 0)
+					hat.addTokens(WEAPONS, npc.getLosingWeapons() + 1);
 				if (hasMagic(npc))
 					hat.addTokens(MAGIC, npc.getLosingMagic() + 1);
 			}
