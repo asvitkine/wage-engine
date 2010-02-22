@@ -26,6 +26,7 @@ public class Obj implements Weapon {
 
 	private int index;
 	private String name;
+	private short resourceID;
 	private boolean namePlural;
 	private Design design;
 	private Rectangle designBounds;
@@ -89,6 +90,18 @@ public class Obj implements Weapon {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public short getResourceID() {
+		return resourceID;
+	}
+	
+	public void setResourceID(short resourceID) {
+		this.resourceID = resourceID;
+	}
+	
+	public short getHexOffset(State state) {
+		return (short) ((index * State.OBJ_SIZE) + state.getObjsHexOffset());
 	}
 
 	public String toString() {

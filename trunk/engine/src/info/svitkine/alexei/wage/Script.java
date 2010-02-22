@@ -502,7 +502,7 @@ public class Script {
 		} else if (data[index] == (byte) 0xE0) {
 			context.setStatVariable(Context.PHYS_STR_CUR, value);
 		} else if (data[index] == (byte) 0xE1) {
-			context.setStatVariable(Context.PHYS_STR_CUR, value);
+			context.setStatVariable(Context.PHYS_HIT_CUR, value);
 		} else if (data[index] == (byte) 0xE2) {
 			context.setStatVariable(Context.PHYS_ARM_CUR, value);
 		} else if (data[index] == (byte) 0xE3) {
@@ -639,8 +639,7 @@ public class Script {
 		}
 	}
 	
-	private void processMove() {
-		System.out.println("processMove!");
+	private void processMove() {		
 		Operand what = readOperand();
 		// TODO check data[index] == 0x8A
 		index++;
@@ -983,6 +982,7 @@ public class Script {
 			appendText("Your pack is full, you must drop something.");
 		} else {
 			world.move(obj, world.getPlayer());
+			System.out.println("Take Object: " + obj + " for player: " + world.getPlayer());
 			appendText("You now have the " + obj.getName() + ".");
 			if (obj.getType() == Obj.HELMET) {
 				if (player.getArmor()[Chr.HEAD_ARMOR] == null) {

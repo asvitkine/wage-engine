@@ -104,6 +104,8 @@ public class WorldLoader {
 	public World loadWorld(ResourceModel model, File file) throws UnsupportedEncodingException {
 		rdm.addDocument(file, null);
 		World world = new World(new Script(model.getResource("GCOD", (short) 0).getData()));
+		State initialState = new State();
+		
 		world.setName(file.getName());
 		ResourceType vers = model.getResourceType("VERS");
 		if (vers != null) {
@@ -111,7 +113,12 @@ public class WorldLoader {
 			byte[] data = r.getData();
 			try {
 				DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
-				in.skip(10);
+				
+				int signature = in.readInt();
+				world.setSignature(signature);	// unique world ID
+				initialState.setWorldSig(signature);
+				
+				in.skip(6);
 				byte b = in.readByte();
 				world.setWeaponsMenuDisabled(b != 0);
 				if (b != 1 && b != 0)
@@ -129,6 +136,8 @@ public class WorldLoader {
 			}
 		}
 		ResourceType scenes = model.getResourceType("ASCN");
+		short sceneCount = 0;
+		
 		if (scenes != null) {
 			for (Resource r : scenes.getResArray()) {
 				Scene scene = parseSceneData(r.getName(), r.getData());
@@ -153,23 +162,53 @@ public class WorldLoader {
 							data[i] = '\n';
 					scene.setText(MacRoman.toString(data, 12, data.length-12));
 				}
+				
+				scene.setResourceID(r.getID());
 				world.addScene(scene);
+				sceneCount++;
 			}
-		}
-		ResourceType objs = model.getResourceType("AOBJ");
-		if (objs != null) {
-			for (Resource r : objs.getResArray())
-				world.addObj(parseObjData(r.getName(), r.getData()));
+			
+			// store global info in state object for use with save/load actions
+			initialState.setNumScenes(sceneCount);								// total scene count
+			int charHex = (State.SCENES_INDEX+(sceneCount*State.SCENE_SIZE));	// hex offset to start of char data in save file
+			initialState.setCharsHexOffset((short)charHex);
 		}
 		ResourceType chrs = model.getResourceType("ACHR");
+		short charCount = 0;
 		if (chrs != null) {
 			for (Resource r : chrs.getResArray()) {
 				Chr chr = parseChrData(r.getName(), r.getData());
+				chr.setResourceID(r.getID());
 				world.addChr(chr);
 				// TODO: What if there's more than one player character?
-				if (chr.isPlayerCharacter())
+				if (chr.isPlayerCharacter()) {
 					world.setPlayer(chr);
+					
+					// hex offset to player character in save file
+					initialState.setPlayerHexOffset((short)(initialState.getCharsHexOffset()+(charCount*State.CHAR_SIZE)));
+				}
+				charCount++;
 			}
+			
+			// store global info in state object for use with save/load actions
+			initialState.setNumChars(charCount);											// total char count
+			int objHex = (initialState.getCharsHexOffset()+(charCount*State.CHAR_SIZE));	// hex offset to start of obj date in save file
+			initialState.setObjsHexOffset((short)objHex);
+		}
+		ResourceType objs = model.getResourceType("AOBJ");
+		short objCount = 0;
+
+		if (objs != null) {
+			for (Resource r : objs.getResArray()) {
+				Obj obj = parseObjData(r.getName(), r.getData());
+				obj.setResourceID(r.getID());
+
+				world.addObj(obj);
+				objCount++;
+			}
+			
+			// store global info in state object for use with save/load actions
+			initialState.setNumObjs(objCount);		// total obj count
 		}
 		ResourceType sounds = model.getResourceType("ASND");
 		if (sounds != null) {
@@ -203,6 +242,10 @@ public class WorldLoader {
 				}
 			}
 		}
+	
+		// store global info in state object for use with save/load actions
+		world.setCurrentState(initialState);	// pass off the state object to the world
+		
 		return world;
 	}
 

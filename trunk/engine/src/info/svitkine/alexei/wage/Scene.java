@@ -13,7 +13,9 @@ public class Scene {
 	public static final int PERIODIC = 0;
 	public static final int RANDOM = 1;
 
+	private int index;
 	private String name;
+	private short resourceID;
 	private Script script;
 	private Design design;
 	private Rectangle designBounds;
@@ -81,12 +83,32 @@ public class Scene {
 		this.design = design;
 	}
 
+	public int getIndex() {
+		return index;
+	}
+
+	public void setIndex(int index) {
+		this.index = index;
+	}
+
 	public String getName() {
 		return name;
 	}
 	
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public short getResourceID() {
+		return resourceID;
+	}
+
+	public void setResourceID(short resourceID) {
+		this.resourceID = resourceID;
+	}
+
+	public short getHexOffset(State state) {
+		return (short) ((index * State.SCENE_SIZE) + State.SCENES_INDEX);
 	}
 
 	public String getText() {
