@@ -3,18 +3,22 @@ package info.svitkine.alexei.wage;
 import info.svitkine.alexei.wage.World.MoveEvent;
 import info.svitkine.alexei.wage.World.MoveListener;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 
 
 public class Engine implements Script.Callbacks, MoveListener {
 	private World world;
+	private StateManager stateManager;
 	private Scene lastScene;
 	private PrintStream out;
 	private int loopCount;
 	private int turn;
 	private Callbacks callbacks;
 	private Chr monster;
+	private Chr running;
 	private Obj offer;
 	private boolean commandWasQuick;
 	private int aim = -1;
@@ -29,6 +33,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 
 	public Engine(World world, PrintStream out, Callbacks callbacks) {
 		this.world = world;
+		this.stateManager = new StateManager(world);
 		this.out = out;
 		this.callbacks = callbacks;
 		world.addMoveListener(this);
@@ -78,6 +83,60 @@ public class Engine implements Script.Callbacks, MoveListener {
 			}
 		}
 	}
+	
+	public void loadState(File file) throws IOException{
+		// parse the save file
+		stateManager.readSaveData(file);
+		
+		// uncomment the next line for a human readable dump of information contained in save file on load
+		//stateManager.printAll(file.getPath() + "_dump.txt");
+
+		// update the world based on the file
+		if (stateManager.updateWorld()) {
+			
+			//TODO: make sure that armor in the inventory gets put on if we are wearing it
+
+			loopCount = world.getCurrentState().getLoopNum();
+
+			// let the engine know if there is a npc in the current scene
+			int presMonHexOffset = world.getCurrentState().getPresCharHexOffset();			
+			if (presMonHexOffset != 0xffff) {
+				monster = world.getCharByHexOffset((short)presMonHexOffset);
+			}
+
+			this.callbacks.clearOutput();
+
+			processTurn("look", null);
+		}
+	}
+
+	public void saveState(File toFile) throws IOException{
+		// updates state variables with current world info
+		boolean success = stateManager.updateState(monster, running, loopCount);
+		// output state info to disk
+		if (success) {
+			stateManager.writeSaveData(toFile);
+		}	
+	}
+	
+	public void revert() throws IOException{
+		if (stateManager.updateWorld() == false) {
+			System.err.println("Error reverting to last saved game!");
+			return;
+		}
+		
+		//TODO: make sure that armor in the inventory gets put on if we are wearing it
+		loopCount = world.getCurrentState().getLoopNum();
+		
+		// let the engine know if there is a npc in the current scene
+		int presMonHexOffset = world.getCurrentState().getPresCharHexOffset();
+		if (presMonHexOffset != 0xffff)
+			monster = world.getCharByHexOffset((short)presMonHexOffset);
+		
+		this.callbacks.clearOutput();
+		
+		processTurn("look",null);
+	}
 
 	private void processTurnInternal(String textInput, Object clickInput) {
 		Scene playerScene = world.getPlayer().getCurrentScene();
@@ -88,6 +147,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 			loopCount = 0;
 			lastScene = playerScene;
 			monster = null;
+			running = null;
 			offer = null;
 			for (Chr chr : playerScene.getChrs()) {
 				if (!chr.isPlayerCharacter()) {
@@ -275,7 +335,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 			if (validMoves != 0)
 				hat.addTokens(RUN, npc.getWinningRun() + 1);
 			if (!npc.getInventory().isEmpty())
-				hat.addTokens(3, npc.getWinningOffer() + 1);
+				hat.addTokens(OFFER, npc.getWinningOffer() + 1);
 		} else {
 			if (!world.isWeaponsMenuDisabled()) {
 				if (npc.getWeapons().length > 0)
@@ -383,6 +443,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 		int dir = moves[(int) (Math.random() * numValidMoves)];
 		appendText("%s runs %s.", getNameWithDefiniteArticle(chr, true),
 			new String[] {"north", "south", "east", "west"}[dir]);
+		running = chr;
 		int dx[] = new int[] { 0, 0, 1, -1 };
 		int dy[] = new int[] { -1, 1, 0, 0 };
 		Scene currentScene = chr.getCurrentScene();
@@ -449,5 +510,10 @@ public class Engine implements Script.Callbacks, MoveListener {
 			sb.append(capitalize ? "The " : "the ");
 		sb.append(chr.getName());
 		return sb.toString();
+	}
+
+
+	public StateManager getStateManager() {
+		return stateManager;
 	}
 }

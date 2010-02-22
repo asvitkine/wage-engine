@@ -16,6 +16,7 @@ public class Chr {
 	
 	private int index;
 	private String name;
+	private short resourceID;
 	private Design design;
 	private Rectangle designBounds;
 	private String initialScene;
@@ -496,6 +497,18 @@ public class Chr {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public short getResourceID() {
+		return resourceID;
+	}
+	
+	public void setResourceID(short resourceID) {
+		this.resourceID = resourceID;
+	}
+
+	public short getHexOffset(State state) {
+		return (short) ((index * State.CHAR_SIZE) + state.getCharsHexOffset());
 	}
 
 	public String toString() {

@@ -13,6 +13,7 @@ public class World {
 	public static final String STORAGE = "STORAGE@";
 
 	private String name;
+	private int signature;
 	private String aboutMessage;
 	private String soundLibrary1;
 	private String soundLibrary2;
@@ -30,7 +31,9 @@ public class World {
 	private Scene storageScene;
 	private Chr player;
 	private List<MoveListener> moveListeners;
-
+	
+	private State currentState;
+	
 	public World(Script globalScript) {
 		this.globalScript = globalScript;
 		scenes = new HashMap<String, Scene>();
@@ -56,6 +59,12 @@ public class World {
 	public void addScene(Scene room) {
 		if (room.getName() != null)
 			scenes.put(room.getName().toLowerCase(), room);
+		
+		// this is kind of a hack ... having the first scene in orderedScenes be the storage scene throws off
+		// my method for calculating a hex offset for the save files
+		if (room != getStorageScene())
+			room.setIndex(orderedScenes.size() - 1);
+
 		orderedScenes.add(room);
 	}
 
@@ -94,6 +103,62 @@ public class World {
 
 	public Map<String, Chr> getChrs() {
 		return chrs;
+	}
+	
+	public Scene getSceneByID(short resourceID) {
+		for (Scene scene : getOrderedScenes()) {
+			if (scene.getResourceID() == resourceID) {
+				return scene;
+			}
+		}
+		return null;
+	}
+
+	public Scene getSceneByHexOffset(short offset) {
+		// the save file stores blank info as 0xffff...
+		if (offset == -1)
+			return null;
+
+		// ...and the storage scene as 0x0000
+		if (offset == 0)
+			return getStorageScene();
+
+		int index = (offset - State.SCENES_INDEX) / State.SCENE_SIZE;
+		return this.orderedScenes.get(index+1);
+	}
+
+	public Chr getCharByID(short resourceID) {
+		for (Chr chr : getOrderedChrs()) {
+			if (chr.getResourceID() == resourceID) {
+				return chr;
+			}
+		}
+		return null;
+	}
+
+	public Chr getCharByHexOffset(short offset) {
+		// a lot of char hex offsets = 0xffff if they are empty (i.e. no character attacking, etc)
+		if (offset == -1)
+			return null;
+		int index = (offset - currentState.getCharsHexOffset()) / State.CHAR_SIZE;
+		return orderedChrs.get(index);
+	}
+
+	public Obj getObjByID(short resourceID) {
+		for (Obj obj : getOrderedObjs()) {
+			if (obj.getResourceID() == resourceID) {
+				return obj;
+			}
+		}
+		return null;
+	}
+
+	public Obj getObjByHexOffset(short offset) {
+		// a lot of obj hex offsets = 0xffff if they are empty (i.e. not wearing spirtual armor, etc.)
+		if (offset == -1)
+			return null;
+		int index = (offset - currentState.getObjsHexOffset()) / State.OBJ_SIZE;
+		return orderedObjs.get(index);
 	}
 
 	public Map<String, Sound> getSounds() {
@@ -202,24 +267,24 @@ public class World {
 
 	private void initChrContext(Chr chr) {
 		Context context = chr.getContext();
-		context.setStatVariable(Context.PHYS_ACC_BAS, player.getPhysicalAccuracy());
-		context.setStatVariable(Context.PHYS_ACC_CUR, player.getPhysicalAccuracy());
-		context.setStatVariable(Context.PHYS_ARM_BAS, player.getNaturalArmor());
-		context.setStatVariable(Context.PHYS_ARM_CUR, player.getNaturalArmor());
-		context.setStatVariable(Context.PHYS_HIT_BAS, player.getPhysicalHp());
-		context.setStatVariable(Context.PHYS_HIT_CUR, player.getPhysicalHp());
-		context.setStatVariable(Context.PHYS_SPE_BAS, player.getRunningSpeed());
-		context.setStatVariable(Context.PHYS_SPE_CUR, player.getRunningSpeed());
-		context.setStatVariable(Context.PHYS_STR_BAS, player.getPhysicalStrength());
-		context.setStatVariable(Context.PHYS_STR_CUR, player.getPhysicalStrength());
-		context.setStatVariable(Context.SPIR_ACC_BAS, player.getSpiritualAccuracy());
-		context.setStatVariable(Context.SPIR_ACC_CUR, player.getSpiritualAccuracy());
-		context.setStatVariable(Context.SPIR_ARM_BAS, player.getResistanceToMagic());
-		context.setStatVariable(Context.SPIR_ARM_CUR, player.getResistanceToMagic());
-		context.setStatVariable(Context.SPIR_HIT_BAS, player.getSpiritialHp());
-		context.setStatVariable(Context.SPIR_HIT_CUR, player.getSpiritialHp());
-		context.setStatVariable(Context.SPIR_STR_BAS, player.getSpiritualStength());
-		context.setStatVariable(Context.SPIR_STR_CUR, player.getSpiritualStength());
+		context.setStatVariable(Context.PHYS_ACC_BAS, chr.getPhysicalAccuracy());
+		context.setStatVariable(Context.PHYS_ACC_CUR, chr.getPhysicalAccuracy());
+		context.setStatVariable(Context.PHYS_ARM_BAS, chr.getNaturalArmor());
+		context.setStatVariable(Context.PHYS_ARM_CUR, chr.getNaturalArmor());
+		context.setStatVariable(Context.PHYS_HIT_BAS, chr.getPhysicalHp());
+		context.setStatVariable(Context.PHYS_HIT_CUR, chr.getPhysicalHp());
+		context.setStatVariable(Context.PHYS_SPE_BAS, chr.getRunningSpeed());
+		context.setStatVariable(Context.PHYS_SPE_CUR, chr.getRunningSpeed());
+		context.setStatVariable(Context.PHYS_STR_BAS, chr.getPhysicalStrength());
+		context.setStatVariable(Context.PHYS_STR_CUR, chr.getPhysicalStrength());
+		context.setStatVariable(Context.SPIR_ACC_BAS, chr.getSpiritualAccuracy());
+		context.setStatVariable(Context.SPIR_ACC_CUR, chr.getSpiritualAccuracy());
+		context.setStatVariable(Context.SPIR_ARM_BAS, chr.getResistanceToMagic());
+		context.setStatVariable(Context.SPIR_ARM_CUR, chr.getResistanceToMagic());
+		context.setStatVariable(Context.SPIR_HIT_BAS, chr.getSpiritialHp());
+		context.setStatVariable(Context.SPIR_HIT_CUR, chr.getSpiritialHp());
+		context.setStatVariable(Context.SPIR_STR_BAS, chr.getSpiritualStength());
+		context.setStatVariable(Context.SPIR_STR_CUR, chr.getSpiritualStength());
 		context.setVisits(1);
 		context.setKills(0);
 	}
@@ -318,5 +383,21 @@ public class World {
 
 	public void setSoundLibrary2(String soundLibrary2) {
 		this.soundLibrary2 = soundLibrary2;
+	}
+
+	public void setCurrentState(State currentState) {
+		this.currentState = currentState;
+	}
+
+	public State getCurrentState() {
+		return currentState;
+	}
+	
+	public void setSignature(int signature) {
+		this.signature = signature;
+	}
+
+	public int getSignature() {
+		return signature;
 	}
 }

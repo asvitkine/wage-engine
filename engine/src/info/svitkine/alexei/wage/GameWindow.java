@@ -2,7 +2,9 @@ package info.svitkine.alexei.wage;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.FileDialog;
 import java.awt.Font;
+import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.TexturePaint;
@@ -12,12 +14,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.swing.AbstractAction;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -39,6 +43,7 @@ public class GameWindow extends JFrame {
 	private ConsoleTextArea textArea;
 	private JPanel panel;
 	private Timer soundTimer;
+	private File lastSaveFile;
 	
 	public GameWindow(final World world, TexturePaint[] patterns) {
 		this.world = world;
@@ -63,21 +68,7 @@ public class GameWindow extends JFrame {
 				updateMenuFromString(commandsMenu, format);
 			}
 			public void redrawScene() {
-				final Scene currentScene = world.getPlayer().getCurrentScene();
-				if (currentScene != null) {
-					Runnable repainter = new Runnable() {
-						public void run() {
-							updateTextAreaForScene(textArea, panel, currentScene);
-							updateSceneViewerForScene(viewer, currentScene);
-							viewer.paintImmediately(viewer.getBounds());
-							getContentPane().validate();
-							getContentPane().repaint();
-							textArea.postUpdateUI();
-							updateSoundTimerForScene(currentScene, true);
-						}
-					};
-					runOnEventDispatchThread(repainter);
-				}
+				GameWindow.this.redrawScene();
 			}
 			public void clearOutput() {
 				textArea.clear();
@@ -134,6 +125,24 @@ public class GameWindow extends JFrame {
 		setSize(640, 480);
 		setLocationRelativeTo(null);
 		setVisible(true);
+	}
+	
+	private void redrawScene() {
+		final Scene currentScene = world.getPlayer().getCurrentScene();
+		if (currentScene != null) {
+			Runnable repainter = new Runnable() {
+				public void run() {
+					updateTextAreaForScene(textArea, panel, currentScene);
+					updateSceneViewerForScene(viewer, currentScene);
+					viewer.paintImmediately(viewer.getBounds());
+					getContentPane().validate();
+					getContentPane().repaint();
+					textArea.postUpdateUI();
+					updateSoundTimerForScene(currentScene, true);
+				}
+			};
+			runOnEventDispatchThread(repainter);
+		}
 	}
 
 	private static void runOnEventDispatchThread(Runnable runnable) {
@@ -198,13 +207,13 @@ public class GameWindow extends JFrame {
 	
 	private JMenu createFileMenu() {
 		JMenu menu = new JMenu("File");
-		menu.add(new JMenuItem("New"));
-		menu.add(new JMenuItem("Open..."));
-		menu.add(new JMenuItem("Close"));
-		menu.add(new JMenuItem("Save"));
-		menu.add(new JMenuItem("Save As..."));
-		menu.add(new JMenuItem("Revert"));
-		menu.add(new JMenuItem("Quit"));
+		menu.add(new JMenuItem(new NewAction()));
+		menu.add(new JMenuItem(new OpenAction()));
+		menu.add(new JMenuItem(new CloseAction()));
+		menu.add(new JMenuItem(new SaveAction()));
+		menu.add(new JMenuItem(new SaveAsAction()));
+		menu.add(new JMenuItem(new RevertAction()));
+		menu.add(new JMenuItem(new QuitAction()));
 		return menu;
 	}
 
@@ -218,7 +227,118 @@ public class GameWindow extends JFrame {
 		menu.add(new JMenuItem("Clear"));
 		return menu;
 	}
+	
+	public class NewAction extends AbstractAction {
+		public NewAction() {
+			putValue(NAME, "New");
+		}
 
+		public void actionPerformed(ActionEvent e) {
+			// TODO
+			JOptionPane.showMessageDialog(null, "Not implemented yet.");
+		}
+	}
+	
+	public class OpenAction extends AbstractAction {
+		public OpenAction() {
+			putValue(NAME, "Open...");
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			FileDialog dialog = new FileDialog(new Frame(), "Load Game", FileDialog.LOAD);
+			dialog.setVisible(true);
+			if (dialog.getFile() == null)
+				return;
+			File file = new File(dialog.getDirectory() + "/" + dialog.getFile());
+			try {
+				engine.loadState(file);
+				lastSaveFile = file;
+				GameWindow.this.redrawScene();
+			} catch (IOException ioe) {
+				// TODO Auto-generated catch block
+				ioe.printStackTrace();
+			}
+		}
+	}
+
+	public class CloseAction extends AbstractAction {
+		public CloseAction() {
+			putValue(NAME, "Close");
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			// TODO
+			JOptionPane.showMessageDialog(null, "Not implemented yet.");
+		}
+	}
+	
+	public class SaveAction extends SaveAsAction {
+		public SaveAction() {
+			putValue(NAME, "Save");
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			if (lastSaveFile == null) {
+				super.actionPerformed(e);
+				return;
+			}
+
+			try {
+				engine.saveState(lastSaveFile);
+			} catch (IOException ioe) {
+				// TODO Auto-generated catch block
+				ioe.printStackTrace();
+			}
+		}
+	}
+	
+	public class SaveAsAction extends AbstractAction {
+		public SaveAsAction() {
+			putValue(NAME, "Save As...");
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			FileDialog dialog = new FileDialog(new Frame(), "Save Game", FileDialog.SAVE);
+			dialog.setVisible(true);
+			if (dialog.getFile() == null)
+				return;
+			File file = new File(dialog.getDirectory() + "/" + dialog.getFile());
+			try {
+				engine.saveState(file);
+				lastSaveFile = file;
+			} catch (IOException ioe) {
+				// TODO Auto-generated catch block
+				ioe.printStackTrace();
+			}
+		}
+	}
+
+	public class RevertAction extends AbstractAction {
+		public RevertAction() {
+			putValue(NAME, "Revert");
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			try {
+				engine.revert();
+				GameWindow.this.redrawScene();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+	}
+
+	public class QuitAction extends AbstractAction {
+		public QuitAction() {
+			putValue(NAME, "Quit");
+		}
+
+		public void actionPerformed(ActionEvent e) {
+
+		}
+	}
+	
 	private JMenu createWeaponsMenu() {
 		final JMenu menu = new JMenu("Weapons");
 		menu.addMenuListener(new MenuListener() {
