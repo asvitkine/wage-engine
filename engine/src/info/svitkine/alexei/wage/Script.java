@@ -248,6 +248,26 @@ public class Script {
 						}
 					}
 				});
+				handlers.add(new PairEvaluator(Operand.NUMBER, Operand.TEXT_INPUT) {
+					@Override
+					public void evaluatePair(Operand o1, Operand o2) {
+						if (inputText != null) {
+							evalResult = inputText.contains(o1.value.toString());
+						} else {
+							evalResult = false;
+						}
+					}
+				});
+				handlers.add(new PairEvaluator(Operand.TEXT_INPUT, Operand.NUMBER) {
+					@Override
+					public void evaluatePair(Operand o1, Operand o2) {
+						if (inputText != null) {
+							evalResult = inputText.contains(o2.value.toString());
+						} else {
+							evalResult = false;
+						}
+					}
+				});
 				evaluatePair(handlers, lhs, rhs);
 				result = (Boolean) evalResult;
 			}
