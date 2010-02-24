@@ -116,6 +116,11 @@ public class Engine implements Script.Callbacks, MoveListener {
 		// output state info to disk
 		if (success) {
 			stateManager.writeSaveData(toFile);
+			// NOTE: The FileManager class only works on macs
+			// Not sure how much good this does as Snow Leopard won't write to HFS volumes anymore,
+			// but it changes the icon so i do it anyways...
+			//FileManager.setFileCreator(file.getPath(),FileManager.OSTypeToInt("WEDT"));
+			//FileManager.setFileType(file.getPath(),FileManager.OSTypeToInt("WDOC"));
 		}	
 	}
 	

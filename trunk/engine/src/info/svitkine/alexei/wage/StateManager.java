@@ -1,15 +1,13 @@
 package info.svitkine.alexei.wage;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-
-// for editing type and creator info on mac platforms
-// import com.apple.eio.FileManager;
 
 public class StateManager {
 
@@ -30,12 +28,7 @@ public class StateManager {
 	}
 
 	public void readSaveData(File file) throws IOException {
-		RandomAccessFile raf = new RandomAccessFile(file.getPath(), "r");
-
-		byte[] data = new byte[(int)raf.length()];	// set byte array to size of file
-		raf.readFully(data);						// read data
-		
-		DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
+		DataInputStream in = new DataInputStream(new FileInputStream(file));
 		
 		// Counters
 		state.setNumScenes(in.readShort());
@@ -97,7 +90,6 @@ public class StateManager {
 		else
 			in.skipBytes(2);
 		
-		
 		// TODO: 
 		System.out.println("UNKNOWN 1:" + in.readShort());	// Usually = FFFF
 		System.out.println("UNKNOWN 2:" + in.readShort());	// Usually = FFFF
@@ -122,18 +114,18 @@ public class StateManager {
 		System.out.println("UNKNOWN 9:" + in.readShort());	// Usually = 0000
 		
 		// Base character stats
-		state.setBasePhysStr(readUnsignedByte(in));
-		state.setBasePhysHp(readUnsignedByte(in));
-		state.setBasePhysArm(readUnsignedByte(in));
-		state.setBasePhysAcc(readUnsignedByte(in));
-		state.setBaseSprtStr(readUnsignedByte(in));
-		state.setBaseSprtHp(readUnsignedByte(in));
-		state.setBaseSprtArm(readUnsignedByte(in));
-		state.setBaseSprtAcc(readUnsignedByte(in));
-		state.setBaseRunSpeed(readUnsignedByte(in));
+		state.setBasePhysStr(in.readUnsignedByte());
+		state.setBasePhysHp(in.readUnsignedByte());
+		state.setBasePhysArm(in.readUnsignedByte());
+		state.setBasePhysAcc(in.readUnsignedByte());
+		state.setBaseSprtStr(in.readUnsignedByte());
+		state.setBaseSprtHp(in.readUnsignedByte());
+		state.setBaseSprtArm(in.readUnsignedByte());
+		state.setBaseSprtAcc(in.readUnsignedByte());
+		state.setBaseRunSpeed(in.readUnsignedByte());
 		
 		// TODO:
-		System.out.println("UNKNOWN 10: " + readUnsignedByte(in));	// Usually = 0A
+		System.out.println("UNKNOWN 10: " + in.readUnsignedByte());	// Usually = 0A
 		
 		// read user variables
 		short[] userVars = parseUserVars(in);
@@ -142,17 +134,17 @@ public class StateManager {
 		// read update info for every scene
 		int sceneSize = state.getNumScenes() * State.SCENE_SIZE;
 		byte[] sceneData = new byte[sceneSize];
-		
-		if(in.read(sceneData) == sceneSize);
+
+		if (in.read(sceneData) == sceneSize);
 			state.setSceneData(sceneData);
 		
 		// read update info for ever character
 		int chrSize = state.getNumChars() * State.CHAR_SIZE;
 		byte[] chrData = new byte[chrSize];
 			
-		if(in.read(chrData) == chrSize);
-			state.setCharData(chrData);
-		
+		if (in.read(chrData) == chrSize);
+			state.setChrData(chrData);
+
 		// read update info for ever object
 		int objSize = state.getNumObjs() * State.OBJ_SIZE;
 		byte[] objData = new byte[objSize];
@@ -284,27 +276,21 @@ public class StateManager {
 		// TODO:
 		os.writeByte(0x0A);		// ???? - always seems to be 0x0A
 		
-		// write user vars
-		for (int var = 0; var < 234; var++)
-			os.writeShort(state.getUserVars()[var]);
-		
+		// write user vars		
+		for (short var : state.getUserVars())
+			os.writeShort(var);
+
 		// write updated info for all scenes
 		os.write(state.getSceneData());
 			
 		// write updated info for all characters
-		os.write(state.getCharData());
+		os.write(state.getChrData());
 		
 		// write updated info for all objects
 		os.write(state.getObjData());
 		
 		// close file for writing
 		os.close();
-		
-		// NOTE: The FileManager class only works on macs
-		// Not sure how much good this does as Snow Leopard won't write to HFS volumes anymore,
-		// but it changes the icon so i do it anyways...
-		//FileManager.setFileCreator(file.getPath(),FileManager.OSTypeToInt("WEDT"));
-		//FileManager.setFileType(file.getPath(),FileManager.OSTypeToInt("WDOC"));
 	}
 	
 	public boolean updateState(Chr monster, Chr running, int loopNum) {
@@ -550,7 +536,7 @@ public class StateManager {
 				updateScenesWithBinaryData(state.getSceneData());
 
 				// update all char locations and stats
-				updateCharsWithBinaryData(state.getCharData());
+				updateChrsWithBinaryData(state.getChrData());
 
 				// update all object locations and stats
 				updateObjsWithBinaryData(state.getObjData());
@@ -578,151 +564,116 @@ public class StateManager {
 	}
 
 	private void updateStateSceneData() {
-		byte[] data = new byte[state.getNumScenes() * State.SCENE_SIZE];
-		int offset = 0;
-		
-		for (Scene scn : world.getOrderedScenes()) {
-			if (scn != world.getStorageScene()) {
-				
-				byte[] id = shortToBytes(scn.getResourceID());
-				
-				data[offset] = id[0];
-				data[offset+1] = id[1];
-				
-				byte[] worldY = shortToBytes((short)scn.getWorldY());
-				
-				data[offset+2] = worldY[0];
-				data[offset+3] = worldY[1];
-				
-				byte[] worldX = shortToBytes((short)scn.getWorldX());
-				
-				data[offset+4] = worldX[0];
-				data[offset+5] = worldX[1];
-				
-				data[offset+6] = (byte) ((scn.isDirBlocked(Scene.NORTH)) ? 0x01 : 0x00);
-				data[offset+7] = (byte) ((scn.isDirBlocked(Scene.SOUTH)) ? 0x01 : 0x00);
-				data[offset+8] = (byte) ((scn.isDirBlocked(Scene.EAST)) ? 0x01 : 0x00);
-				data[offset+9] = (byte) ((scn.isDirBlocked(Scene.WEST)) ? 0x01 : 0x00);
-				
-				byte[] soundFreq = shortToBytes((short)scn.getSoundFrequency());
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		DataOutputStream stream = new DataOutputStream(bout);
 
-				data[offset+10] = soundFreq[0];
-				data[offset+11] = soundFreq[1];
-				
-				data[offset+12] = (byte) scn.getSoundType();
-				
-				// rest of the scene data (bytes 12-16) are unknown (i've never seen them anything but 0)
-				data[offset+13] = 0x00;
-				data[offset+14] = 0x00;
-				data[offset+15] = 0x00;	// this byte is set to 0x01 if the player has been to this scene -- do we want to keep track of this?
-				
-				offset += State.SCENE_SIZE;
+		try {
+			for (Scene scene : world.getOrderedScenes()) {
+				if (scene != world.getStorageScene()) {
+					stream.writeShort(scene.getResourceID());
+					stream.writeShort(scene.getWorldY());
+					stream.writeShort(scene.getWorldX());
+					stream.writeByte(scene.isDirBlocked(Scene.NORTH) ? 0x01 : 0x00);
+					stream.writeByte(scene.isDirBlocked(Scene.SOUTH) ? 0x01 : 0x00);
+					stream.writeByte(scene.isDirBlocked(Scene.EAST) ? 0x01 : 0x00);
+					stream.writeByte(scene.isDirBlocked(Scene.WEST) ? 0x01 : 0x00);
+					stream.writeShort(scene.getSoundFrequency());
+					stream.writeByte(scene.getSoundType());
+					// the following two bytes are currently unknown
+					stream.writeByte(0);
+					stream.writeByte(0);
+					stream.writeByte(scene.wasVisited() ? 0x01 : 0x00);
+				}
 			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 
-		state.setSceneData(data);
+		state.setSceneData(bout.toByteArray());
 	}
 	
 	private void updateStateCharData() {
-		byte[] data = new byte[state.getNumChars() * State.CHAR_SIZE];
-		int offset = 0;
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		DataOutputStream stream = new DataOutputStream(bout);
 
-		for (Chr chr : world.getOrderedChrs()){
-			byte[] id = shortToBytes(chr.getResourceID());
-			
-			data[offset] = id[0];
-			data[offset+1] = id[1];
-			
-			Scene scn = chr.getCurrentScene();
-			
-			if (scn == world.getStorageScene()){
-				data[offset+2] = 0;
-				data[offset+3] = 0;
-			} else {
-				byte[] loc = shortToBytes(scn.getResourceID());
-			
-				data[offset+2] = loc[0];
-				data[offset+3] = loc[1];
+		try {
+			for (Chr chr : world.getOrderedChrs()) {
+				stream.writeShort(chr.getResourceID());
+
+				Scene scene = chr.getCurrentScene();
+
+				if (scene == world.getStorageScene()) {
+					stream.writeShort(0);
+				} else {
+					stream.writeShort(scene.getResourceID());
+				}
+
+				// TODO: Moving characters is a little poorly designed -- it was coded with only an
+				// initial state in mind, so that moving a character triggers initializing both the 
+				// base and current stat values for the character to one value.  this should be fixed,
+				// as what i have below only works for the player character because the base stats for
+				// other characters are not stored in the save file.
+
+				stream.writeByte(chr.getContext().getStatVariable(Context.PHYS_STR_CUR));
+				stream.writeByte(chr.getContext().getStatVariable(Context.PHYS_HIT_CUR));
+				stream.writeByte(chr.getContext().getStatVariable(Context.PHYS_ARM_CUR));
+				stream.writeByte(chr.getContext().getStatVariable(Context.PHYS_ACC_CUR));
+				stream.writeByte(chr.getContext().getStatVariable(Context.SPIR_STR_CUR));
+				stream.writeByte(chr.getContext().getStatVariable(Context.SPIR_HIT_CUR));
+				stream.writeByte(chr.getContext().getStatVariable(Context.SPIR_ARM_CUR));
+				stream.writeByte(chr.getContext().getStatVariable(Context.SPIR_ACC_CUR));
+				stream.writeByte(chr.getContext().getStatVariable(Context.PHYS_SPE_CUR));
+
+				stream.writeByte(chr.getRejectsOffers());
+				stream.writeByte(chr.getFollowsOpponent());
+
+				// bytes 16-20 are unknown
+				stream.writeByte(0);
+				stream.writeByte(0);
+				stream.writeByte(0);
+				stream.writeByte(0);
+				stream.writeByte(0);
+
+				stream.writeByte(chr.getWeaponDamage1());
+				stream.writeByte(chr.getWeaponDamage2());
 			}
-			
-			// TODO: Moving characters is a little poorly designed -- it was coded with only an
-			// initial state in mind, so that moving a character triggers initializing both the 
-			// base and current stat values for the character to one value.  this should be fixed,
-			// as what i have below only works for the player character because the base stats for
-			// other characters are not stored in the save file.
-			
-			data[offset+4] = (byte)chr.getContext().getStatVariable(Context.PHYS_STR_CUR);
-			data[offset+5] = (byte)chr.getContext().getStatVariable(Context.PHYS_HIT_CUR);
-			data[offset+6] = (byte)chr.getContext().getStatVariable(Context.PHYS_ARM_CUR);
-			data[offset+7] = (byte)chr.getContext().getStatVariable(Context.PHYS_ACC_CUR);
-			data[offset+8] = (byte)chr.getContext().getStatVariable(Context.SPIR_STR_CUR);
-			data[offset+9] = (byte)chr.getContext().getStatVariable(Context.SPIR_HIT_CUR);
-			data[offset+10] = (byte)chr.getContext().getStatVariable(Context.SPIR_ARM_CUR);
-			data[offset+11] = (byte)chr.getContext().getStatVariable(Context.SPIR_ACC_CUR);
-			data[offset+12] = (byte)chr.getContext().getStatVariable(Context.PHYS_SPE_CUR);
-				
-			data[offset+13] = (byte)chr.getRejectsOffers();
-			data[offset+14] = (byte)chr.getFollowsOpponent();
-			
-			// bytes 16-20 are unknown
-			data[offset+15] = 0x00;
-			data[offset+16] = 0x00;
-			data[offset+17] = 0x00;
-			data[offset+18] = 0x00;
-			data[offset+19] = 0x00;
-			
-			data[offset+20] = (byte)chr.getWeaponDamage1();
-			data[offset+21] = (byte)chr.getWeaponDamage2();
-			
-			offset += State.CHAR_SIZE;
-		}
+
+			stream.flush();
 		
-		state.setCharData(data);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		state.setChrData(bout.toByteArray());
 	}
 	
 	private void updateStateObjData() {
-		byte[] data = new byte[state.getNumObjs() * State.OBJ_SIZE];
-		int offset = 0;
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		DataOutputStream stream = new DataOutputStream(bout);
 
-		for (Obj obj : world.getOrderedObjs()) {
-				byte[] id = shortToBytes(obj.getResourceID());
-				
-				data[offset] = id[0];
-				data[offset+1] = id[1];
-				
+		try {
+			for (Obj obj : world.getOrderedObjs()) {
+				stream.writeShort(obj.getResourceID());
+
 				Scene location = obj.getCurrentScene();
 				Chr owner = obj.getCurrentOwner();
-								
-				if(location != null){
-					byte[] loc = shortToBytes(location.getResourceID());
-					data[offset+2] = loc[0];
-					data[offset+3] = loc[1];
-					data[offset+4] = 0x00;
-					data[offset+5] = 0x00;
-				}
-				if(owner != null){
-					byte[] own = shortToBytes(owner.getResourceID());
-					data[offset+2] = 0x00;
-					data[offset+3] = 0x00;
-					data[offset+4] = own[0];
-					data[offset+5] = own[1];
-				}
 
-				// update object stats
-				data[offset+9] = (byte) obj.getAccuracy();
-				data[offset+10] = (byte) obj.getValue();
-				data[offset+11] = (byte) obj.getType();
-				data[offset+12] = (byte) obj.getDamage();
-				data[offset+13] = (byte) obj.getAttackType();
-				
-				byte[] uses = shortToBytes((short)obj.getNumberOfUses());
-				data[offset+14] = uses[0];
-				data[offset+15] = uses[1];
-				
-				offset += State.OBJ_SIZE;
+				stream.writeShort(location == null ? 0 : location.getResourceID());
+				stream.writeShort(owner == null ? 0 : owner.getResourceID());
+				stream.writeByte(obj.getAccuracy());
+				stream.writeByte(obj.getValue());
+				stream.writeByte(obj.getType());
+				stream.writeByte(obj.getDamage());
+				stream.writeByte(obj.getAttackType());
+				stream.writeShort(obj.getNumberOfUses());
+			}
+
+			stream.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		
-		state.setObjData(data);
+
+		state.setObjData(bout.toByteArray());
 	}
 	
 	private void updateWorldUserVars(){
@@ -733,108 +684,123 @@ public class StateManager {
 	}
 	
 	public void updateScenesWithBinaryData(byte[] data) {
-		int offset = 0;
+		DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
 
-		for (Scene scn : world.getOrderedScenes()) {
-			if (scn != world.getStorageScene()) {
-				
-				short id = bytesToShort(data[offset], data[offset+1]);
+		try {
+			for (Scene scene : world.getOrderedScenes()) {
+				if (scene != world.getStorageScene()) {
+					short id = in.readShort();
 
-				if (scn.getResourceID() != id)
-					return;
-				
-				scn.setWorldY(bytesToShort(data[offset+2],data[offset+3]));
-				scn.setWorldX(bytesToShort(data[offset+4],data[offset+5]));
-				scn.setDirBlocked(Scene.NORTH, (unsigned(data[offset+6])==0x01));
-				scn.setDirBlocked(Scene.SOUTH, (unsigned(data[offset+7])==0x01));
-				scn.setDirBlocked(Scene.EAST, (unsigned(data[offset+8])==0x01));
-				scn.setDirBlocked(Scene.WEST, (unsigned(data[offset+9])==0x01));
-				
-				scn.setSoundFrequency(bytesToShort(data[offset+10],data[offset+11]));
-				scn.setSoundType(unsigned(data[offset+12]));
-				
-				// rest of the scene data (bytes 14-15) are unknown
-				
-				// byte 16 is set to 0x01 if the player has been to this scene -- do we want to keep track of this?
-				
-				offset += State.SCENE_SIZE;
+					if (scene.getResourceID() != id) {
+						System.err.printf("updateScenesWithBinaryData(): Expected %d but got %d!\n\n", scene.getResourceID(), id);
+						return;
+					}
+
+					scene.setWorldY(in.readShort());
+					scene.setWorldX(in.readShort());
+					scene.setDirBlocked(Scene.NORTH, in.readByte() != 0);
+					scene.setDirBlocked(Scene.SOUTH, in.readByte() != 0);
+					scene.setDirBlocked(Scene.EAST, in.readByte() != 0);
+					scene.setDirBlocked(Scene.WEST, in.readByte() != 0);
+					scene.setSoundFrequency(in.readUnsignedShort());
+					scene.setSoundType(in.readUnsignedByte());
+					// below are unknown
+					in.readByte();
+					in.readByte();
+					scene.setVisited(in.readByte() != 0);
+				}
 			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
-	public void updateCharsWithBinaryData(byte[] data) {
-		int offset = 0;
-		
-		for (Chr chr : world.getOrderedChrs()) {
-			
-			short id = bytesToShort(data[offset],data[offset+1]);
-			
-			if (chr.getResourceID() != id)
-				return;
-			
-			short sceneLoc = bytesToShort(data[offset+2],data[offset+3]);
-			
-			if (sceneLoc != 0x0000)
-				world.move(chr, world.getSceneByID(sceneLoc));
-			else
-				world.move(chr, world.getStorageScene());
-			
-			// TODO: When does a context get created?  For non-player characters?  It looks like it's
-			// only when a character is moved from storage
+	public void updateChrsWithBinaryData(byte[] data) {
+		DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
 
-			chr.getContext().setStatVariable(Context.PHYS_STR_CUR, unsigned(data[offset+4]));
-			chr.getContext().setStatVariable(Context.PHYS_HIT_CUR, unsigned(data[offset+5]));
-			chr.getContext().setStatVariable(Context.PHYS_ARM_CUR, unsigned(data[offset+6]));
-			chr.getContext().setStatVariable(Context.PHYS_ACC_CUR, unsigned(data[offset+7]));
-			chr.getContext().setStatVariable(Context.SPIR_STR_CUR, unsigned(data[offset+8]));
-			chr.getContext().setStatVariable(Context.SPIR_HIT_CUR, unsigned(data[offset+9]));
-			chr.getContext().setStatVariable(Context.SPIR_ARM_CUR, unsigned(data[offset+10]));
-			chr.getContext().setStatVariable(Context.SPIR_ACC_CUR, unsigned(data[offset+11]));
-			chr.getContext().setStatVariable(Context.PHYS_SPE_CUR, unsigned(data[offset+12]));
-			chr.setRejectsOffers(unsigned(data[offset+13]));
-			chr.setFollowsOpponent(unsigned(data[offset+14]));
-			
-			// bytes 16-20 are unknown
-			
-			chr.setWeaponDamage1(unsigned(data[offset+20]));
-			chr.setWeaponDamage2(unsigned(data[offset+21]));
-			
-			offset += State.CHAR_SIZE;
+		try {
+			for (Chr chr : world.getOrderedChrs()) {			
+				short id = in.readShort();
+
+				if (chr.getResourceID() != id) {
+					System.err.printf("updateChrsWithBinaryData(): Expected %d but got %d!\n\n", chr.getResourceID(), id);
+					return;
+				}
+
+				short sceneLoc = in.readShort();
+
+				if (sceneLoc != 0x0000)
+					world.move(chr, world.getSceneByID(sceneLoc));
+				else
+					world.move(chr, world.getStorageScene());
+
+				// TODO: When does a context get created?  For non-player characters?  It looks like it's
+				// only when a character is moved from storage
+
+				chr.getContext().setStatVariable(Context.PHYS_STR_CUR, in.readUnsignedByte());
+				chr.getContext().setStatVariable(Context.PHYS_HIT_CUR, in.readUnsignedByte());
+				chr.getContext().setStatVariable(Context.PHYS_ARM_CUR, in.readUnsignedByte());
+				chr.getContext().setStatVariable(Context.PHYS_ACC_CUR, in.readUnsignedByte());
+				chr.getContext().setStatVariable(Context.SPIR_STR_CUR, in.readUnsignedByte());
+				chr.getContext().setStatVariable(Context.SPIR_HIT_CUR, in.readUnsignedByte());
+				chr.getContext().setStatVariable(Context.SPIR_ARM_CUR, in.readUnsignedByte());
+				chr.getContext().setStatVariable(Context.SPIR_ACC_CUR, in.readUnsignedByte());
+				chr.getContext().setStatVariable(Context.PHYS_SPE_CUR, in.readUnsignedByte());
+				chr.setRejectsOffers(in.readUnsignedByte());
+				chr.setFollowsOpponent(in.readUnsignedByte());
+
+				// bytes 16-20 are unknown
+				in.readByte();
+				in.readByte();
+				in.readByte();
+				in.readByte();
+				in.readByte();
+
+				chr.setWeaponDamage1(in.readUnsignedByte());
+				chr.setWeaponDamage2(in.readUnsignedByte());
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 		
 	public void updateObjsWithBinaryData(byte[] data) {
-		int offset = 0;
-		
-		for (Obj obj : world.getOrderedObjs()) {
-			short id = bytesToShort(data[offset], data[offset+1]);
+		DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
 
-			if(obj.getResourceID() != id)
-				return;
-			
-			short sceneLoc = bytesToShort(data[offset+2], data[offset+3]);
-			short charLoc = bytesToShort(data[offset+4], data[offset+5]);
-			
-			if(charLoc > 0x0000)
-				world.move(obj, world.getCharByID(charLoc));
-			else{
-				if(sceneLoc == 0x0000)
+		try {
+			for (Obj obj : world.getOrderedObjs()) {
+				short id = in.readShort();
+
+				if (obj.getResourceID() != id) {
+					System.err.printf("updateObjsWithBinaryData(): Expected %d but got %d!\n\n", obj.getResourceID(), id);
+					return;
+				}
+
+				short sceneLoc = in.readShort();
+				short charLoc = in.readShort();
+
+				if (charLoc > 0x0000) {
+					world.move(obj, world.getCharByID(charLoc));
+				} else if (sceneLoc == 0x0000) {
 					world.move(obj, world.getStorageScene());
-				else
+				} else {
 					world.move(obj, world.getSceneByID(sceneLoc));
+				}
+
+				// bytes 7-9 are unknown (always = 0)
+				in.readByte();
+				in.readByte();
+
+				// update object stats
+				obj.setAccuracy(in.readUnsignedByte());
+				obj.setValue(in.readUnsignedByte());
+				obj.setType(in.readUnsignedByte());
+				obj.setDamage(in.readUnsignedByte());
+				obj.setAttackType(in.readUnsignedByte());
+				obj.setNumberOfUses(in.readShort());
 			}
-				
-			// bytes 7-9 are unknown (always = 0)
-			
-			// update object stats
-			obj.setAccuracy(unsigned(data[offset+9]));
-			obj.setValue(unsigned(data[offset+10]));
-			obj.setType(unsigned(data[offset+11]));
-			obj.setDamage(unsigned(data[offset+12]));
-			obj.setAttackType(unsigned(data[offset+13]));
-			obj.setNumberOfUses(bytesToShort(data[offset+14],data[offset+15]));
-			
-			offset += State.OBJ_SIZE;
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -855,22 +821,5 @@ public class StateManager {
 			else
 				state.printState(world, filePath);
 		}
-	}
-	
-	private int readUnsignedByte(DataInputStream in) throws IOException {
-		int value = in.readByte();
-		return (value < 0 ? 256 + value : value);
-	}
-	
-	private static short bytesToShort(byte low, byte high) {
-		return (short)((0xff & high) | (0xff & low) << 8 );
-	}
-	
-	private static byte[] shortToBytes(short s) {
-		return new byte[] { (byte) ((s & 0xFF00) >> 8), (byte) (s & 0x00FF) };
-	}
-
-	public static int unsigned(byte b) {
-		return b & 0xFF;
 	}
 }
