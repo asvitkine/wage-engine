@@ -343,6 +343,9 @@ public class Script {
 					evalResult = (left > right);
 				}
 			});
+			/*
+			FIXME: this prevents the below cases from working due to exact
+			matches taking precedence over conversions...
 			handlers.add(new PairEvaluator(Operand.STRING, Operand.STRING) {
 				@Override
 				public void evaluatePair(Operand o1, Operand o2) {
@@ -353,6 +356,7 @@ public class Script {
 					}
 				}
 			});
+			*/
 			handlers.add(new PairEvaluator(Operand.OBJ, Operand.CHR) {
 				@Override
 				public void evaluatePair(Operand o1, Operand o2) {
