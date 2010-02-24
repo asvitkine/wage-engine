@@ -30,6 +30,7 @@ public class Scene {
 	private String soundName;
 	private int worldX;
 	private int worldY;
+	private boolean visited;
 	
 	private List<Obj> objs = new ArrayList<Obj>();
 	private List<Chr> chrs = new ArrayList<Chr>();
@@ -236,5 +237,13 @@ taliesin(24):Wingdings(Decorative)
 
 	public List<Obj> getObjs() {
 		return objs;
+	}
+
+	public void setVisited(boolean visited) {
+		this.visited = true;
+	}
+	
+	public boolean wasVisited() {
+		return visited;
 	}
 }
