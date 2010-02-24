@@ -92,13 +92,13 @@ public class Design {
 				x = in.readShort();
 				height = (short) (in.readShort() - y);
 				width = (short) (in.readShort() - x);
-				in.readShort(); // ???
+				short arc = in.readShort();
 				outer = new RoundRectangle2D.Float(x, y, width, height, 12, 12);
 				if (mask) {
 					g2d.fill(outer);
 					break;
 				}
-				inner = new RoundRectangle2D.Float(x+borderThickness, y+borderThickness, width-2*borderThickness, height-2*borderThickness, 12, 12);
+				inner = new RoundRectangle2D.Float(x+borderThickness, y+borderThickness, width-2*borderThickness, height-2*borderThickness, arc, arc);
 				paintShape(g2d, patterns, outer, inner, borderFillType, fillType);
 				break;
 			case 12: // oval
