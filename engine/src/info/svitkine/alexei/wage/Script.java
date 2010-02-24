@@ -312,6 +312,14 @@ public class Script {
 					evalResult = (o.getCurrentOwner() != c);
 				}
 			});
+			handlers.add(new PairEvaluator(Operand.CHR, Operand.OBJ) {
+				@Override
+				public void evaluatePair(Operand o1, Operand o2) {
+					Chr c = (Chr) o1.value;
+					Obj o = (Obj) o2.value;
+					evalResult = (o.getCurrentOwner() != c);
+				}
+			});
 			handlers.add(new PairEvaluator(Operand.OBJ, Operand.SCENE) {
 				@Override
 				public void evaluatePair(Operand o1, Operand o2) {
