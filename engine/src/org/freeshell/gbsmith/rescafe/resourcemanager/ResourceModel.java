@@ -274,9 +274,7 @@ public class ResourceModel extends Observable
    /*----------------------------------------------------------------------*/
    /**
     * Returns the single Resource keyed to the given numeric Resource ID
-    * of the
-    * ResourceType
-    * keyed to the given 4-Letter Type ID.
+    * of the ResourceType keyed to the given 4-Letter Type ID.
     * This is Hashtable style access - at two levels. This method allows
     * the client to grab a single Resource in one operation
     * @param inType the 4-Letter ID Key of the desired ResourceType
@@ -297,7 +295,7 @@ public class ResourceModel extends Observable
     */
    public Resource getResource(String inType, short idtoget)
    {
-      return  getResource(inType, new Short(idtoget));
+      return getResource(inType, new Short(idtoget));
    }
 
    /*----------------------------------------------------------------------*/

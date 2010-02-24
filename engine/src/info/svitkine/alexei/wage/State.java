@@ -1,5 +1,7 @@
 package info.svitkine.alexei.wage;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -57,7 +59,7 @@ public class State {
 	private short[] userVars;
 	
 	private byte[] sceneData;
-	private byte[] charData;
+	private byte[] chrData;
 	private byte[] objData;
 	
 	private Boolean isValid;
@@ -241,11 +243,11 @@ public class State {
 	public void setSceneData(byte[] sceneData) {
 		this.sceneData = sceneData;
 	}
-	public byte[] getCharData() {
-		return charData;
+	public byte[] getChrData() {
+		return chrData;
 	}
-	public void setCharData(byte[] charData) {
-		this.charData = charData;
+	public void setChrData(byte[] charData) {
+		this.chrData = charData;
 	}
 	public byte[] getObjData() {
 		return objData;
@@ -379,46 +381,45 @@ public class State {
 	}
 	
 	private void printCharacters(World world, PrintWriter stream) {
-		int offset = 0;
-		
-		for (Chr chr : world.getOrderedChrs()) {
-			
-			short id = bytesToShort(charData[offset],charData[offset+1]);
-			
-			if (chr.getResourceID() != id)
-				return;
-			
-			short sceneLoc = bytesToShort(charData[offset+2],charData[offset+3]);
-			
-			stream.println("Character: " + chr.getName());
-			stream.println("ID: " + id );
-			stream.println("Location: " + sceneLoc);
+		ByteArrayInputStream bin = new ByteArrayInputStream(chrData);
+		DataInputStream in = new DataInputStream(bin);
+		try {
+			for (Chr chr : world.getOrderedChrs()) {			
+				short id = in.readShort();
 
-			stream.println("Current Physical Strength: " + charData[offset+4]);
-			stream.println("Current Physical Hit: " + charData[offset+5]);
-			stream.println("Current Physical Armor: " + charData[offset+6]);
-			stream.println("Current Physical Accuracy: " + charData[offset+7]);
-			stream.println("Current Spiritual Strength: " + charData[offset+8]);
-			stream.println("Current Spiritual Hit: " + charData[offset+9]);
-			stream.println("Current Spiritual Armor: " + charData[offset+10]);
-			stream.println("Current Spiritual Accuracy: " + charData[offset+11]);
-			stream.println("Current Physical Speed: " + charData[offset+12]);
-			
-			stream.println("Rejects Offers: " + charData[offset+13]);
-			stream.println("Follows Opponents: " + charData[offset+14]);
-			
-			// bytes 16-20 are unknown
-			stream.println("UNKNOWN: " + charData[offset+15]);
-			stream.println("UNKNOWN: " + charData[offset+16]);
-			stream.println("UNKNOWN: " + charData[offset+17]);
-			stream.println("UNKNOWN: " + charData[offset+18]);
-			stream.println("UNKNOWN: " + charData[offset+19]);
-			
-			stream.println("Weapon Damage 1: "+ charData[offset+20]);
-			stream.println("Weapon Damage 2: " + charData[offset+21]);
-			
-			offset += State.CHAR_SIZE;
-		}
+				if (chr.getResourceID() != id)
+					return;
+
+				short sceneLoc = in.readShort();
+
+				stream.println("Character: " + chr.getName());
+				stream.println("ID: " + id );
+				stream.println("Location: " + sceneLoc);
+
+				stream.println("Current Physical Strength: " + in.readByte());
+				stream.println("Current Physical Hit: " + in.readByte());
+				stream.println("Current Physical Armor: " + in.readByte());
+				stream.println("Current Physical Accuracy: " + in.readByte());
+				stream.println("Current Spiritual Strength: " + in.readByte());
+				stream.println("Current Spiritual Hit: " + in.readByte());
+				stream.println("Current Spiritual Armor: " + in.readByte());
+				stream.println("Current Spiritual Accuracy: " + in.readByte());
+				stream.println("Current Physical Speed: " + in.readByte());
+
+				stream.println("Rejects Offers: " + in.readByte());
+				stream.println("Follows Opponents: " + in.readByte());
+
+				// bytes 16-20 are unknown
+				stream.println("UNKNOWN: " + in.readByte());
+				stream.println("UNKNOWN: " + in.readByte());
+				stream.println("UNKNOWN: " + in.readByte());
+				stream.println("UNKNOWN: " + in.readByte());
+				stream.println("UNKNOWN: " + in.readByte());
+
+				stream.println("Weapon Damage 1: "+ in.readByte());
+				stream.println("Weapon Damage 2: " + in.readByte());
+			}
+		} catch (IOException e) { }
 	}
 	
 	private void printObjects(World world, PrintWriter stream){
