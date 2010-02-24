@@ -400,9 +400,10 @@ public class GameWindow extends JFrame {
 						Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
 					item = item.substring(0, index);
 				}
-				if (item.startsWith("(")) {
+				if (item.trim().startsWith("(")) {
 					enabled = false;
-					item = item.substring(1);
+					int loc = item.indexOf("(");
+					item = item.substring(0, loc) + item.substring(loc + 1);
 				}
 				JMenuItem menuItem = new JMenuItem(item);
 				if (style != 0) {
