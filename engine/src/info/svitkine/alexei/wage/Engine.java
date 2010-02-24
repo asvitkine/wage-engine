@@ -408,6 +408,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 		for (Obj o : attacker.getInventory()) {
 			appendText("%s offers %s.",
 				getNameWithDefiniteArticle(attacker, true),
+				o.isNamePlural() ? o.getName() :
 				TextUtils.prependIndefiniteArticle(o.getName()));
 			offer = o;
 			return;
