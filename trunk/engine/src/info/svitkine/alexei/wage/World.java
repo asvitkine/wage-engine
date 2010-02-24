@@ -302,6 +302,9 @@ public class World {
 			if (from == storageScene) {
 				initChrContext(chr);
 			} else {
+				if (chr.isPlayerCharacter()) {
+					scene.setVisited(true);
+				}
 				chr.getContext().setVisits(chr.getContext().getVisits() + 1);
 			}
 			fireMoveEvent(new MoveEvent(chr, from, scene));
