@@ -153,7 +153,7 @@ public class StateManager {
 			state.setObjData(objData);	
 		
 		// EOF reached, let state manager know our state is complete and valid
-		state.setIsValid(true);
+		state.setValid(true);
 		in.close();
 	}
 
@@ -390,14 +390,14 @@ public class StateManager {
 		updateStateObjData();
 		
 		// we're done
-		state.setIsValid(true);
+		state.setValid(true);
 		
 		return true;
 	}
 
 	public boolean updateWorld() {
 		// make sure we have a valid state object
-		if (state.getIsValid()) {
+		if (state.isValid()) {
 			// make sure save file is for this game
 			if (world.getSignature() == state.getWorldSig()) {
 

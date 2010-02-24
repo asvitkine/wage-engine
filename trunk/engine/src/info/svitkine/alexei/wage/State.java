@@ -62,10 +62,10 @@ public class State {
 	private byte[] chrData;
 	private byte[] objData;
 	
-	private Boolean isValid;
+	private boolean valid;
 	
 	public State() {
-		this.isValid = false;
+		this.valid = false;
 		userVars = new short[26 * 9];
 	}
 
@@ -255,11 +255,11 @@ public class State {
 	public void setObjData(byte[] objData) {
 		this.objData = objData;
 	}
-	public Boolean getIsValid() {
-		return isValid;
+	public boolean isValid() {
+		return valid;
 	}
-	public void setIsValid(Boolean isValid) {
-		this.isValid = isValid;
+	public void setValid(boolean valid) {
+		this.valid = valid;
 	}
 	
 	// For Debugging Purposes:
