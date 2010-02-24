@@ -388,16 +388,16 @@ public class Script {
 			} else {
 				// exact string match
 				if (lhs.type == Operand.TEXT_INPUT) {
-					if (rhs.type != Operand.STRING || inputText == null) {
+					if ((rhs.type != Operand.STRING && rhs.type != Operand.NUMBER) || inputText == null) {
 						result = false;
 					} else {
-						result = inputText.toLowerCase().equals(((String) rhs.value).toLowerCase());
+						result = inputText.toLowerCase().equals((rhs.value.toString()).toLowerCase());
 					}
 				} else if (rhs.type == Operand.TEXT_INPUT) {
-					if (lhs.type != Operand.STRING || inputText == null) {
+					if ((lhs.type != Operand.STRING && lhs.type != Operand.NUMBER) || inputText == null) {
 						result = false;
 					} else {
-						result = ((String) lhs.value).toLowerCase().equals(inputText.toLowerCase());
+						result = lhs.value.toString().toLowerCase().equals(inputText.toLowerCase());
 					}
 				}
 				if (op.equals(">>")) {
