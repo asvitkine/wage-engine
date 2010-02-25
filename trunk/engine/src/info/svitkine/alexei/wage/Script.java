@@ -964,7 +964,9 @@ public class Script {
 		if (armor[Chr.HEAD_ARMOR] != null)
 			appendText("Head protection: " + armor[Chr.HEAD_ARMOR].getName());
 		if (armor[Chr.BODY_ARMOR] != null)
-			appendText("Body protection: " + armor[Chr.BODY_ARMOR].getName());
+			appendText("Chest protection: " + armor[Chr.BODY_ARMOR].getName());
+		if (armor[Chr.MAGIC_ARMOR] != null)
+			appendText("Magical protection: " + armor[Chr.MAGIC_ARMOR].getName());
 		int wealth = 0;
 		for (Obj o : player.getInventory())
 			wealth += o.getValue();
@@ -989,7 +991,7 @@ public class Script {
 			return "average";
 		} else if (percent < 0.85) {
 			return "good";
-		} else if (percent < 1.00) {
+		} else if (percent <= 1.00) {
 			return "very good";
 		} else {
 			return "enhanced";
@@ -1020,7 +1022,6 @@ public class Script {
 		} else {
 			world.move(obj, world.getPlayer());
 			System.out.println("Take Object: " + obj + " for player: " + world.getPlayer());
-			appendText("You now have the " + obj.getName() + ".");
 			if (obj.getType() == Obj.HELMET) {
 				if (player.getArmor()[Chr.HEAD_ARMOR] == null) {
 					player.getArmor()[Chr.HEAD_ARMOR] = obj;
@@ -1036,6 +1037,13 @@ public class Script {
 					player.getArmor()[Chr.SHIELD_ARMOR] = obj;
 					appendText("You are now wearing the " + obj.getName() + ".");
 				}
+			} else if (obj.getType() == Obj.SPIRITUAL_ARMOR) {
+				if (player.getArmor()[Chr.MAGIC_ARMOR] == null) {
+					player.getArmor()[Chr.MAGIC_ARMOR] = obj;
+					appendText("You are now wearing the " + obj.getName() + ".");
+				}
+			} else {
+				appendText("You now have the " + obj.getName() + ".");
 			}
 			appendText(obj.getClickMessage());
 		}
@@ -1087,6 +1095,8 @@ public class Script {
 					wearObj(o, Chr.BODY_ARMOR);
 				} else if (o.getType() == Obj.SHIELD) {
 					wearObj(o, Chr.SHIELD_ARMOR);
+				} else if (o.getType() == Obj.SPIRITUAL_ARMOR) {
+					wearObj(o, Chr.MAGIC_ARMOR);
 				} else {
 					appendText("You cannot wear that object.");
 				}

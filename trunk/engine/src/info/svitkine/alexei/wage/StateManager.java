@@ -356,26 +356,22 @@ public class StateManager {
 			state.setShieldIndex(shield.getHexOffset(state));
 		else
 			state.setShieldIndex(0xffff);
-		
-		// Armor
-		// TODO: Discuss a fix for this -- as of now spiritual armor is not considered a type of armor
-		
+
+		// Chest Armor
 		Obj armor = player.getArmor()[Chr.BODY_ARMOR];
 		
-		if (armor != null) {
-			if (armor.getType() == Obj.CHEST_ARMOR)
-				state.setChestArmIndex(armor.getHexOffset(state));
-			else
-				state.setChestArmIndex(0xffff);
-			
-			if (armor.getType() == Obj.SPIRITUAL_ARMOR)
-				state.setSprtArmIndex(armor.getHexOffset(state));
-			else
-				state.setSprtArmIndex(0xffff);
-		} else {
+		if (armor != null)
+			state.setChestArmIndex(armor.getHexOffset(state));
+		else
 			state.setChestArmIndex(0xffff);
+
+		// Spiritual Armor
+		Obj magicArmor = player.getArmor()[Chr.MAGIC_ARMOR];
+		
+		if (magicArmor != null)
+			state.setSprtArmIndex(magicArmor.getHexOffset(state));
+		else
 			state.setSprtArmIndex(0xffff);
-		}
 		
 		// update user vars
 		updateStateUserVars();
@@ -523,10 +519,8 @@ public class StateManager {
 					}
 
 					world.move(sa, player);
-					// TODO: there is no slot for magic protection, we should
-					// add it
-					// Obj[] armor = player.getArmor();
-					// armor[Chr.BODY_ARMOR] = sa;
+					Obj[] armor = player.getArmor();
+					armor[Chr.MAGIC_ARMOR] = sa;
 				}
 
 				// set all user variables
