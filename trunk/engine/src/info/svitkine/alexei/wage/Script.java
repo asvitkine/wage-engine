@@ -183,10 +183,13 @@ public class Script {
 		} else if (lhs.value == rhs.value) {
 			result = true;
 		} else if (rhs.type == Operand.STRING) {
+			String str = rhs.value.toString();
 			if (lhs.value instanceof Chr) {
-				result = ((Chr) lhs.value).getName().equalsIgnoreCase(rhs.value.toString());
+				String name = ((Chr) lhs.value).getName();
+				result = name.toLowerCase().indexOf(str.toLowerCase()) != -1;
 			} else if (lhs.value instanceof Obj) {
-				result = ((Obj) lhs.value).getName().equalsIgnoreCase(rhs.value.toString());
+				String name = ((Obj) lhs.value).getName();
+				result = name.toLowerCase().indexOf(str.toLowerCase()) != -1;
 			}
 		}
 		return result;
