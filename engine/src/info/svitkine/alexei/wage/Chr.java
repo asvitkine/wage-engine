@@ -76,8 +76,9 @@ public class Chr {
 	public static final int HEAD_ARMOR = 0;
 	public static final int BODY_ARMOR = 1;
 	public static final int SHIELD_ARMOR = 2;
-	
-	private Obj[] armor = new Obj[3];
+	public static final int MAGIC_ARMOR = 3;
+
+	private Obj[] armor = new Obj[4];
 
 	private Context context = new Context();
 
