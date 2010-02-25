@@ -904,13 +904,28 @@ public class Script {
 		handled = true;
 	}
 
+	private boolean isWearing(Chr chr, Obj obj) {
+		for (Obj wearingObj : chr.getArmor()) {
+			if (obj == wearingObj) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	private void handleInventoryCommand() {
-		List<Obj> inv = world.getPlayer().getInventory();
-		if (inv.size() == 0) {
-			appendText("Your pack is empty.");
+		Chr player = world.getPlayer();
+		List<Obj> objs = new ArrayList<Obj>();
+		for (Obj obj : player.getInventory()) {
+			if (!isWearing(player, obj)) {
+				objs.add(obj);
+			}
+		}
+		if (objs.isEmpty()) {
+			appendText("Your pack is empty.");			
 		} else {
 			StringBuilder sb = new StringBuilder("Your pack contains ");
-			appendObjNames(sb, inv, world.getPlayer().getArmor());
+			appendObjNames(sb, objs);
 			appendText(sb.toString());
 		}
 	}
@@ -918,40 +933,34 @@ public class Script {
 	private void handleLookCommand() {
 		Scene playerScene = world.getPlayer().getCurrentScene();
 		appendText(playerScene.getText());
-		List<Obj> objs = playerScene.getObjs();
-		for (Obj o : objs) {
-			if (o.getType() != Obj.IMMOBILE_OBJECT) {
-				StringBuilder sb = new StringBuilder("On the ground you see ");
-				appendObjNames(sb, objs, new Obj[0]);
-				appendText(sb.toString());
-				break;
+		List<Obj> objs = new ArrayList<Obj>();
+		for (Obj obj : playerScene.getObjs()) {
+			if (obj.getType() != Obj.IMMOBILE_OBJECT) {
+				objs.add(obj);
 			}
+		}
+		if (!objs.isEmpty()) {
+			StringBuilder sb = new StringBuilder("On the ground you see ");
+			appendObjNames(sb, objs);
+			appendText(sb.toString());
 		}
 	}
 	
-	private void appendObjNames(StringBuilder sb, List<Obj> objs, Obj[] exclude) {
-		objs_loop:
+	private void appendObjNames(StringBuilder sb, List<Obj> objs) {
 		for (int i = 0; i < objs.size(); i++) {
 			Obj obj = objs.get(i);
-			if (obj.getType() != Obj.IMMOBILE_OBJECT) {
-				for (int j = 0; j < exclude.length; j++) {
-					if (obj == exclude[j]) {
-						continue objs_loop;
-					}
-				}
-				if (!obj.isNamePlural())
-					sb.append(TextUtils.prependIndefiniteArticle(obj.getName()));
-				else
-					sb.append(obj.getName());
-				if (i == objs.size() - 1) {
-					sb.append(".");
-				} else if (i == objs.size() - 2) {
-					if (objs.size() > 2)
-						sb.append(",");
-					sb.append(" and ");
-				} else {
-					sb.append(", ");
-				}
+			if (!obj.isNamePlural())
+				sb.append(TextUtils.prependIndefiniteArticle(obj.getName()));
+			else
+				sb.append(obj.getName());
+			if (i == objs.size() - 1) {
+				sb.append(".");
+			} else if (i == objs.size() - 2) {
+				if (objs.size() > 2)
+					sb.append(",");
+				sb.append(" and ");
+			} else {
+				sb.append(", ");
 			}
 		}
 	}
