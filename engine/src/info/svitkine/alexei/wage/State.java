@@ -373,7 +373,7 @@ public class State {
 				// rest of the scene data (bytes 14-16) are unknown
 				stream.println("UNKNOWN: " + sceneData[offset+13]);
 				stream.println("UNKNOWN: " + sceneData[offset+14]);
-				stream.println("UNKNOWN: " + sceneData[offset+15]);
+				stream.println("Visited: " + sceneData[offset+15]);
 				
 				offset += State.SCENE_SIZE;
 			}
