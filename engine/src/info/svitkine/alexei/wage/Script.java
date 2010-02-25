@@ -985,12 +985,14 @@ public class Script {
 			return "very bad";
 		} else if (percent < 0.55) {
 			return "bad";
-		} else if (percent < 0.7) {
+		} else if (percent < 0.70) {
 			return "average";
 		} else if (percent < 0.85) {
 			return "good";
-		} else {
+		} else if (percent < 1.00) {
 			return "very good";
+		} else {
+			return "enhanced";
 		}
 	}
 
