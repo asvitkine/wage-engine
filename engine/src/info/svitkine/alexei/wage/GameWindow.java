@@ -349,16 +349,21 @@ public class GameWindow extends JFrame {
 					if (obj.getType() == Obj.REGULAR_WEAPON ||
 						obj.getType() == Obj.THROW_WEAPON ||
 						obj.getType() == Obj.MAGICAL_OBJECT) {
-						menu.add(new JMenuItem(obj.getOperativeVerb() + " " + obj.getName()));
+						JMenuItem item = new JMenuItem(obj.getOperativeVerb() + " " + obj.getName());
+						((JMenuItem) item).addActionListener(new ActionListener() {
+							public void actionPerformed(ActionEvent e) {
+								textArea.getOut().append(e.getActionCommand() + "\n");
+								doCommand(e.getActionCommand());
+							}
+						});
+						menu.add(item);
+						
 					}
 				}
-				for (Object item : menu.getMenuComponents()) {
-					((JMenuItem) item).addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							textArea.getOut().append(e.getActionCommand() + "\n");
-							doCommand(e.getActionCommand());
-						}
-					});
+				if (menu.getMenuComponentCount() == 0) {
+					JMenuItem noWeaponsItem = new JMenuItem("You have no weapons");
+					noWeaponsItem.setEnabled(false);
+					menu.add(noWeaponsItem);
 				}
 			}
 
