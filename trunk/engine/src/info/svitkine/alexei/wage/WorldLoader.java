@@ -241,6 +241,25 @@ public class WorldLoader {
 					e.printStackTrace();
 				}
 			}
+		} else {
+			/* Enchanted Scepters did not use the PAT# resource for the textures. */
+			ResourceType code = model.getResourceType("CODE");
+			if (code != null) {
+				Resource r = code.getResource((short) 1);
+				if (r != null) {
+					try {
+						DataInputStream in = new DataInputStream(new ByteArrayInputStream(r.getData()));
+						in.skip(0x55ac);
+						for (int i = 0; i < 29; i++) {
+							byte[] pattern = new byte[8];
+							in.readFully(pattern);
+							world.getPatterns().add(pattern);
+						}
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
 		}
 	
 		// store global info in state object for use with save/load actions
