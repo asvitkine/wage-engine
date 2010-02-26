@@ -299,41 +299,41 @@ public class WorldLoader {
 			in.skip(in.readShort() - 2); // Skip design.
 			chr.setDesignBounds(readRectangle(in));
 			
-			chr.setPhysicalStrength(readUnsignedByte(in));
-			chr.setPhysicalHp(readUnsignedByte(in));
-			chr.setNaturalArmor(readUnsignedByte(in));
-			chr.setPhysicalAccuracy(readUnsignedByte(in));
+			chr.setPhysicalStrength(in.readUnsignedByte());
+			chr.setPhysicalHp(in.readUnsignedByte());
+			chr.setNaturalArmor(in.readUnsignedByte());
+			chr.setPhysicalAccuracy(in.readUnsignedByte());
 			
-			chr.setSpiritualStength(readUnsignedByte(in));
-			chr.setSpiritialHp(readUnsignedByte(in));
-			chr.setResistanceToMagic(readUnsignedByte(in));
-			chr.setSpiritualAccuracy(readUnsignedByte(in));
+			chr.setSpiritualStength(in.readUnsignedByte());
+			chr.setSpiritialHp(in.readUnsignedByte());
+			chr.setResistanceToMagic(in.readUnsignedByte());
+			chr.setSpiritualAccuracy(in.readUnsignedByte());
 			
-			chr.setRunningSpeed(readUnsignedByte(in));
-			chr.setRejectsOffers(readUnsignedByte(in));
-			chr.setFollowsOpponent(readUnsignedByte(in));
+			chr.setRunningSpeed(in.readUnsignedByte());
+			chr.setRejectsOffers(in.readUnsignedByte());
+			chr.setFollowsOpponent(in.readUnsignedByte());
 
 			in.readByte(); // TODO: ???
 			in.readInt(); // TODO: ???
 
-			chr.setWeaponDamage1(readUnsignedByte(in));
-			chr.setWeaponDamage2(readUnsignedByte(in));
+			chr.setWeaponDamage1(in.readUnsignedByte());
+			chr.setWeaponDamage2(in.readUnsignedByte());
 			
 			in.readByte(); // TODO: ???
 
 			if (in.readByte() == 1)
 				chr.setPlayerCharacter(true);
-			chr.setMaximumCarriedObjects(readUnsignedByte(in));
+			chr.setMaximumCarriedObjects(in.readUnsignedByte());
 			chr.setReturnTo(in.readByte());
 
-			chr.setWinningWeapons(readUnsignedByte(in));
-			chr.setWinningMagic(readUnsignedByte(in));
-			chr.setWinningRun(readUnsignedByte(in));
-			chr.setWinningOffer(readUnsignedByte(in));
-			chr.setLosingWeapons(readUnsignedByte(in));
-			chr.setLosingMagic(readUnsignedByte(in));
-			chr.setLosingRun(readUnsignedByte(in));
-			chr.setLosingOffer(readUnsignedByte(in));
+			chr.setWinningWeapons(in.readUnsignedByte());
+			chr.setWinningMagic(in.readUnsignedByte());
+			chr.setWinningRun(in.readUnsignedByte());
+			chr.setWinningOffer(in.readUnsignedByte());
+			chr.setLosingWeapons(in.readUnsignedByte());
+			chr.setLosingMagic(in.readUnsignedByte());
+			chr.setLosingRun(in.readUnsignedByte());
+			chr.setLosingOffer(in.readUnsignedByte());
 			
 			chr.setGender(in.readByte());
 			if (in.readByte() == 1)
@@ -385,10 +385,10 @@ public class WorldLoader {
 				System.err.println(objName + " had short set!");
 			if (in.readByte() != 0)
 				System.err.println(objName + " had byte set!");
-			obj.setAccuracy(readUnsignedByte(in));
-			obj.setValue(readUnsignedByte(in));
+			obj.setAccuracy(in.readUnsignedByte());
+			obj.setValue(in.readUnsignedByte());
 			obj.setType(in.readByte());
-			obj.setDamage(readUnsignedByte(in));
+			obj.setDamage(in.readUnsignedByte());
 			obj.setAttackType(in.readByte());
 			obj.setNumberOfUses(in.readShort());
 			short returnTo = in.readShort();
@@ -437,11 +437,6 @@ public class WorldLoader {
 		return scene;
 	}
 
-	private static int readUnsignedByte(DataInputStream in) throws IOException {
-		int value = in.readByte();
-		return (value < 0 ? 256 + value : value);
-	}
-	
 	private static Rectangle readRectangle(DataInputStream in) throws IOException {
 		Rectangle bounds = new Rectangle();
 		bounds.y = in.readShort();
@@ -453,9 +448,7 @@ public class WorldLoader {
 	
 	private static String readPascalString(DataInputStream in) throws IOException {
 		if (in.available() == 0) return "";
-		int length = in.readByte();
-		if (length < 0)
-			length += 256;
+		int length = in.readUnsignedByte();
 		byte[] data = new byte[length];
 		in.read(data);
 		for (int i = 0; i < data.length; i++)
