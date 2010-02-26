@@ -596,11 +596,7 @@ public class StateManager {
 
 				Scene scene = chr.getCurrentScene();
 
-				if (scene == world.getStorageScene()) {
-					stream.writeShort(0);
-				} else {
-					stream.writeShort(scene.getResourceID());
-				}
+				stream.writeShort(scene.getResourceID());
 
 				// TODO: Moving characters is a little poorly designed -- it was coded with only an
 				// initial state in mind, so that moving a character triggers initializing both the 
@@ -723,10 +719,7 @@ public class StateManager {
 
 				short sceneLoc = in.readShort();
 
-				if (sceneLoc != 0x0000)
-					world.move(chr, world.getSceneByID(sceneLoc));
-				else
-					world.move(chr, world.getStorageScene());
+				world.move(chr, world.getSceneByID(sceneLoc));
 
 				// TODO: When does a context get created?  For non-player characters?  It looks like it's
 				// only when a character is moved from storage
@@ -773,15 +766,14 @@ public class StateManager {
 				short sceneLoc = in.readShort();
 				short charLoc = in.readShort();
 
-				if (charLoc > 0x0000) {
+				if (charLoc != 0x0000) {
 					world.move(obj, world.getCharByID(charLoc));
-				} else if (sceneLoc == 0x0000) {
-					world.move(obj, world.getStorageScene());
 				} else {
 					world.move(obj, world.getSceneByID(sceneLoc));
 				}
 
 				// bytes 7-9 are unknown (always = 0)
+				in.readByte();
 				in.readByte();
 				in.readByte();
 
