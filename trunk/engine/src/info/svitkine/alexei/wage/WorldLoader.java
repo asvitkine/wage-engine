@@ -313,13 +313,19 @@ public class WorldLoader {
 			chr.setRejectsOffers(in.readUnsignedByte());
 			chr.setFollowsOpponent(in.readUnsignedByte());
 
-			in.readByte(); // TODO: ???
-			in.readInt(); // TODO: ???
-
+			int b = in.readByte();
+			if (b != 0)
+				System.err.println("Chr unknown 1: " + b); // unknown
+			b = in.readInt();
+			if (b != 0)
+				System.err.println("Chr unknown 2: " + b); // unknown
+			
 			chr.setWeaponDamage1(in.readUnsignedByte());
 			chr.setWeaponDamage2(in.readUnsignedByte());
 			
-			in.readByte(); // TODO: ???
+			b = in.readByte();
+			if (b != 0)
+				System.err.println("Chr unknown 3: " + b); // unknown
 
 			if (in.readByte() == 1)
 				chr.setPlayerCharacter(true);
@@ -424,8 +430,10 @@ public class WorldLoader {
 			scene.setDirBlocked(Scene.EAST, (in.readByte() != 0));
 			scene.setDirBlocked(Scene.WEST, (in.readByte() != 0));
 			scene.setSoundFrequency(in.readShort());
-			scene.setSoundType(in.readByte());
-			in.readByte(); // unknown
+			scene.setSoundType(in.readUnsignedByte());
+			int b = in.readByte();
+			if (b != 0)
+				System.err.println("Scene unknown: " + b); // unknown
 			scene.setDirMessage(Scene.NORTH, readPascalString(in));
 			scene.setDirMessage(Scene.SOUTH, readPascalString(in));
 			scene.setDirMessage(Scene.EAST, readPascalString(in));
