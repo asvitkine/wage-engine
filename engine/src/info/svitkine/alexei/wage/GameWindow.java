@@ -350,14 +350,13 @@ public class GameWindow extends JFrame {
 						obj.getType() == Obj.THROW_WEAPON ||
 						obj.getType() == Obj.MAGICAL_OBJECT) {
 						JMenuItem item = new JMenuItem(obj.getOperativeVerb() + " " + obj.getName());
-						((JMenuItem) item).addActionListener(new ActionListener() {
+						item.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent e) {
 								textArea.getOut().append(e.getActionCommand() + "\n");
 								doCommand(e.getActionCommand());
 							}
 						});
 						menu.add(item);
-						
 					}
 				}
 				if (menu.getMenuComponentCount() == 0) {
