@@ -84,7 +84,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 		}
 	}
 	
-	public void loadState(File file) throws IOException{
+	public void loadState(File file) throws IOException {
 		// parse the save file
 		stateManager.readSaveData(file);
 		
@@ -110,21 +110,18 @@ public class Engine implements Script.Callbacks, MoveListener {
 		}
 	}
 
-	public void saveState(File toFile) throws IOException{
+	public void saveState(File toFile) throws IOException {
 		// updates state variables with current world info
 		boolean success = stateManager.updateState(monster, running, loopCount);
 		// output state info to disk
 		if (success) {
 			stateManager.writeSaveData(toFile);
-			// NOTE: The FileManager class only works on macs
-			// Not sure how much good this does as Snow Leopard won't write to HFS volumes anymore,
-			// but it changes the icon so i do it anyways...
-			//FileManager.setFileCreator(file.getPath(),FileManager.OSTypeToInt("WEDT"));
-			//FileManager.setFileType(file.getPath(),FileManager.OSTypeToInt("WDOC"));
+			// TODO: We should get the creator code from the game app.
+			Utils.setFileTypeAndCreator(toFile.getAbsolutePath(), "WDOC", "WEDT");
 		}	
 	}
 	
-	public void revert() throws IOException{
+	public void revert() throws IOException {
 		if (stateManager.updateWorld() == false) {
 			System.err.println("Error reverting to last saved game!");
 			return;
