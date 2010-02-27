@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
+import java.util.Set;
 
 
 public class Engine implements Script.Callbacks, MoveListener {
@@ -207,8 +208,16 @@ public class Engine implements Script.Callbacks, MoveListener {
 		Scene playerScene = world.getPlayer().getCurrentScene();
 		if (prevScene != playerScene && playerScene != world.getStorageScene()) {
 			if (prevMonster != null) {
-				if (getMonster() == null && (int) (Math.random() * 255) < prevMonster.getFollowsOpponent()) {
-					// TODO: monsters shouldn't be able to follow you if you moved via script (i.e. teleport out?)
+				boolean followed = false;
+				if (getMonster() == null) {
+					Set<Scene> scenes = world.getAdjacentScenes(prevMonster.getCurrentScene());
+					// TODO: adjacent scenes doesn't contain up/down etc... verify that monsters can't follow these...
+					if (scenes.contains(playerScene)) {
+						int chance = (int) (Math.random() * 255);
+						followed = (chance < prevMonster.getFollowsOpponent());
+					}
+				}
+				if (followed) {
 					appendText("%s follows you.", getNameWithDefiniteArticle(prevMonster, true));
 					world.move(prevMonster, playerScene);
 				} else {
