@@ -63,6 +63,11 @@ public class GameWindow extends JFrame {
 		textArea = createTextArea();
 		final JScrollPane scrollPane = wrapInScrollPane(textArea);
 		panel = wrapInPanel(scrollPane);
+		wm.add(viewer);
+		wm.setComponentZOrder(viewer, 0);
+		wm.add(panel);
+		((WindowBorder) panel.getBorder()).setScrollable(true);
+		wm.setComponentZOrder(viewer, 1);
 		engine = new Engine(world, textArea.getOut(), new Engine.Callbacks() {
 			public void setCommandsMenu(String format) {
 				updateMenuFromString(commandsMenu, format);
@@ -83,11 +88,6 @@ public class GameWindow extends JFrame {
 		});
 		engine.processTurn("look", null);
 		textArea.getOut().append("\n");
-		wm.add(viewer);
-		wm.setComponentZOrder(viewer, 0);
-		wm.add(panel);
-		((WindowBorder) panel.getBorder()).setScrollable(true);
-		wm.setComponentZOrder(viewer, 1);
 		viewer.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(final MouseEvent e) {
