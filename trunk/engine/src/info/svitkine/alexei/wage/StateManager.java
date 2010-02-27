@@ -108,7 +108,7 @@ public class StateManager {
 		
 		// TODO: 
 		System.out.println("UNKNOWN 5:" + in.readShort());	// Usually = 0002
-		System.out.println("UNKNOWN 6:" + in.readShort());	// Usually = 0002
+		System.out.println("UNKNOWN 6:" + in.readShort());	// Usually = 0001 / 0002 / 0003
 		System.out.println("UNKNOWN 7:" + in.readShort());	// Usually = 0000
 		System.out.println("UNKNOWN 8:" + in.readShort());	// Usually = 0000, but was 0002 when i froze an enemy
 		System.out.println("UNKNOWN 9:" + in.readShort());	// Usually = 0000
@@ -125,7 +125,7 @@ public class StateManager {
 		state.setBaseRunSpeed(in.readUnsignedByte());
 		
 		// TODO:
-		System.out.println("UNKNOWN 10: " + in.readUnsignedByte());	// Usually = 0A
+		System.out.println("UNKNOWN 10: " + in.readUnsignedByte());	// Usually = 0A or FF
 		
 		// read user variables
 		short[] userVars = parseUserVars(in);
@@ -469,6 +469,18 @@ public class StateManager {
 				// TODO: The current engine doesn't have a case for this, we
 				// should update it
 
+				// set all user variables
+				updateWorldUserVars();
+
+				// update all scene stats
+				updateScenesWithBinaryData(state.getSceneData());
+
+				// update all char locations and stats
+				updateChrsWithBinaryData(state.getChrData());
+
+				// update all object locations and stats
+				updateObjsWithBinaryData(state.getObjData());
+
 				// move all worn helmets, shields, chest armors and spiritual
 				// armors to player
 				if (state.getHelmetIndex() != 0xffff) {
@@ -522,19 +534,7 @@ public class StateManager {
 					Obj[] armor = player.getArmor();
 					armor[Chr.MAGIC_ARMOR] = sa;
 				}
-
-				// set all user variables
-				updateWorldUserVars();
-
-				// update all scene stats
-				updateScenesWithBinaryData(state.getSceneData());
-
-				// update all char locations and stats
-				updateChrsWithBinaryData(state.getChrData());
-
-				// update all object locations and stats
-				updateObjsWithBinaryData(state.getObjData());
-
+				
 				// we're done -- restart our game engine
 				return true;
 
