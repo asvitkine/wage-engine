@@ -42,7 +42,8 @@ public class Engine implements Script.Callbacks, MoveListener {
 	private Scene getSceneByName(String location) {
 		Scene scene;
 		if (location.equals("random@")) {
-			scene = world.getOrderedScenes().get((int) (Math.random() * world.getOrderedScenes().size()));
+			// Not including storage:
+			scene = world.getOrderedScenes().get(1 + (int) (Math.random() * world.getOrderedScenes().size() - 1));
 		} else {
 			scene = world.getScenes().get(location);
 		}
@@ -72,6 +73,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 				}
 			}
 		}
+		boolean playerPlaced = false;
 		for (Chr chr : world.getOrderedChrs()) {
 			if (!chr.getInitialScene().equals(World.STORAGE)) {
 				Scene scene = getSceneByName(chr.getInitialScene().toLowerCase());
@@ -80,7 +82,13 @@ public class Engine implements Script.Callbacks, MoveListener {
 				} else {
 					world.move(chr, getSceneByName("random@"));
 				}
+				if (chr.isPlayerCharacter()) {
+					playerPlaced = true;
+				}
 			}
+		}
+		if (!playerPlaced) {
+			world.move(world.getPlayer(), getSceneByName("random@"));
 		}
 	}
 	
