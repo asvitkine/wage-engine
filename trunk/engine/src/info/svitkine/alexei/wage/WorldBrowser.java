@@ -58,7 +58,7 @@ public class WorldBrowser extends JPanel {
 		});
 	}
 
-	private void addField(JPanel info, String name, int value) {
+	private void addField(JPanel info, String name, Object value) {
 		JLabel label = new JLabel(name);
 		label.setHorizontalAlignment(JLabel.RIGHT);
 		info.add(label);
@@ -68,6 +68,7 @@ public class WorldBrowser extends JPanel {
 	private Component createInfoPanel() {
 		JPanel info = new JPanel();
 		info.setLayout(new GridLayout(0, 2));
+		addField(info, "Signature: ", Integer.toHexString(world.getSignature()).toUpperCase());
 		addField(info, "Scenes: ", world.getScenes().size());
 		addField(info, "Objects: ", world.getObjs().size());
 		addField(info, "Characters: ", world.getChrs().size());
