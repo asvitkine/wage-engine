@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 public class World {
@@ -186,6 +188,22 @@ public class World {
 		return null;
 	}
 
+	public Set<Scene> getAdjacentScenes(Scene scene) {
+		Set<Scene> scenes = new HashSet<Scene>();
+		if (scene != null) {
+			int x = scene.getWorldX();
+			int y = scene.getWorldY();
+			int dx[] = new int[] { 0, 0, 1, -1 };
+			int dy[] = new int[] { -1, 1, 0, 0 };
+			for (int dir : new int[] { Scene.NORTH, Scene.EAST, Scene.SOUTH, Scene.WEST }) {
+				if (!scene.isDirBlocked(dir)) {
+					scenes.add(getSceneAt(x + dx[dir], y + dy[dir]));
+				}
+			}
+		}
+		return scenes;
+	}
+	
 	public class MoveEvent {
 		private Object what;
 		private Object from;
