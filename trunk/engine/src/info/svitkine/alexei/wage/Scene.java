@@ -18,9 +18,9 @@ public class Scene {
 	private short resourceID;
 	private Script script;
 	private Design design;
-	private Rectangle designBounds;
+	private Rectangle designBounds = new Rectangle();
 	private String text;
-	private Rectangle textBounds;
+	private Rectangle textBounds = new Rectangle();
 	private int fontSize;
 	private int fontType; // 3 => Geneva, 22 => Courier, param to TextFont() function
 	private boolean[] blocked = new boolean[4];
