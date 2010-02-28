@@ -115,6 +115,11 @@ public class World {
 		}
 		return null;
 	}
+	
+	public Scene getRandomScene() {
+		// Not including storage:
+		return getOrderedScenes().get(1 + (int) (Math.random() * getOrderedScenes().size() - 1));
+	}
 
 	public Scene getSceneByHexOffset(short offset) {
 		// the save file stores blank info as 0xffff...
