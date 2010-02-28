@@ -655,7 +655,7 @@ public class StateManager {
 				stream.writeByte(obj.getType());
 				stream.writeByte(obj.getDamage());
 				stream.writeByte(obj.getAttackType());
-				stream.writeShort(obj.getNumberOfUses());
+				stream.writeShort(obj.getCurrentNumberOfUses());
 			}
 
 			stream.flush();
@@ -783,7 +783,7 @@ public class StateManager {
 				obj.setType(in.readUnsignedByte());
 				obj.setDamage(in.readUnsignedByte());
 				obj.setAttackType(in.readUnsignedByte());
-				obj.setNumberOfUses(in.readShort());
+				obj.setCurrentNumberOfUses(in.readShort());
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

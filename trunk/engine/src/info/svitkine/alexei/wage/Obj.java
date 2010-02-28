@@ -32,10 +32,11 @@ public class Obj implements Weapon {
 	private Rectangle designBounds;
 	private int type;
 	private int value;
-	private int damage;
+	private int damage; // or protection, if armor / helmet. etc
 	private int accuracy;
 	private int attackType;
 	private int numberOfUses;
+	private int currentNumberOfUses;
 	private boolean returnToRandomScene;
 	private String sceneOrOwner;
 	private String clickMessage;
@@ -156,10 +157,12 @@ public class Obj implements Weapon {
 		this.numberOfUses = numberOfUses;
 	}
 
-	public void decrementNumberOfUses() {
-		if (numberOfUses != -1) {
-			numberOfUses--;
-		}
+	public int getCurrentNumberOfUses() {
+		return currentNumberOfUses;
+	}
+
+	public void setCurrentNumberOfUses(int numberOfUses) {
+		this.currentNumberOfUses = numberOfUses;
 	}
 
 	public int getType() {
@@ -178,7 +181,7 @@ public class Obj implements Weapon {
 		this.operativeVerb = operativeVerb;
 	}
 
-	public boolean isReturnToRandomScene() {
+	public boolean getReturnToRandomScene() {
 		return returnToRandomScene;
 	}
 
