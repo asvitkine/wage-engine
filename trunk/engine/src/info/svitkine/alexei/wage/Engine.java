@@ -538,6 +538,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 				if (numberOfUses > 0) {
 					weaponObj.setCurrentNumberOfUses(numberOfUses);
 				} else {
+					weaponObj.setCurrentNumberOfUses(weaponObj.getNumberOfUses());
 					if (weaponObj.getReturnToRandomScene()) {
 						world.move(weaponObj, world.getRandomScene());
 					} else {
