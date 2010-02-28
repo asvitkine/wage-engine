@@ -43,8 +43,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 	private Scene getSceneByName(String location) {
 		Scene scene;
 		if (location.equals("random@")) {
-			// Not including storage:
-			scene = world.getOrderedScenes().get(1 + (int) (Math.random() * world.getOrderedScenes().size() - 1));
+			scene = world.getRandomScene();
 		} else {
 			scene = world.getScenes().get(location);
 		}
@@ -81,7 +80,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 				if (scene != null) {
 					world.move(chr, scene);
 				} else {
-					world.move(chr, getSceneByName("random@"));
+					world.move(chr, world.getRandomScene());
 				}
 				if (chr.isPlayerCharacter()) {
 					playerPlaced = true;
@@ -89,7 +88,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 			}
 		}
 		if (!playerPlaced) {
-			world.move(world.getPlayer(), getSceneByName("random@"));
+			world.move(world.getPlayer(), world.getRandomScene());
 		}
 	}
 	
@@ -475,7 +474,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 	public void performAttack(Chr attacker, Chr victim, Weapon weapon) {
 		if (world.isWeaponsMenuDisabled())
 			return;
-		String[] targets = new String[] { "chest", "head", "side" };
+		String[] targets = new String[] { "head", "chest", "side" };
 		int targetIndex = (attacker.isPlayerCharacter() && aim != -1 ? aim : (int) (Math.random()*targets.length));
 		String target = targets[targetIndex];
 		if (!attacker.isPlayerCharacter()) {
@@ -487,8 +486,17 @@ public class Engine implements Script.Callbacks, MoveListener {
 					target);
 		}
 		playSound(weapon.getSound());
-		if ((int) (Math.random() * 255) < attacker.getPhysicalAccuracy()) {
+		int chance = (int) (Math.random() * 255);
+		if (chance < attacker.getPhysicalAccuracy()) {
 			appendText("A hit to the %s.", target);
+			if (victim.getArmor()[targetIndex] != null) {
+				// TODO: Absorb some damage.
+				appendText("%s's %s weakens the impact of %s's %s.",
+						getNameWithDefiniteArticle(victim, true),
+						victim.getArmor()[targetIndex].getName(),
+						getNameWithDefiniteArticle(attacker, false),
+						weapon.getName());
+			}
 			playSound(attacker.getScoresHitSound());
 			appendText(attacker.getScoresHitComment());
 			playSound(victim.getReceivesHitSound());
@@ -496,7 +504,6 @@ public class Engine implements Script.Callbacks, MoveListener {
 			if (weapon.getType() == Obj.THROW_WEAPON) {
 				world.move((Obj) weapon, victim.getCurrentScene());
 			}
-			// TODO: Armor can absorb some of the damage, I think.
 			Context victimContext = victim.getContext();
 			int victimHp = victim.getContext().getStatVariable(Context.PHYS_HIT_CUR);
 			victimHp -= weapon.getDamage();
@@ -518,10 +525,27 @@ public class Engine implements Script.Callbacks, MoveListener {
 					getNameWithDefiniteArticle(victim, true),
 					Script.getPercentMessage(victim, Context.PHYS_HIT_CUR, Context.PHYS_HIT_BAS));
 			}
+		} else if (weapon.getFailureMessage() != null) {
+			appendText(weapon.getFailureMessage());
 		} else {
 			appendText("A miss!");
 		}
-		weapon.decrementNumberOfUses();
+		if (weapon instanceof Obj) {
+			Obj weaponObj = (Obj) weapon;
+			int numberOfUses = weaponObj.getCurrentNumberOfUses();
+			if (numberOfUses != -1) {
+				numberOfUses--;
+				if (numberOfUses > 0) {
+					weaponObj.setCurrentNumberOfUses(numberOfUses);
+				} else {
+					if (weaponObj.getReturnToRandomScene()) {
+						world.move(weaponObj, world.getRandomScene());
+					} else {
+						world.move(weaponObj, world.getStorageScene());
+					}
+				}
+			}
+		}
 	}
 
 	public static String getNameWithDefiniteArticle(Chr chr, boolean capitalize) {
