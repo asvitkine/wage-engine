@@ -993,6 +993,10 @@ public class Script {
 		Chr player = world.getPlayer();
 		appendText("Character name: " + player.getName());
 		appendText("Experience: " + player.getContext().getExperience());
+		int wealth = 0;
+		for (Obj o : player.getInventory())
+			wealth += o.getValue();
+		appendText("Wealth: " + wealth);
 		Obj[] armor = player.getArmor();
 		if (armor[Chr.HEAD_ARMOR] != null)
 			appendText("Head protection: " + armor[Chr.HEAD_ARMOR].getName());
@@ -1000,10 +1004,6 @@ public class Script {
 			appendText("Chest protection: " + armor[Chr.BODY_ARMOR].getName());
 		if (armor[Chr.MAGIC_ARMOR] != null)
 			appendText("Magical protection: " + armor[Chr.MAGIC_ARMOR].getName());
-		int wealth = 0;
-		for (Obj o : player.getInventory())
-			wealth += o.getValue();
-		appendText("Wealth: " + wealth);
 		for (Obj o : player.getInventory()) {
 			if (o.getNumberOfUses() > 0) {
 				appendText(String.format("Your %s has %d uses left.", o.getName(), o.getNumberOfUses()));
