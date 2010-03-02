@@ -949,8 +949,15 @@ public class Script {
 	private void handleLookCommand() {
 		Scene playerScene = world.getPlayer().getCurrentScene();
 		appendText(playerScene.getText());
+		String items = getGroundItemsList(playerScene);
+		if (items != null) {
+			appendText(items);
+		}
+	}
+	
+	public static String getGroundItemsList(Scene scene) {
 		List<Obj> objs = new ArrayList<Obj>();
-		for (Obj obj : playerScene.getObjs()) {
+		for (Obj obj : scene.getObjs()) {
 			if (obj.getType() != Obj.IMMOBILE_OBJECT) {
 				objs.add(obj);
 			}
@@ -958,11 +965,12 @@ public class Script {
 		if (!objs.isEmpty()) {
 			StringBuilder sb = new StringBuilder("On the ground you see ");
 			appendObjNames(sb, objs);
-			appendText(sb.toString());
+			return sb.toString();
 		}
+		return null;
 	}
 	
-	private void appendObjNames(StringBuilder sb, List<Obj> objs) {
+	private static void appendObjNames(StringBuilder sb, List<Obj> objs) {
 		for (int i = 0; i < objs.size(); i++) {
 			Obj obj = objs.get(i);
 			if (!obj.isNamePlural())

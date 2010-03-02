@@ -515,9 +515,11 @@ public class Engine implements Script.Callbacks, MoveListener {
 				Context attackerContext = attacker.getContext();
 				attackerContext.setKills(attackerContext.getKills() + 1);
 				attackerContext.setExperience(attackerContext.getExperience() + 1 + victim.getPhysicalHp());
-				if (!victim.isPlayerCharacter()) {
-					for (int i = victim.getInventory().size() - 1; i >= 0; i--)
+				if (!victim.isPlayerCharacter() && !victim.getInventory().isEmpty()) {
+					for (int i = victim.getInventory().size() - 1; i >= 0; i--) {
 						world.move(victim.getInventory().get(i), victim.getCurrentScene());
+					}
+					appendText(Script.getGroundItemsList(victim.getCurrentScene()));
 				}
 				world.move(victim, world.getStorageScene());
 			} else if (attacker.isPlayerCharacter()) {
