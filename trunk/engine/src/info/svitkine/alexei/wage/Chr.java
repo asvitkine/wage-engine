@@ -261,6 +261,17 @@ public class Chr {
 		}
 		return (Weapon[]) weapons.toArray(new Weapon[0]);
 	}
+	
+
+	public Obj[] getMagicalObjects() {
+		ArrayList<Obj> magic = new ArrayList<Obj>();
+		for (Obj obj : getInventory()) {
+			if (obj.getType() == Obj.MAGICAL_OBJECT) {
+				magic.add(obj);
+			}
+		}
+		return magic.toArray(new Obj[0]);
+	}
 
 	public boolean hasNativeWeapon1() {
 		return nativeWeapon1 != null && operativeVerb1 != null &&

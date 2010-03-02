@@ -347,7 +347,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 			if (!world.isWeaponsMenuDisabled()) {
 				if (npc.getWeapons().length > 0)
 					hat.addTokens(WEAPONS, npc.getWinningWeapons() + 1);
-				if (hasMagic(npc))
+				if (npc.getMagicalObjects().length > 0)
 					hat.addTokens(MAGIC, npc.getWinningMagic() + 1);
 			}
 			if (validMoves != 0)
@@ -358,7 +358,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 			if (!world.isWeaponsMenuDisabled()) {
 				if (npc.getWeapons().length > 0)
 					hat.addTokens(WEAPONS, npc.getLosingWeapons() + 1);
-				if (hasMagic(npc))
+				if (npc.getMagicalObjects().length > 0)
 					hat.addTokens(MAGIC, npc.getLosingMagic() + 1);
 			}
 			if (validMoves != 0)
@@ -385,7 +385,10 @@ public class Engine implements Script.Callbacks, MoveListener {
 				performAttack(npc, player, weapon);
 				break;
 			case MAGIC:
-				performMagic(npc, player);
+				Obj[] magicalObjects = npc.getMagicalObjects();
+				Obj magicalObject = magicalObjects[(int) (Math.random()*magicalObjects.length)];
+				// TODO: I think the monster should choose the "best" magic.
+				performMagic(npc, player, magicalObject);
 				break;
 			case RUN:
 				performMove(npc, validMoves);
@@ -428,11 +431,47 @@ public class Engine implements Script.Callbacks, MoveListener {
 		}
 	}
 
-	private boolean hasMagic(Chr chr) {
-		return false;
+	private void performHealingMagic(Chr chr, Obj magicalObject) {
+		int chance = (int) (Math.random() * 255);
+		if (chance < magicalObject.getAccuracy()) {
+			int type = magicalObject.getAttackType();
+
+			if (type == Obj.HEALS_PHYSICAL_DAMAGE || type == Obj.HEALS_PHYSICAL_AND_SPIRITUAL_DAMAGE) {
+				int hp = chr.getContext().getStatVariable(Context.PHYS_HIT_CUR);
+				hp += magicalObject.getDamage();
+				chr.getContext().setStatVariable(Context.PHYS_HIT_CUR, hp);
+			}
+			
+			if (type == Obj.HEALS_SPIRITUAL_DAMAGE || type == Obj.HEALS_PHYSICAL_AND_SPIRITUAL_DAMAGE) {
+				int spirit = chr.getContext().getStatVariable(Context.SPIR_HIT_CUR);
+				spirit += magicalObject.getDamage();
+				chr.getContext().setStatVariable(Context.SPIR_HIT_CUR, spirit);
+			}
+
+			playSound(magicalObject.getSound());
+			appendText(magicalObject.getUseMessage());
+
+			// TODO: what if enemy heals himself?
+			appendText("Your physical condition is " + Script.getPercentMessage(chr, Context.PHYS_HIT_CUR, Context.PHYS_HIT_BAS) + ".");
+			appendText("Your spiritual condition is " + Script.getPercentMessage(chr, Context.SPIR_HIT_CUR, Context.SPIR_HIT_BAS) + ".");
+
+		} else if (magicalObject.getFailureMessage() != null) {
+			// TODO: what if it's null?
+			appendText(magicalObject.getFailureMessage());
+		}
+
+		decrementUses(magicalObject);
 	}
 
-	private void performMagic(Chr attacker, Chr victim) {
+	public void performMagic(Chr attacker, Chr victim, Obj magicalObject) {
+		switch (magicalObject.getAttackType()) {
+			case Obj.HEALS_PHYSICAL_DAMAGE:
+			case Obj.HEALS_SPIRITUAL_DAMAGE:
+			case Obj.HEALS_PHYSICAL_AND_SPIRITUAL_DAMAGE:
+				performHealingMagic(attacker, magicalObject);
+				return;
+		}
+		performAttack(attacker, victim, (Weapon) magicalObject);
 	}
 
 	private int getValidMoveDirections(Chr npc) {
@@ -488,7 +527,6 @@ public class Engine implements Script.Callbacks, MoveListener {
 		playSound(weapon.getSound());
 		int chance = (int) (Math.random() * 255);
 		if (chance < attacker.getPhysicalAccuracy()) {
-			appendText("A hit to the %s.", target);
 			if (victim.getArmor()[targetIndex] != null) {
 				// TODO: Absorb some damage.
 				appendText("%s's %s weakens the impact of %s's %s.",
@@ -496,6 +534,8 @@ public class Engine implements Script.Callbacks, MoveListener {
 						victim.getArmor()[targetIndex].getName(),
 						getNameWithDefiniteArticle(attacker, false),
 						weapon.getName());
+			} else {
+				appendText("A hit to the %s.", target);
 			}
 			playSound(attacker.getScoresHitSound());
 			appendText(attacker.getScoresHitComment());
@@ -533,19 +573,22 @@ public class Engine implements Script.Callbacks, MoveListener {
 			appendText("A miss!");
 		}
 		if (weapon instanceof Obj) {
-			Obj weaponObj = (Obj) weapon;
-			int numberOfUses = weaponObj.getCurrentNumberOfUses();
-			if (numberOfUses != -1) {
-				numberOfUses--;
-				if (numberOfUses > 0) {
-					weaponObj.setCurrentNumberOfUses(numberOfUses);
+			decrementUses((Obj) weapon);
+		}
+	}
+	
+	private void decrementUses(Obj obj) {
+		int numberOfUses = obj.getCurrentNumberOfUses();
+		if (numberOfUses != -1) {
+			numberOfUses--;
+			if (numberOfUses > 0) {
+				obj.setCurrentNumberOfUses(numberOfUses);
+			} else {
+				obj.setCurrentNumberOfUses(obj.getNumberOfUses());
+				if (obj.getReturnToRandomScene()) {
+					world.move(obj, world.getRandomScene());
 				} else {
-					weaponObj.setCurrentNumberOfUses(weaponObj.getNumberOfUses());
-					if (weaponObj.getReturnToRandomScene()) {
-						world.move(weaponObj, world.getRandomScene());
-					} else {
-						world.move(weaponObj, world.getStorageScene());
-					}
+					world.move(obj, world.getStorageScene());
 				}
 			}
 		}
