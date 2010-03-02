@@ -479,6 +479,7 @@ public class Script {
 		public void playSound(String sound);
 		public void setMenu(String menuData);
 		public void performAttack(Chr attacker, Chr victim, Weapon weapon);
+		public void performMagic(Chr attacker, Chr victim, Obj magicalObject);
 		public void regen();
 		public Chr getMonster();
 		public Obj getOffer();
@@ -911,6 +912,17 @@ public class Script {
 	private void handleAttack(Weapon weapon) {
 		Chr player = world.getPlayer();
 		Chr enemy = callbacks.getMonster();
+		if (weapon.getType() == Obj.MAGICAL_OBJECT) {
+			Obj magicalObject = (Obj) weapon;
+			switch (magicalObject.getAttackType()) {
+				case Obj.HEALS_PHYSICAL_AND_SPIRITUAL_DAMAGE:
+				case Obj.HEALS_PHYSICAL_DAMAGE:
+				case Obj.HEALS_SPIRITUAL_DAMAGE:
+					callbacks.performMagic(player, enemy, magicalObject);
+					handled = true;
+					return;
+			}
+		}
 		if (enemy != null)
 			callbacks.performAttack(player, enemy, weapon);
 		else if (weapon.getType() == Obj.MAGICAL_OBJECT)
