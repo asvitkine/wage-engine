@@ -331,6 +331,22 @@ public class Script {
 					evalResult = (o.getCurrentScene() != s);
 				}
 			});
+			handlers.add(new PairEvaluator(Operand.CHR, Operand.CHR) {
+				@Override
+				public void evaluatePair(Operand o1, Operand o2) {
+					Chr c1 = (Chr) o1.value;
+					Chr c2 = (Chr) o2.value;
+					evalResult = (c1 == c2);
+				}
+			});
+			handlers.add(new PairEvaluator(Operand.SCENE, Operand.SCENE) {
+				@Override
+				public void evaluatePair(Operand o1, Operand o2) {
+					Scene s1 = (Scene) o1.value;
+					Scene s2 = (Scene) o2.value;
+					evalResult = (s1 == s2);
+				}
+			});
 			evaluatePair(handlers, lhs, rhs);
 			result = (Boolean) evalResult;
 		} else if (op.equals(">")) {
