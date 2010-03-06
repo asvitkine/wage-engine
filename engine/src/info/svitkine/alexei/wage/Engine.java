@@ -141,11 +141,11 @@ public class Engine implements Script.Callbacks, MoveListener {
 		// let the engine know if there is a npc in the current scene
 		int presMonHexOffset = world.getCurrentState().getPresCharHexOffset();
 		if (presMonHexOffset != 0xffff)
-			monster = world.getCharByHexOffset((short)presMonHexOffset);
+			monster = world.getCharByHexOffset(presMonHexOffset);
 		
 		this.callbacks.clearOutput();
 		
-		processTurn("look",null);
+		processTurn("look", null);
 	}
 
 	private void processTurnInternal(String textInput, Object clickInput) {
