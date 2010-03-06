@@ -143,7 +143,7 @@ public class World {
 		return null;
 	}
 
-	public Chr getCharByHexOffset(short offset) {
+	public Chr getCharByHexOffset(int offset) {
 		// a lot of char hex offsets = 0xffff if they are empty (i.e. no character attacking, etc)
 		if (offset == -1)
 			return null;
