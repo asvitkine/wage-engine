@@ -264,9 +264,14 @@ public class Engine implements Script.Callbacks, MoveListener {
 	
 	public void playSound(String soundName) {
 		if (soundName != null) {
-			Sound sound = world.getSounds().get(soundName.toLowerCase());
-			if (sound != null)
-				sound.play();
+			final Sound sound = world.getSounds().get(soundName.toLowerCase());
+			if (sound != null) {
+				new Thread(new Runnable() {
+					public void run() {
+						sound.play();
+					}
+				}).start();
+			}
 		}
 	}
 
