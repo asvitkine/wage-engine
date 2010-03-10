@@ -12,7 +12,7 @@ public class State {
 	public static final int SCENES_INDEX = (int)0x0232;
 	
 	public static final int SCENE_SIZE = (int)0x0010;
-	public static final int CHAR_SIZE = (int)0x0016;
+	public static final int CHR_SIZE = (int)0x0016;
 	public static final int OBJ_SIZE = (int)0x0010;
 	
 	// important global info
@@ -41,7 +41,7 @@ public class State {
 	private int baseRunSpeed;
 	
 	// hex offsets within the save file
-	private short charsHexOffset;
+	private short chrsHexOffset;
 	private short objsHexOffset;
 	private short playerHexOffset;	
 	private short curSceneHexOffset = 0;
@@ -171,11 +171,11 @@ public class State {
 	public void setBaseRunSpeed(int runSpeed) {
 		this.baseRunSpeed = runSpeed;
 	}
-	public short getCharsHexOffset() {
-		return charsHexOffset;
+	public short getChrsHexOffset() {
+		return chrsHexOffset;
 	}
-	public void setCharsHexOffset(short charsIndex) {
-		this.charsHexOffset = charsIndex;
+	public void setChrsHexOffset(short charsIndex) {
+		this.chrsHexOffset = charsIndex;
 	}
 	public short getObjsHexOffset() {
 		return objsHexOffset;
@@ -262,6 +262,24 @@ public class State {
 		this.valid = valid;
 	}
 	
+	public short getHexOffsetForObj(Obj obj) {
+		if (obj == null)
+			return (short) 0xffff;
+		return (short) ((obj.getIndex() * State.OBJ_SIZE) + getObjsHexOffset());
+	}
+
+	public short getHexOffsetForChr(Chr chr) {
+		if (chr == null)
+			return (short) 0xffff;
+		return (short) ((chr.getIndex() * State.CHR_SIZE) + getChrsHexOffset());
+	}
+
+	public short getHexOffsetForScene(Scene scene) {
+		if (scene == null)
+			return (short) 0xffff;
+		return (short) ((scene.getIndex() * State.SCENE_SIZE) + State.SCENES_INDEX);
+	}
+
 	// For Debugging Purposes:
 	public void printState(World world, String filePath) throws IOException {
 		PrintWriter stream;
@@ -275,7 +293,7 @@ public class State {
 		stream.println("Number of Characters: " + this.numChars);
 		stream.println("Number of Object: " + this.numObjs);
 		stream.println("==============================================");
-		stream.println("Hex Offset to start of Characters: " + Integer.toHexString(this.charsHexOffset));
+		stream.println("Hex Offset to start of Characters: " + Integer.toHexString(this.chrsHexOffset));
 		stream.println("Hex Offset to start of Objects: " + Integer.toHexString(this.objsHexOffset));
 		stream.println("==============================================");
 		stream.println("World Signature: " + Integer.toHexString(this.worldSignature));

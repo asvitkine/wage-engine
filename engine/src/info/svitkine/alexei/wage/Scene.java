@@ -108,10 +108,6 @@ public class Scene {
 		this.resourceID = resourceID;
 	}
 
-	public short getHexOffset(State state) {
-		return (short) ((index * State.SCENE_SIZE) + State.SCENES_INDEX);
-	}
-
 	public String getText() {
 		return text;
 	}

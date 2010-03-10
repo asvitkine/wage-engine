@@ -171,7 +171,7 @@ public class WorldLoader {
 			// store global info in state object for use with save/load actions
 			initialState.setNumScenes(sceneCount);								// total scene count
 			int charHex = (State.SCENES_INDEX+(sceneCount*State.SCENE_SIZE));	// hex offset to start of char data in save file
-			initialState.setCharsHexOffset((short)charHex);
+			initialState.setChrsHexOffset((short)charHex);
 		}
 		ResourceType chrs = model.getResourceType("ACHR");
 		short charCount = 0;
@@ -185,14 +185,14 @@ public class WorldLoader {
 					world.setPlayer(chr);
 					
 					// hex offset to player character in save file
-					initialState.setPlayerHexOffset((short)(initialState.getCharsHexOffset()+(charCount*State.CHAR_SIZE)));
+					initialState.setPlayerHexOffset((short)(initialState.getChrsHexOffset()+(charCount*State.CHR_SIZE)));
 				}
 				charCount++;
 			}
 			
 			// store global info in state object for use with save/load actions
 			initialState.setNumChars(charCount);											// total char count
-			int objHex = (initialState.getCharsHexOffset()+(charCount*State.CHAR_SIZE));	// hex offset to start of obj date in save file
+			int objHex = (initialState.getChrsHexOffset()+(charCount*State.CHR_SIZE));	// hex offset to start of obj date in save file
 			initialState.setObjsHexOffset((short)objHex);
 		}
 		ResourceType objs = model.getResourceType("AOBJ");
