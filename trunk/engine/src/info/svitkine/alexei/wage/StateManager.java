@@ -36,59 +36,37 @@ public class StateManager {
 		state.setNumObjs(in.readShort());
 		 
 		// Hex Offsets
-		in.skipBytes(2);
-		state.setChrsHexOffset(in.readShort());		 
-		in.skipBytes(2);
-		state.setObjsHexOffset(in.readShort());
+		state.setChrsHexOffset(in.readInt());		 
+		state.setObjsHexOffset(in.readInt());
 
 		// Unique 8-byte World Signature
 		state.setWorldSig(in.readInt());
 		
 		// More Counters
-		in.skipBytes(2);
-		state.setVisitNum(in.readShort());
-		in.skipBytes(2);
-		state.setLoopNum(in.readShort());
-		in.skipBytes(2);
-		state.setKillNum(in.readShort());
+		state.setVisitNum(in.readInt());
+		state.setLoopNum(in.readInt());
+		state.setKillNum(in.readInt());
 		
 		// Hex offset to player character
-		in.skipBytes(2);
-		state.setPlayerHexOffset(in.readShort());
+		state.setPlayerHexOffset(in.readInt());
 
 		// character in this scene?
-		if ((in.readShort() & 0xffff) != 0xffff)
-			state.setPresCharHexOffset(in.readShort());
-		else
-			in.skipBytes(2);
+		state.setPresCharHexOffset(in.readInt());
 
 		// Hex offset to current scene
-		in.skipBytes(2);
-		state.setCurSceneHexOffset(in.readShort());
+		state.setCurSceneHexOffset(in.readInt());
 
 		// wearing a helmet?
-		if ((in.readShort() & 0xffff) != 0xffff)
-			state.setHelmetIndex(in.readShort());
-		else
-			in.skipBytes(2);
+		state.setHelmetIndex(in.readInt());
 
 		// holding a shield?
-		if ((in.readShort() & 0xffff) != 0xffff)
-			state.setShieldIndex(in.readShort());
-		else
-			in.skipBytes(2);
+		state.setShieldIndex(in.readInt());
 
 		// wearing chest armor?
-		if ((in.readShort() & 0xffff) != 0xffff)
-			state.setChestArmIndex(in.readShort());
-		else
-			in.skipBytes(2);
+		state.setChestArmIndex(in.readInt());
 
 		// wearing spiritual armor?
-		if ((in.readShort() & 0xffff) != 0xffff)
-			state.setSprtArmIndex(in.readShort());
-		else
-			in.skipBytes(2);
+		state.setSprtArmIndex(in.readInt());
 		
 		// TODO: 
 		System.out.println("UNKNOWN 1:" + in.readShort());	// Usually = FFFF
@@ -97,14 +75,10 @@ public class StateManager {
 		System.out.println("UNKNOWN 4:" + in.readShort());	// Usually = FFFF
 		
 		// is a character running away?
-		if ((in.readShort() & 0xffff) != 0xffff)
-			state.setRunCharHexOffset(in.readShort());
-		else
-			in.skipBytes(2);
+		state.setRunCharHexOffset(in.readInt());
 
 		// players experience
-		in.skipBytes(2);
-		state.setExp(in.readShort());
+		state.setExp(in.readInt());
 		
 		// TODO: 
 		System.out.println("UNKNOWN 5:" + in.readShort());	// Usually = 0002
@@ -151,146 +125,101 @@ public class StateManager {
 			
 		if (in.read(objData) == objSize);
 			state.setObjData(objData);	
-		
+
 		// EOF reached, let state manager know our state is complete and valid
 		state.setValid(true);
 		in.close();
 	}
 
-	public void writeSaveData(File file) throws IOException {
-		
-		DataOutputStream os = new DataOutputStream(new FileOutputStream(file));
-		
+	public void writeSaveData(File file) throws IOException {		
+		DataOutputStream out = new DataOutputStream(new FileOutputStream(file));
+
 		// Counters
-		os.writeShort(state.getNumScenes());
-		os.writeShort(state.getNumChars());
-		os.writeShort(state.getNumObjs());
+		out.writeShort(state.getNumScenes());
+		out.writeShort(state.getNumChars());
+		out.writeShort(state.getNumObjs());
 		 
 		// Hex Offsets
-		os.writeShort(0);
-		os.writeShort(state.getChrsHexOffset());		 
-		os.writeShort(0);
-		os.writeShort(state.getObjsHexOffset());
+		out.writeInt(state.getChrsHexOffset());		 
+		out.writeInt(state.getObjsHexOffset());
 
 		// Unique 8-byte World Signature
-		os.writeInt(state.getWorldSig());
-		
+		out.writeInt(state.getWorldSig());
+
 		// More Counters
-		os.writeShort(0);
-		os.writeShort(state.getVisitNum());
-		os.writeShort(0);
-		os.writeShort(state.getLoopNum());
-		os.writeShort(0);
-		os.writeShort(state.getKillNum());
-		
+		out.writeInt(state.getVisitNum());
+		out.writeInt(state.getLoopNum());
+		out.writeInt(state.getKillNum());
+
 		// Hex offset to player character
-		os.writeShort(0);
-		os.writeShort(state.getPlayerHexOffset());
-				
+		out.writeInt(state.getPlayerHexOffset());
+
 		// character in this scene?
-		if (state.getPresCharHexOffset() != 0xffff) {
-			os.writeShort(0);
-			os.writeShort(state.getPresCharHexOffset());
-		} else {
-			os.writeShort(0xffff);
-			os.writeShort(0xffff);
-		}
-		
+		out.writeInt(state.getPresCharHexOffset());
+
 		// Hex offset to current scene
-		os.writeShort(0);
-		os.writeShort(state.getCurSceneHexOffset());
-		
+		out.writeInt(state.getCurSceneHexOffset());
+
 		// wearing a helmet?
-		if (state.getHelmetIndex() != 0xffff) {
-			os.writeShort(0);
-			os.writeShort(state.getHelmetIndex());
-		} else {
-			os.writeShort(0xffff);
-			os.writeShort(0xffff);
-		}
-		
+		out.writeInt(state.getHelmetIndex());
+
 		// holding a shield?
-		if (state.getShieldIndex() != 0xffff) {
-			os.writeShort(0x0000);
-			os.writeShort(state.getShieldIndex());
-		} else {
-			os.writeShort(0xffff);
-			os.writeShort(0xffff);
-		}
-		
+		out.writeInt(state.getShieldIndex());
+
 		// wearing chest armor?
-		if (state.getChestArmIndex() != 0xffff) {
-			os.writeShort(0);
-			os.writeShort(state.getChestArmIndex());
-		} else {
-			os.writeShort(0xffff);
-			os.writeShort(0xffff);
-		}
-	
+		out.writeInt(state.getChestArmIndex());
+
 		// wearing spiritual armor?
-		if (state.getSprtArmIndex() != 0xffff) {
-			os.writeShort(0);
-			os.writeShort(state.getSprtArmIndex());
-		} else {
-			os.writeShort(0xffff);
-			os.writeShort(0xffff);
-		}
-		
+		out.writeInt(state.getSprtArmIndex());
+
 		// TODO: 
-		os.writeShort(0xffff);	// ???? - always FFFF
-		os.writeShort(0xffff);	// ???? - always FFFF
-		os.writeShort(0xffff);	// ???? - always FFFF
-		os.writeShort(0xffff);	// ???? - always FFFF
+		out.writeShort(0xffff);	// ???? - always FFFF
+		out.writeShort(0xffff);	// ???? - always FFFF
+		out.writeShort(0xffff);	// ???? - always FFFF
+		out.writeShort(0xffff);	// ???? - always FFFF
 		
 		// did a character just escape?
-		if (state.getRunCharHexOffset() != 0xffff) {
-			os.writeShort(0);
-			os.writeShort(state.getRunCharHexOffset());
-		} else {
-			os.writeShort(0xffff);
-			os.writeShort(0xffff);
-		}
+		out.writeInt(state.getRunCharHexOffset());
 
 		// players experience points
-		os.writeShort(0);
-		os.writeShort(state.getExp());
+		out.writeInt(state.getExp());
 		
 		// TODO:
-		os.writeShort(0x0002);	// anything but 2 seems to report "enhanced physical/spiritual conditions to "status"
-		os.writeShort(0x0002);	// this is usually 2, but i've seen 1 and 3 as well
-		os.writeShort(0x0000);	// always 0
-		os.writeShort(0x0000);	// always 0
-		os.writeShort(0x0000);	// always 0
+		out.writeShort(0x0002);	// anything but 2 seems to report "enhanced physical/spiritual conditions to "status"
+		out.writeShort(0x0002);	// this is usually 2, but i've seen 1 and 3 as well
+		out.writeShort(0x0000);	// always 0
+		out.writeShort(0x0000);	// always 0
+		out.writeShort(0x0000);	// always 0
 
 		// Base character stats
-		os.writeByte(state.getBasePhysStr());
-		os.writeByte(state.getBasePhysHp());
-		os.writeByte(state.getBasePhysArm());
-		os.writeByte(state.getBasePhysAcc());
-		os.writeByte(state.getBaseSprtStr());
-		os.writeByte(state.getBaseSprtHp());
-		os.writeByte(state.getBaseSprtArm());
-		os.writeByte(state.getBaseSprtAcc());
-		os.writeByte(state.getBaseRunSpeed());
-		
+		out.writeByte(state.getBasePhysStr());
+		out.writeByte(state.getBasePhysHp());
+		out.writeByte(state.getBasePhysArm());
+		out.writeByte(state.getBasePhysAcc());
+		out.writeByte(state.getBaseSprtStr());
+		out.writeByte(state.getBaseSprtHp());
+		out.writeByte(state.getBaseSprtArm());
+		out.writeByte(state.getBaseSprtAcc());
+		out.writeByte(state.getBaseRunSpeed());
+
 		// TODO:
-		os.writeByte(0x0A);		// ???? - always seems to be 0x0A
-		
+		out.writeByte(0x0A);		// ???? - always seems to be 0x0A
+
 		// write user vars		
 		for (short var : state.getUserVars())
-			os.writeShort(var);
+			out.writeShort(var);
 
 		// write updated info for all scenes
-		os.write(state.getSceneData());
-			
+		out.write(state.getSceneData());
+
 		// write updated info for all characters
-		os.write(state.getChrData());
-		
+		out.write(state.getChrData());
+
 		// write updated info for all objects
-		os.write(state.getObjData());
-		
+		out.write(state.getObjData());
+
 		// close file for writing
-		os.close();
+		out.close();
 	}
 	
 	public boolean updateState(Chr monster, Chr running, int loopNum) {
@@ -372,8 +301,7 @@ public class StateManager {
 			if (world.getSignature() == state.getWorldSig()) {
 
 				// set player character
-				short playerOffset = (short) state.getPlayerHexOffset();
-				Chr player = world.getCharByHexOffset(playerOffset);
+				Chr player = world.getCharByHexOffset(state.getPlayerHexOffset());
 
 				if (player == null) {
 					System.err.println("Invalid Character!  Aborting load.");
@@ -384,7 +312,7 @@ public class StateManager {
 				player.setPlayerCharacter(true);
 
 				// set current scene
-				Scene s = world.getSceneByHexOffset((short) state.getCurSceneHexOffset());
+				Scene s = world.getSceneByHexOffset(state.getCurSceneHexOffset());
 
 				if (s == null) {
 					System.err.println("Invalid Scene!  Aborting load.");
@@ -457,58 +385,24 @@ public class StateManager {
 
 				// move all worn helmets, shields, chest armors and spiritual
 				// armors to player
-				if (state.getHelmetIndex() != 0xffff) {
-					Obj helmet = world.getObjByHexOffset((short) state
-							.getHelmetIndex());
-					if (helmet == null) {
-						System.err.println("Invalid Object!  Aborting load.");
-						return false;
-					}
+				for (int type : new int[] { Chr.HEAD_ARMOR, Chr.SHIELD_ARMOR, Chr.BODY_ARMOR, Chr.MAGIC_ARMOR } ) {
+					Obj armor;
 
-					world.move(helmet, player);
-					Obj[] armor = player.getArmor();
-					armor[Chr.HEAD_ARMOR] = helmet;
+					if (type == Chr.HEAD_ARMOR)
+						armor = world.getObjByHexOffset(state.getHelmetIndex());
+					else if (type == Chr.SHIELD_ARMOR)
+						armor = world.getObjByHexOffset(state.getShieldIndex());
+					else if (type == Chr.BODY_ARMOR)
+						armor = world.getObjByHexOffset(state.getChestArmIndex());
+					else
+						armor = world.getObjByHexOffset(state.getSprtArmIndex());
+
+					if (armor != null) {
+						world.move(armor, player);
+						player.getArmor()[type] = armor;
+					}
 				}
 
-				if (state.getShieldIndex() != 0xffff) {
-					Obj shield = world.getObjByHexOffset((short) state.getShieldIndex());
-					System.out.println("Shield found!");
-					if (shield == null) {
-						System.err.println("Invalid Object!  Aborting load.");
-						return false;
-					}
-
-					world.move(shield, player);
-					Obj[] armor = player.getArmor();
-					armor[Chr.SHIELD_ARMOR] = shield;
-				}
-
-				if (state.getChestArmIndex() != 0xffff) {
-					Obj ca = world.getObjByHexOffset((short) state.getChestArmIndex());
-					System.out.println("Physical Armor found!");
-					if (ca == null) {
-						System.err.println("Invalid Object!  Aborting load.");
-						return false;
-					}
-
-					world.move(ca, player);
-					Obj[] armor = player.getArmor();
-					armor[Chr.BODY_ARMOR] = ca;
-				}
-
-				if (state.getSprtArmIndex() != 0xffff) {
-					Obj sa = world.getObjByHexOffset((short) state.getSprtArmIndex());
-					System.out.println("Spiritual Armor found!");
-					if (sa == null) {
-						System.err.println("Invalid Object!  Aborting load.");
-						return false;
-					}
-
-					world.move(sa, player);
-					Obj[] armor = player.getArmor();
-					armor[Chr.MAGIC_ARMOR] = sa;
-				}
-				
 				// we're done -- restart our game engine
 				return true;
 
@@ -523,7 +417,7 @@ public class StateManager {
 		System.err.println("Invalid state object!");
 		return false;
 	}
-	
+
 	private void updateStateUserVars() {
 		short[] vars = state.getUserVars();
 		for (int i = 0; i < vars.length; i++){
@@ -624,6 +518,12 @@ public class StateManager {
 
 				stream.writeShort(location == null ? 0 : location.getResourceID());
 				stream.writeShort(owner == null ? 0 : owner.getResourceID());
+
+				// bytes 7-9 are unknown (always = 0)
+				stream.writeByte(0);
+				stream.writeByte(0);
+				stream.writeByte(0);
+				
 				stream.writeByte(obj.getAccuracy());
 				stream.writeByte(obj.getValue());
 				stream.writeByte(obj.getType());

@@ -8,12 +8,12 @@ import java.io.PrintWriter;
 
 public class State {
 
-	public static final int VARS_INDEX = (int)0x005E;
-	public static final int SCENES_INDEX = (int)0x0232;
+	public static final int VARS_INDEX = 0x005E;
+	public static final int SCENES_INDEX = 0x0232;
 	
-	public static final int SCENE_SIZE = (int)0x0010;
-	public static final int CHR_SIZE = (int)0x0016;
-	public static final int OBJ_SIZE = (int)0x0010;
+	public static final int SCENE_SIZE = 0x0010;
+	public static final int CHR_SIZE = 0x0016;
+	public static final int OBJ_SIZE = 0x0010;
 	
 	// important global info
 	private short numScenes;
@@ -24,10 +24,10 @@ public class State {
 	private int worldSignature;
 	
 	// global status vars
-	private short visitNum = 0;
-	private short loopNum = 0;
-	private short killNum = 0;
-	private short exp = 0;
+	private int visitNum = 0;
+	private int loopNum = 0;
+	private int killNum = 0;
+	private int exp = 0;
 	
 	// information about player character
 	private int basePhysStr;
@@ -41,20 +41,20 @@ public class State {
 	private int baseRunSpeed;
 	
 	// hex offsets within the save file
-	private short chrsHexOffset;
-	private short objsHexOffset;
-	private short playerHexOffset;	
-	private short curSceneHexOffset = 0;
+	private int chrsHexOffset;
+	private int objsHexOffset;
+	private int playerHexOffset;	
+	private int curSceneHexOffset = 0;
 	
 	// info about non-player characters related to the current scene
-	private int presCharHexOffset = 0xFFFF;		// resource id of character present in current scene
-	private int runCharHexOffset = 0xFFFF;		// hex index to character who just ran away
+	private int presCharHexOffset = -1;		// resource id of character present in current scene
+	private int runCharHexOffset = -1;		// hex index to character who just ran away
 	
 	// are we wearing anything?
-	private int helmetHexOffset = 0xFFFF;
-	private int shieldHexOffset = 0xFFFF;
-	private int chestArmHexOffset = 0xFFFF;
-	private int sprtArmHexOffset = 0xFFFF;
+	private int helmetHexOffset = -1;
+	private int shieldHexOffset = -1;
+	private int chestArmHexOffset = -1;
+	private int sprtArmHexOffset = -1;
 	
 	private short[] userVars;
 	
@@ -93,28 +93,28 @@ public class State {
 	public void setWorldSig(int worldSig) {
 		this.worldSignature = worldSig;
 	}
-	public short getVisitNum() {
+	public int getVisitNum() {
 		return visitNum;
 	}
-	public void setVisitNum(short visitNum) {
+	public void setVisitNum(int visitNum) {
 		this.visitNum = visitNum;
 	}
-	public short getLoopNum() {
+	public int getLoopNum() {
 		return loopNum;
 	}
-	public void setLoopNum(short loopNum) {
+	public void setLoopNum(int loopNum) {
 		this.loopNum = loopNum;
 	}
-	public short getKillNum() {
+	public int getKillNum() {
 		return killNum;
 	}
-	public void setKillNum(short killNum) {
+	public void setKillNum(int killNum) {
 		this.killNum = killNum;
 	}
-	public short getExp() {
+	public int getExp() {
 		return exp;
 	}
-	public void setExp(short exp) {
+	public void setExp(int exp) {
 		this.exp = exp;
 	}
 	public int getBasePhysStr() {
@@ -171,29 +171,29 @@ public class State {
 	public void setBaseRunSpeed(int runSpeed) {
 		this.baseRunSpeed = runSpeed;
 	}
-	public short getChrsHexOffset() {
+	public int getChrsHexOffset() {
 		return chrsHexOffset;
 	}
-	public void setChrsHexOffset(short charsIndex) {
-		this.chrsHexOffset = charsIndex;
+	public void setChrsHexOffset(int chrsHexOffset) {
+		this.chrsHexOffset = chrsHexOffset;
 	}
-	public short getObjsHexOffset() {
+	public int getObjsHexOffset() {
 		return objsHexOffset;
 	}
-	public void setObjsHexOffset(short objsIndex) {
-		this.objsHexOffset = objsIndex;
+	public void setObjsHexOffset(int objsHexOffset) {
+		this.objsHexOffset = objsHexOffset;
 	}
-	public short getPlayerHexOffset() {
+	public int getPlayerHexOffset() {
 		return playerHexOffset;
 	}
-	public void setPlayerHexOffset(short playerIndex) {
-		this.playerHexOffset = playerIndex;
+	public void setPlayerHexOffset(int playerHexOffset) {
+		this.playerHexOffset = playerHexOffset;
 	}
-	public short getCurSceneHexOffset() {
+	public int getCurSceneHexOffset() {
 		return curSceneHexOffset;
 	}
-	public void setCurSceneHexOffset(short curSceneIndex) {
-		this.curSceneHexOffset = curSceneIndex;
+	public void setCurSceneHexOffset(int curSceneHexOffset) {
+		this.curSceneHexOffset = curSceneHexOffset;
 	}
 	public int getPresCharHexOffset() {
 		return presCharHexOffset;
@@ -262,22 +262,22 @@ public class State {
 		this.valid = valid;
 	}
 	
-	public short getHexOffsetForObj(Obj obj) {
+	public int getHexOffsetForObj(Obj obj) {
 		if (obj == null)
-			return (short) 0xffff;
-		return (short) ((obj.getIndex() * State.OBJ_SIZE) + getObjsHexOffset());
+			return -1;
+		return ((obj.getIndex() * State.OBJ_SIZE) + getObjsHexOffset());
 	}
 
-	public short getHexOffsetForChr(Chr chr) {
+	public int getHexOffsetForChr(Chr chr) {
 		if (chr == null)
-			return (short) 0xffff;
-		return (short) ((chr.getIndex() * State.CHR_SIZE) + getChrsHexOffset());
+			return -1;
+		return ((chr.getIndex() * State.CHR_SIZE) + getChrsHexOffset());
 	}
 
-	public short getHexOffsetForScene(Scene scene) {
+	public int getHexOffsetForScene(Scene scene) {
 		if (scene == null)
-			return (short) 0xffff;
-		return (short) ((scene.getIndex() * State.SCENE_SIZE) + State.SCENES_INDEX);
+			return -1;
+		return ((scene.getIndex() * State.SCENE_SIZE) + State.SCENES_INDEX);
 	}
 
 	// For Debugging Purposes:
