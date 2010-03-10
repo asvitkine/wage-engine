@@ -268,7 +268,7 @@ public class StateManager {
 		state.setHelmetIndex(state.getHexOffsetForObj(player.getArmor()[Chr.HEAD_ARMOR]));
 
 		// Shield
-		state.setHelmetIndex(state.getHexOffsetForObj(player.getArmor()[Chr.SHIELD_ARMOR]));
+		state.setShieldIndex(state.getHexOffsetForObj(player.getArmor()[Chr.SHIELD_ARMOR]));
 
 		// Chest Armor
 		state.setChestArmIndex(state.getHexOffsetForObj(player.getArmor()[Chr.BODY_ARMOR]));
