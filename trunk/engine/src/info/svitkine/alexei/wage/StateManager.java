@@ -37,7 +37,7 @@ public class StateManager {
 		 
 		// Hex Offsets
 		in.skipBytes(2);
-		state.setCharsHexOffset(in.readShort());		 
+		state.setChrsHexOffset(in.readShort());		 
 		in.skipBytes(2);
 		state.setObjsHexOffset(in.readShort());
 
@@ -139,9 +139,9 @@ public class StateManager {
 			state.setSceneData(sceneData);
 		
 		// read update info for ever character
-		int chrSize = state.getNumChars() * State.CHAR_SIZE;
+		int chrSize = state.getNumChars() * State.CHR_SIZE;
 		byte[] chrData = new byte[chrSize];
-			
+
 		if (in.read(chrData) == chrSize);
 			state.setChrData(chrData);
 
@@ -168,7 +168,7 @@ public class StateManager {
 		 
 		// Hex Offsets
 		os.writeShort(0);
-		os.writeShort(state.getCharsHexOffset());		 
+		os.writeShort(state.getChrsHexOffset());		 
 		os.writeShort(0);
 		os.writeShort(state.getObjsHexOffset());
 
@@ -314,7 +314,7 @@ public class StateManager {
 		state.setBaseRunSpeed(playerContext.getStatVariable(Context.PHYS_SPE_BAS));
 		
 		// set current scene
-		state.setCurSceneHexOffset(curScene.getHexOffset(state));
+		state.setCurSceneHexOffset(state.getHexOffsetForScene(curScene));
 		System.out.println("Current Scene Offset == " + Integer.toHexString(state.getCurSceneHexOffset()));
 		
 		// set visit#
@@ -325,53 +325,27 @@ public class StateManager {
 		
 		// set monsters killed
 		state.setKillNum(playerContext.getKills());
-		
+
 		// set experience
 		state.setExp(playerContext.getExperience());
-		
+
 		// Current Monster
-		if (monster != null)
-			state.setPresCharHexOffset(monster.getHexOffset(state));
-		else
-			state.setPresCharHexOffset(0xffff);
-		
+		state.setPresCharHexOffset(state.getHexOffsetForChr(monster));
+
 		// Running Monster
-		if (running != null)
-			state.setRunCharHexOffset(running.getHexOffset(state));
-		else
-			state.setRunCharHexOffset(0xffff);
-		
+		state.setRunCharHexOffset(state.getHexOffsetForChr(running));
+
 		// Helmet		
-		Obj helmet = player.getArmor()[Chr.HEAD_ARMOR];
-				
-		if (helmet != null)
-			state.setHelmetIndex(helmet.getHexOffset(state));
-		else
-			state.setHelmetIndex(0xffff);
-		
+		state.setHelmetIndex(state.getHexOffsetForObj(player.getArmor()[Chr.HEAD_ARMOR]));
+
 		// Shield
-		Obj shield = player.getArmor()[Chr.SHIELD_ARMOR];
-		
-		if (shield != null)
-			state.setShieldIndex(shield.getHexOffset(state));
-		else
-			state.setShieldIndex(0xffff);
+		state.setHelmetIndex(state.getHexOffsetForObj(player.getArmor()[Chr.SHIELD_ARMOR]));
 
 		// Chest Armor
-		Obj armor = player.getArmor()[Chr.BODY_ARMOR];
-		
-		if (armor != null)
-			state.setChestArmIndex(armor.getHexOffset(state));
-		else
-			state.setChestArmIndex(0xffff);
+		state.setChestArmIndex(state.getHexOffsetForObj(player.getArmor()[Chr.BODY_ARMOR]));
 
 		// Spiritual Armor
-		Obj magicArmor = player.getArmor()[Chr.MAGIC_ARMOR];
-		
-		if (magicArmor != null)
-			state.setSprtArmIndex(magicArmor.getHexOffset(state));
-		else
-			state.setSprtArmIndex(0xffff);
+		state.setSprtArmIndex(state.getHexOffsetForObj(player.getArmor()[Chr.MAGIC_ARMOR]));
 		
 		// update user vars
 		updateStateUserVars();
@@ -389,8 +363,8 @@ public class StateManager {
 		state.setValid(true);
 		
 		return true;
-	}
-
+	}	
+	
 	public boolean updateWorld() {
 		// make sure we have a valid state object
 		if (state.isValid()) {

@@ -147,7 +147,7 @@ public class World {
 		// a lot of char hex offsets = 0xffff if they are empty (i.e. no character attacking, etc)
 		if (offset == -1)
 			return null;
-		int index = (offset - currentState.getCharsHexOffset()) / State.CHAR_SIZE;
+		int index = (offset - currentState.getChrsHexOffset()) / State.CHR_SIZE;
 		return orderedChrs.get(index);
 	}
 

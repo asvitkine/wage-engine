@@ -100,10 +100,6 @@ public class Obj implements Weapon {
 	public void setResourceID(short resourceID) {
 		this.resourceID = resourceID;
 	}
-	
-	public short getHexOffset(State state) {
-		return (short) ((index * State.OBJ_SIZE) + state.getObjsHexOffset());
-	}
 
 	public String toString() {
 		return name;

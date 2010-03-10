@@ -523,10 +523,6 @@ public class Chr {
 		this.resourceID = resourceID;
 	}
 
-	public short getHexOffset(State state) {
-		return (short) ((index * State.CHAR_SIZE) + state.getCharsHexOffset());
-	}
-
 	public String toString() {
 		return name;
 	}
