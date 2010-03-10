@@ -121,7 +121,7 @@ public class World {
 		return getOrderedScenes().get(1 + (int) (Math.random() * getOrderedScenes().size() - 1));
 	}
 
-	public Scene getSceneByHexOffset(short offset) {
+	public Scene getSceneByHexOffset(int offset) {
 		// the save file stores blank info as 0xffff...
 		if (offset == -1)
 			return null;
@@ -160,7 +160,7 @@ public class World {
 		return null;
 	}
 
-	public Obj getObjByHexOffset(short offset) {
+	public Obj getObjByHexOffset(int offset) {
 		// a lot of obj hex offsets = 0xffff if they are empty (i.e. not wearing spirtual armor, etc.)
 		if (offset == -1)
 			return null;
