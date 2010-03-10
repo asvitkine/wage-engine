@@ -250,7 +250,7 @@ public class StateManager {
 		state.setVisitNum(playerContext.getVisits());
 		
 		// set loop#
-		state.setLoopNum((short)loopNum);
+		state.setLoopNum(loopNum);
 		
 		// set monsters killed
 		state.setKillNum(playerContext.getKills());
