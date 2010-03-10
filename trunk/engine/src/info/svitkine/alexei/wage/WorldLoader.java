@@ -185,7 +185,7 @@ public class WorldLoader {
 					world.setPlayer(chr);
 					
 					// hex offset to player character in save file
-					initialState.setPlayerHexOffset((short)(initialState.getChrsHexOffset()+(charCount*State.CHR_SIZE)));
+					initialState.setPlayerHexOffset(initialState.getHexOffsetForChr(chr));
 				}
 				charCount++;
 			}
