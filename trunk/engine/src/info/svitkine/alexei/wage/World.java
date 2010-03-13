@@ -265,7 +265,7 @@ public class World {
 			return;
 		Object from = removeFromChr(obj);
 		if (obj.getState().getCurrentScene() != null) {
-			obj.getState().getCurrentScene().getObjs().remove(obj);
+			obj.getState().getCurrentScene().getState().getObjs().remove(obj);
 			from = obj.getState().getCurrentScene();
 		}
 		obj.getState().setCurrentOwner(chr);
@@ -279,12 +279,12 @@ public class World {
 			return;
 		Object from = removeFromChr(obj);
 		if (obj.getState().getCurrentScene() != null) {
-			obj.getState().getCurrentScene().getObjs().remove(obj);
+			obj.getState().getCurrentScene().getState().getObjs().remove(obj);
 			from = obj.getState().getCurrentScene();
 		}
 		obj.getState().setCurrentScene(scene);
-		scene.getObjs().add(obj);
-		sortObjs(scene.getObjs());
+		scene.getState().getObjs().add(obj);
+		sortObjs(scene.getState().getObjs());
 		fireMoveEvent(new MoveEvent(obj, from, scene));
 	}
 
@@ -318,15 +318,15 @@ public class World {
 		Scene from = chr.getCurrentScene();
 		if (from != scene) {
 			if (from != null)
-				from.getChrs().remove(chr);
+				from.getState().getChrs().remove(chr);
 			chr.setCurrentScene(scene);
-			scene.getChrs().add(chr);
-			sortChrs(scene.getChrs());
+			scene.getState().getChrs().add(chr);
+			sortChrs(scene.getState().getChrs());
 			if (from == storageScene) {
 				initChrContext(chr);
 			} else {
 				if (chr.isPlayerCharacter()) {
-					scene.setVisited(true);
+					scene.getState().setVisited(true);
 				}
 				chr.getContext().setVisits(chr.getContext().getVisits() + 1);
 			}

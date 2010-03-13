@@ -222,13 +222,13 @@ public class Script {
 				handlers.add(new PairEvaluator(Operand.OBJ, Operand.SCENE) {
 					@Override
 					public void evaluatePair(Operand o1, Operand o2) {
-						evalResult = ((Scene) o2.value).getObjs().contains((Obj) o1.value);
+						evalResult = ((Scene) o2.value).getState().getObjs().contains((Obj) o1.value);
 					}
 				});
 				handlers.add(new PairEvaluator(Operand.CHR, Operand.SCENE) {
 					@Override
 					public void evaluatePair(Operand o1, Operand o2) {
-						evalResult = ((Scene) o2.value).getChrs().contains((Chr) o1.value);
+						evalResult = ((Scene) o2.value).getState().getChrs().contains((Chr) o1.value);
 					}
 				});
 				handlers.add(new PairEvaluator(Operand.OBJ, Operand.CHR) {
@@ -987,7 +987,7 @@ public class Script {
 	
 	public static String getGroundItemsList(Scene scene) {
 		List<Obj> objs = new ArrayList<Obj>();
-		for (Obj obj : scene.getObjs()) {
+		for (Obj obj : scene.getState().getObjs()) {
 			if (obj.getType() != Obj.IMMOBILE_OBJECT) {
 				objs.add(obj);
 			}
@@ -1113,7 +1113,7 @@ public class Script {
 	}
 	
 	private void handleTakeCommand(String target) {
-		for (Obj o : world.getPlayer().getCurrentScene().getObjs()) {
+		for (Obj o : world.getPlayer().getCurrentScene().getState().getObjs()) {
 			if (target.contains(o.getName().toLowerCase())) {
 				if (o.getType() == Obj.IMMOBILE_OBJECT) {
 					appendText("You can't move it.");

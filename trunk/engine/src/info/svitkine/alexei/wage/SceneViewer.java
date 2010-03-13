@@ -40,9 +40,9 @@ public class SceneViewer extends JPanel {
 			g2d.setColor(Color.WHITE);
 			g2d.fillRect(2, 2, getWidth()-4, getHeight()-4);
 			scene.getDesign().paint(g2d, patterns);
-			for (Obj o : scene.getObjs())
+			for (Obj o : scene.getState().getObjs())
 				o.getDesign().paint(g2d, patterns);
-			for (Chr c : scene.getChrs())
+			for (Chr c : scene.getState().getChrs())
 				if (!c.isPlayerCharacter())
 					c.getDesign().paint(g2d, patterns);
 			g2d.translate(-2, -2);
@@ -52,14 +52,14 @@ public class SceneViewer extends JPanel {
 	}
 
 	public Object getClickTarget(MouseEvent e) {
-		for (int i = scene.getObjs().size() - 1; i >= 0; i--) {
-			Obj o = scene.getObjs().get(i);
+		for (int i = scene.getState().getObjs().size() - 1; i >= 0; i--) {
+			Obj o = scene.getState().getObjs().get(i);
 			if (o.getDesign().isPointOpaque(e.getX(), e.getY())) {
 				return o;
 			}
 		}
-		for (int i = scene.getChrs().size() - 1; i >= 0; i--) {
-			Chr c = scene.getChrs().get(i);
+		for (int i = scene.getState().getChrs().size() - 1; i >= 0; i--) {
+			Chr c = scene.getState().getChrs().get(i);
 			if (c.getDesign().isPointOpaque(e.getX(), e.getY())) {
 				return c;
 			}

@@ -30,11 +30,97 @@ public class Scene {
 	private String soundName;
 	private int worldX;
 	private int worldY;
-	private boolean visited;
-	
-	private List<Obj> objs = new ArrayList<Obj>();
-	private List<Chr> chrs = new ArrayList<Chr>();
 
+	private State state;
+
+	public static class State {
+		private int worldX;
+		private int worldY;
+		private boolean[] blocked = new boolean[4];
+		private int soundFrequency; // times a minute, max 3600
+		private int soundType;
+		private boolean visited;
+		private List<Obj> objs = new ArrayList<Obj>();
+		private List<Chr> chrs = new ArrayList<Chr>();
+
+		public State(Scene scene) {
+			worldX = scene.getWorldX();
+			worldY = scene.getWorldY();
+			blocked[Scene.NORTH] = scene.isDirBlocked(Scene.NORTH);
+			blocked[Scene.SOUTH] = scene.isDirBlocked(Scene.SOUTH);
+			blocked[Scene.EAST] = scene.isDirBlocked(Scene.EAST);
+			blocked[Scene.WEST] = scene.isDirBlocked(Scene.WEST);
+			soundFrequency = scene.getSoundFrequency();
+			soundType = scene.getSoundType();
+		}
+
+		public int getWorldX() {
+			return worldX;
+		}
+
+		public void setWorldX(int worldX) {
+			this.worldX = worldX;
+		}
+
+		public int getWorldY() {
+			return worldY;
+		}
+
+		public void setWorldY(int worldY) {
+			this.worldY = worldY;
+		}
+
+		public void setDirBlocked(int dir, boolean blocked) {
+			this.blocked[dir] = blocked;
+		}
+		
+		public boolean isDirBlocked(int dir) {
+			return blocked[dir];
+		}
+
+		public int getSoundFrequency() {
+			return soundFrequency;
+		}
+
+		public void setSoundFrequency(int soundFrequency) {
+			this.soundFrequency = soundFrequency;
+		}
+
+		public int getSoundType() {
+			return soundType;
+		}
+
+		public void setSoundType(int soundType) {
+			this.soundType = soundType;
+		}
+
+		public List<Chr> getChrs() {
+			return chrs;
+		}
+
+		public List<Obj> getObjs() {
+			return objs;
+		}
+
+		public void setVisited(boolean visited) {
+			this.visited = true;
+		}
+		
+		public boolean wasVisited() {
+			return visited;
+		}
+	}
+
+	public State getState() {
+		if (state == null)
+			state = new State(this);
+		return state;
+	}
+
+	public void setState(State state) {
+		this.state = state;
+	}
+	
 	public int getSoundFrequency() {
 		return soundFrequency;
 	}
@@ -171,75 +257,12 @@ public class Scene {
 	public int getFontType() {
 		return fontType;
 	}
-	
-	public String getFontName() {
-		String[] fonts = {
-			"Chicago",	// system font
-			"Geneva",	// application font
-			"New York",
-			"Geneva",
-
-			"Monaco",
-			"Venice",
-			"London",
-			"Athens",
-	
-			"San Francisco",
-			"Toronto",
-			"Cairo",
-			"Los Angeles", // 12
-
-			null, null, null, null, null, null, null, // not in Inside Macintosh
-
-			"Times", // 20
-			"Helvetica",
-			"Courier",
-			"Symbol",
-			"Taliesin" // mobile?
-		};
-		/*
-mappings found on some forums:
-systemFont(0):System(Swiss)
-times(20):Times New Roman(Roman)
-helvetica(21):Arial(Modern)
-courier(22):Courier New(Modern)
-symbol(23):Symbol(Decorative)
-applFont(1):Arial(Swiss)
-newYork(2):Times New Roman(Roman)
-geneva(3):Arial(Swiss)
-monaco(4):Courier New(Modern)
-venice(5):Times New Roman(Roman)
-london(6):Times New Roman(Roman)
-athens(7):Times New Roman(Roman)
-sanFran(8):Times New Roman(Roman)
-toronto(9):Times New Roman(Roman)
-cairo(11):Wingdings(Decorative)
-losAngeles(12):Times New Roman(Roman)
-taliesin(24):Wingdings(Decorative)
-		 */
-		if (fontType >= 0 && fontType < fonts.length && fonts[fontType] != null) {
-			return fonts[fontType];
-		}
-		return "Unknown";
-	}
 
 	public void setFontType(int fontType) {
 		this.fontType = fontType;
 	}
 
-	public List<Chr> getChrs() {
-		return chrs;
-	}
-
-	public List<Obj> getObjs() {
-		return objs;
-	}
-
-	public void setVisited(boolean visited) {
-		this.visited = true;
-	}
-	
-	public boolean wasVisited() {
-		return visited;
+	public String getFontName() {
+		return FontNames.getFontName(fontType);
 	}
 }

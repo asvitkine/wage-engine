@@ -429,6 +429,21 @@ public class StateManager {
 			vars[i] = world.getPlayerContext().getUserVariable(i);
 		}
 	}
+	
+	private static void writeSceneState(DataOutputStream stream, Scene.State state) throws IOException {
+		stream.writeShort(state.getWorldY());
+		stream.writeShort(state.getWorldX());
+		stream.writeByte(state.isDirBlocked(Scene.NORTH) ? 0x01 : 0x00);
+		stream.writeByte(state.isDirBlocked(Scene.SOUTH) ? 0x01 : 0x00);
+		stream.writeByte(state.isDirBlocked(Scene.EAST) ? 0x01 : 0x00);
+		stream.writeByte(state.isDirBlocked(Scene.WEST) ? 0x01 : 0x00);
+		stream.writeShort(state.getSoundFrequency());
+		stream.writeByte(state.getSoundType());
+		// the following two bytes are currently unknown
+		stream.writeByte(0);
+		stream.writeByte(0);
+		stream.writeByte(state.wasVisited() ? 0x01 : 0x00);
+	}
 
 	private void updateStateSceneData() {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
@@ -438,18 +453,7 @@ public class StateManager {
 			for (Scene scene : world.getOrderedScenes()) {
 				if (scene != world.getStorageScene()) {
 					stream.writeShort(scene.getResourceID());
-					stream.writeShort(scene.getWorldY());
-					stream.writeShort(scene.getWorldX());
-					stream.writeByte(scene.isDirBlocked(Scene.NORTH) ? 0x01 : 0x00);
-					stream.writeByte(scene.isDirBlocked(Scene.SOUTH) ? 0x01 : 0x00);
-					stream.writeByte(scene.isDirBlocked(Scene.EAST) ? 0x01 : 0x00);
-					stream.writeByte(scene.isDirBlocked(Scene.WEST) ? 0x01 : 0x00);
-					stream.writeShort(scene.getSoundFrequency());
-					stream.writeByte(scene.getSoundType());
-					// the following two bytes are currently unknown
-					stream.writeByte(0);
-					stream.writeByte(0);
-					stream.writeByte(scene.wasVisited() ? 0x01 : 0x00);
+					writeSceneState(stream, scene.getState());
 				}
 			}
 		} catch (IOException e) {
@@ -557,6 +561,23 @@ public class StateManager {
 		}
 	}
 	
+	private static Scene.State readSceneState(DataInputStream in, Scene scene) throws IOException {
+		Scene.State state = new Scene.State(scene);
+		state.setWorldY(in.readShort());
+		state.setWorldX(in.readShort());
+		state.setDirBlocked(Scene.NORTH, in.readByte() != 0);
+		state.setDirBlocked(Scene.SOUTH, in.readByte() != 0);
+		state.setDirBlocked(Scene.EAST, in.readByte() != 0);
+		state.setDirBlocked(Scene.WEST, in.readByte() != 0);
+		state.setSoundFrequency(in.readUnsignedShort());
+		state.setSoundType(in.readUnsignedByte());
+		// below are unknown
+		in.readByte();
+		in.readByte();
+		state.setVisited(in.readByte() != 0);
+		return state;
+	}
+	
 	public void updateScenesWithBinaryData(byte[] data) {
 		DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
 
@@ -570,18 +591,7 @@ public class StateManager {
 						return;
 					}
 
-					scene.setWorldY(in.readShort());
-					scene.setWorldX(in.readShort());
-					scene.setDirBlocked(Scene.NORTH, in.readByte() != 0);
-					scene.setDirBlocked(Scene.SOUTH, in.readByte() != 0);
-					scene.setDirBlocked(Scene.EAST, in.readByte() != 0);
-					scene.setDirBlocked(Scene.WEST, in.readByte() != 0);
-					scene.setSoundFrequency(in.readUnsignedShort());
-					scene.setSoundType(in.readUnsignedByte());
-					// below are unknown
-					in.readByte();
-					in.readByte();
-					scene.setVisited(in.readByte() != 0);
+					scene.setState(readSceneState(in, scene));
 				}
 			}
 		} catch (IOException e) {
