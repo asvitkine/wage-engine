@@ -47,8 +47,9 @@ public class World {
 		orderedChrs = new ArrayList<Chr>();
 		orderedSounds = new ArrayList<Sound>();
 		patterns = new ArrayList<byte[]>();
-		storageScene = new Scene();
-		storageScene.setName(STORAGE);
+		SceneImpl storage = new SceneImpl();
+		storage.setName(STORAGE);
+		storageScene = storage;
 		orderedScenes.add(storageScene);
 		scenes.put(STORAGE, storageScene);
 		moveListeners = new LinkedList<MoveListener>();
@@ -58,7 +59,7 @@ public class World {
 		return storageScene;
 	}
 	
-	public void addScene(Scene room) {
+	public void addScene(SceneImpl room) {
 		if (room.getName() != null)
 			scenes.put(room.getName().toLowerCase(), room);
 		
