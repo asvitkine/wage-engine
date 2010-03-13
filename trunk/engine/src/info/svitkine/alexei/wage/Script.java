@@ -219,16 +219,17 @@ public class Script {
 						evalResult = ((Scene) o2.value).getObjs().contains((Obj) o1.value);
 					}
 				});
-				handlers.add(new PairEvaluator(Operand.STRING, Operand.CHR) {
+				handlers.add(new PairEvaluator(Operand.CHR, Operand.CHR) {
 					@Override
 					public void evaluatePair(Operand o1, Operand o2) {
-						evalResult = (o1 == o2);
+						evalResult = (o1.value == o2.value);
 					}
 				});
 				handlers.add(new PairEvaluator(Operand.CHR, Operand.STRING) {
 					@Override
 					public void evaluatePair(Operand o1, Operand o2) {
-						evalResult = ((Chr)o1.value).getName().toLowerCase().contains(o2.value.toString().toLowerCase());
+						evalResult = o1.value == null ? false :
+							((Chr)o1.value).getName().toLowerCase().contains(o2.value.toString().toLowerCase());
 					}
 				});
 				handlers.add(handlers.get(handlers.size() - 1).reverse());
