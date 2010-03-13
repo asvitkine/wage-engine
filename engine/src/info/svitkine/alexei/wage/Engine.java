@@ -251,7 +251,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 
 	public Obj getOffer() {
 		if (offer != null) {
-			Chr owner = offer.getCurrentOwner();
+			Chr owner = offer.getState().getCurrentOwner();
 			if (owner == null || owner.isPlayerCharacter() || owner.getCurrentScene() != world.getPlayer().getCurrentScene()) {
 				offer = null;
 			}
@@ -638,13 +638,13 @@ public class Engine implements Script.Callbacks, MoveListener {
 	}
 	
 	private void decrementUses(Obj obj) {
-		int numberOfUses = obj.getCurrentNumberOfUses();
+		int numberOfUses = obj.getState().getNumberOfUses();
 		if (numberOfUses != -1) {
 			numberOfUses--;
 			if (numberOfUses > 0) {
-				obj.setCurrentNumberOfUses(numberOfUses);
+				obj.getState().setNumberOfUses(numberOfUses);
 			} else {
-				obj.setCurrentNumberOfUses(obj.getNumberOfUses());
+				obj.setState(new Obj.State(obj));
 				if (obj.getReturnToRandomScene()) {
 					world.move(obj, world.getRandomScene());
 				} else {

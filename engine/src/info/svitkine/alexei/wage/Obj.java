@@ -36,7 +36,6 @@ public class Obj implements Weapon {
 	private int accuracy;
 	private int attackType;
 	private int numberOfUses;
-	private int currentNumberOfUses;
 	private boolean returnToRandomScene;
 	private String sceneOrOwner;
 	private String clickMessage;
@@ -44,30 +43,92 @@ public class Obj implements Weapon {
 	private String failureMessage;
 	private String useMessage;
 	private String sound;
+
+	private State state;
+
+	public static class State {
+		private Scene currentScene;
+		private Chr currentOwner;
+		private int accuracy;
+		private int value;
+		private int type;
+		private int damage;
+		private int attackType;
+		private int numberOfUses;
+		
+		public State(Obj obj) {
+			this.accuracy = obj.getAccuracy();
+			this.value = obj.getValue();
+			this.type = obj.getType();
+			this.damage = obj.getDamage();
+			this.attackType = obj.getAttackType();
+			this.numberOfUses = obj.getNumberOfUses();
+		}
+		
+		public Scene getCurrentScene() {
+			return currentScene;
+		}
+		public void setCurrentScene(Scene currentScene) {
+			this.currentScene = currentScene;
+			if (currentScene != null)
+				currentOwner = null;
+		}
+		public Chr getCurrentOwner() {
+			return currentOwner;
+		}
+		public void setCurrentOwner(Chr currentOwner) {
+			this.currentOwner = currentOwner;
+			if (currentOwner != null)
+				currentScene = null;
+		}
+		public int getAccuracy() {
+			return accuracy;
+		}
+		public void setAccuracy(int accuracy) {
+			this.accuracy = accuracy;
+		}
+		public int getValue() {
+			return value;
+		}
+		public void setValue(int value) {
+			this.value = value;
+		}
+		public int getType() {
+			return type;
+		}
+		public void setType(int type) {
+			this.type = type;
+		}
+		public int getDamage() {
+			return damage;
+		}
+		public void setDamage(int damage) {
+			this.damage = damage;
+		}
+		public int getAttackType() {
+			return attackType;
+		}
+		public void setAttackType(int attackType) {
+			this.attackType = attackType;
+		}
+		public int getNumberOfUses() {
+			return numberOfUses;
+		}
+		public void setNumberOfUses(int numberOfUses) {
+			this.numberOfUses = numberOfUses;
+		}
+	}
+
+	public State getState() {
+		if (state == null)
+			state = new State(this);
+		return state;
+	}
+
+	public void setState(State state) {
+		this.state = state;
+	}
 	
-	private Scene currentScene;
-	private Chr currentOwner;
-
-	public Chr getCurrentOwner() {
-		return currentOwner;
-	}
-
-	public void setCurrentOwner(Chr currentOwner) {
-		this.currentOwner = currentOwner;
-		if (currentOwner != null)
-			currentScene = null;
-	}
-
-	public Scene getCurrentScene() {
-		return currentScene;
-	}
-
-	public void setCurrentScene(Scene currentScene) {
-		this.currentScene = currentScene;
-		if (currentScene != null)
-			currentOwner = null;
-	}
-
 	public Design getDesign() {
 		return design;
 	}
@@ -151,14 +212,6 @@ public class Obj implements Weapon {
 
 	public void setNumberOfUses(int numberOfUses) {
 		this.numberOfUses = numberOfUses;
-	}
-
-	public int getCurrentNumberOfUses() {
-		return currentNumberOfUses;
-	}
-
-	public void setCurrentNumberOfUses(int numberOfUses) {
-		this.currentNumberOfUses = numberOfUses;
 	}
 
 	public int getType() {

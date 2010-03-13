@@ -397,7 +397,6 @@ public class WorldLoader {
 			obj.setDamage(in.readUnsignedByte());
 			obj.setAttackType(in.readByte());
 			obj.setNumberOfUses(in.readShort());
-			obj.setCurrentNumberOfUses(obj.getNumberOfUses());
 			short returnTo = in.readShort();
 			if (returnTo == 256) // TODO any other possibilities?
 				obj.setReturnToRandomScene(true);

@@ -465,6 +465,8 @@ public class StateManager {
 
 		try {
 			for (Chr chr : world.getOrderedChrs()) {
+				// TODO: make Chr.State, Obj.State, Scene.State classes...
+				//       then we just do chr.setState(state)
 				stream.writeShort(chr.getResourceID());
 
 				Scene scene = chr.getCurrentScene();
@@ -510,6 +512,26 @@ public class StateManager {
 		state.setChrData(bout.toByteArray());
 	}
 	
+	private static void writeObjState(DataOutputStream stream, Obj.State state) throws IOException {
+		Scene location = state.getCurrentScene();
+		Chr owner = state.getCurrentOwner();
+
+		stream.writeShort(location == null ? 0 : location.getResourceID());
+		stream.writeShort(owner == null ? 0 : owner.getResourceID());
+
+		// bytes 7-9 are unknown (always = 0)
+		stream.writeByte(0);
+		stream.writeByte(0);
+		stream.writeByte(0);
+
+		stream.writeByte(state.getAccuracy());
+		stream.writeByte(state.getValue());
+		stream.writeByte(state.getType());
+		stream.writeByte(state.getDamage());
+		stream.writeByte(state.getAttackType());
+		stream.writeShort(state.getNumberOfUses());
+	}
+	
 	private void updateStateObjData() {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		DataOutputStream stream = new DataOutputStream(bout);
@@ -517,24 +539,7 @@ public class StateManager {
 		try {
 			for (Obj obj : world.getOrderedObjs()) {
 				stream.writeShort(obj.getResourceID());
-
-				Scene location = obj.getCurrentScene();
-				Chr owner = obj.getCurrentOwner();
-
-				stream.writeShort(location == null ? 0 : location.getResourceID());
-				stream.writeShort(owner == null ? 0 : owner.getResourceID());
-
-				// bytes 7-9 are unknown (always = 0)
-				stream.writeByte(0);
-				stream.writeByte(0);
-				stream.writeByte(0);
-				
-				stream.writeByte(obj.getAccuracy());
-				stream.writeByte(obj.getValue());
-				stream.writeByte(obj.getType());
-				stream.writeByte(obj.getDamage());
-				stream.writeByte(obj.getAttackType());
-				stream.writeShort(obj.getCurrentNumberOfUses());
+				writeObjState(stream, obj.getState());
 			}
 
 			stream.flush();
@@ -629,6 +634,33 @@ public class StateManager {
 			e.printStackTrace();
 		}
 	}
+	
+	private Obj.State readObjState(DataInputStream in, Obj obj) throws IOException {
+		Obj.State state = new Obj.State(obj);
+		short sceneLoc = in.readShort();
+		short charOwner = in.readShort();
+
+		// TODO: Verify that things get properly removed without using world.move()
+		if (charOwner != 0) {
+			state.setCurrentOwner(world.getCharByID(charOwner));
+		} else {
+			state.setCurrentScene(world.getSceneByID(sceneLoc));			
+		}
+
+		// bytes 7-9 are unknown (always = 0)
+		in.readByte();
+		in.readByte();
+		in.readByte();
+
+		// update object stats
+		obj.setAccuracy(in.readUnsignedByte());
+		obj.setValue(in.readUnsignedByte());
+		obj.setType(in.readUnsignedByte());
+		obj.setDamage(in.readUnsignedByte());
+		obj.setAttackType(in.readUnsignedByte());
+		obj.setNumberOfUses(in.readShort());
+		return state;
+	}
 		
 	public void updateObjsWithBinaryData(byte[] data) {
 		DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
@@ -642,27 +674,7 @@ public class StateManager {
 					return;
 				}
 
-				short sceneLoc = in.readShort();
-				short charLoc = in.readShort();
-
-				if (charLoc != 0x0000) {
-					world.move(obj, world.getCharByID(charLoc));
-				} else {
-					world.move(obj, world.getSceneByID(sceneLoc));
-				}
-
-				// bytes 7-9 are unknown (always = 0)
-				in.readByte();
-				in.readByte();
-				in.readByte();
-
-				// update object stats
-				obj.setAccuracy(in.readUnsignedByte());
-				obj.setValue(in.readUnsignedByte());
-				obj.setType(in.readUnsignedByte());
-				obj.setDamage(in.readUnsignedByte());
-				obj.setAttackType(in.readUnsignedByte());
-				obj.setCurrentNumberOfUses(in.readShort());
+				obj.setState(readObjState(in, obj));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
