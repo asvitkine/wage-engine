@@ -237,6 +237,18 @@ public class Script {
 						evalResult = ((Chr) o2.value).getInventory().contains((Obj) o1.value);
 					}
 				});
+				handlers.add(new PairEvaluator(Operand.CHR, Operand.CHR) {
+					@Override
+					public void evaluatePair(Operand o1, Operand o2) {
+						evalResult = (o1.value == o2.value);
+					}
+				});
+				handlers.add(new PairEvaluator(Operand.SCENE, Operand.SCENE) {
+					@Override
+					public void evaluatePair(Operand o1, Operand o2) {
+						evalResult = (o1.value == o2.value);
+					}
+				});
 				handlers.add(new PairEvaluator(Operand.STRING, Operand.TEXT_INPUT) {
 					@Override
 					public void evaluatePair(Operand o1, Operand o2) {
@@ -318,7 +330,7 @@ public class Script {
 				public void evaluatePair(Operand o1, Operand o2) {
 					Obj o = (Obj) o1.value;
 					Chr c = (Chr) o2.value;
-					evalResult = (o.getCurrentOwner() != c);
+					evalResult = (o.getState().getCurrentOwner() != c);
 				}
 			});
 			handlers.add(new PairEvaluator(Operand.CHR, Operand.OBJ) {
@@ -326,7 +338,7 @@ public class Script {
 				public void evaluatePair(Operand o1, Operand o2) {
 					Chr c = (Chr) o1.value;
 					Obj o = (Obj) o2.value;
-					evalResult = (o.getCurrentOwner() != c);
+					evalResult = (o.getState().getCurrentOwner() != c);
 				}
 			});
 			handlers.add(new PairEvaluator(Operand.OBJ, Operand.SCENE) {
@@ -334,7 +346,7 @@ public class Script {
 				public void evaluatePair(Operand o1, Operand o2) {
 					Obj o = (Obj) o1.value;
 					Scene s = (Scene) o2.value;
-					evalResult = (o.getCurrentScene() != s);
+					evalResult = (o.getState().getCurrentScene() != s);
 				}
 			});
 			handlers.add(new PairEvaluator(Operand.CHR, Operand.CHR) {
@@ -387,7 +399,7 @@ public class Script {
 				public void evaluatePair(Operand o1, Operand o2) {
 					Obj o = (Obj) o1.value;
 					Chr c = (Chr) o2.value;
-					evalResult = (o.getCurrentOwner() != c);
+					evalResult = (o.getState().getCurrentOwner() != c);
 				}
 			});
 			handlers.add(new PairEvaluator(Operand.OBJ, Operand.SCENE) {
@@ -395,7 +407,7 @@ public class Script {
 				public void evaluatePair(Operand o1, Operand o2) {
 					Obj o = (Obj) o1.value;
 					Scene s = (Scene) o2.value;
-					evalResult = (o.getCurrentScene() != s);
+					evalResult = (o.getState().getCurrentScene() != s);
 				}
 			});
 			handlers.add(new PairEvaluator(Operand.CHR, Operand.SCENE) {
@@ -908,7 +920,7 @@ public class Script {
 	
 	private void handleAcceptCommand() {
 		Obj offer = callbacks.getOffer();
-		Chr chr = offer.getCurrentOwner();
+		Chr chr = offer.getState().getCurrentOwner();
 		appendText("%s lays the %s on the ground and departs peacefully.",
 			Engine.getNameWithDefiniteArticle(chr, true), offer.getName());
 		world.move(offer, chr.getCurrentScene());

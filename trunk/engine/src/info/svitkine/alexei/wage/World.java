@@ -247,10 +247,10 @@ public class World {
 	}
 
 	private Chr removeFromChr(Obj obj) {
-		Chr owner = obj.getCurrentOwner();
+		Chr owner = obj.getState().getCurrentOwner();
 		if (owner != null) {
 			owner.getInventory().remove(obj);
-			Obj[] armor = obj.getCurrentOwner().getArmor();
+			Obj[] armor = obj.getState().getCurrentOwner().getArmor();
 			for (int i = 0; i < armor.length; i++) {
 				if (armor[i] == obj) {
 					armor[i] = null;
@@ -264,11 +264,11 @@ public class World {
 		if (obj == null)
 			return;
 		Object from = removeFromChr(obj);
-		if (obj.getCurrentScene() != null) {
-			obj.getCurrentScene().getObjs().remove(obj);
-			from = obj.getCurrentScene();
+		if (obj.getState().getCurrentScene() != null) {
+			obj.getState().getCurrentScene().getObjs().remove(obj);
+			from = obj.getState().getCurrentScene();
 		}
-		obj.setCurrentOwner(chr);
+		obj.getState().setCurrentOwner(chr);
 		chr.getInventory().add(obj);
 		sortObjs(chr.getInventory());
 		fireMoveEvent(new MoveEvent(obj, from, chr));
@@ -278,11 +278,11 @@ public class World {
 		if (obj == null)
 			return;
 		Object from = removeFromChr(obj);
-		if (obj.getCurrentScene() != null) {
-			obj.getCurrentScene().getObjs().remove(obj);
-			from = obj.getCurrentScene();
+		if (obj.getState().getCurrentScene() != null) {
+			obj.getState().getCurrentScene().getObjs().remove(obj);
+			from = obj.getState().getCurrentScene();
 		}
-		obj.setCurrentScene(scene);
+		obj.getState().setCurrentScene(scene);
 		scene.getObjs().add(obj);
 		sortObjs(scene.getObjs());
 		fireMoveEvent(new MoveEvent(obj, from, scene));
