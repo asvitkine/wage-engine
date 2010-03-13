@@ -140,7 +140,7 @@ public class WorldLoader {
 		
 		if (scenes != null) {
 			for (Resource r : scenes.getResArray()) {
-				Scene scene = parseSceneData(r.getName(), r.getData());
+				SceneImpl scene = parseSceneData(r.getName(), r.getData());
 				Resource code = model.getResource("ACOD", r.getID());
 				if (code != null) {
 					scene.setScript(new Script(code.getData()));
@@ -415,8 +415,8 @@ public class WorldLoader {
 		return obj;
 	}
 
-	private Scene parseSceneData(String sceneName, byte[] data) {
-		Scene scene = new Scene();
+	private SceneImpl parseSceneData(String sceneName, byte[] data) {
+		SceneImpl scene = new SceneImpl();
 		scene.setName(sceneName);
 		scene.setDesign(new Design(data));
 		try {
