@@ -176,7 +176,7 @@ public class Script {
 		return op;
 	}
 
-	private Boolean evalClickEquality(Operand lhs, Operand rhs) {
+	private Boolean evalClickEquality(Operand lhs, Operand rhs, boolean partialMatch) {
 		Boolean result = null;
 		if (lhs.value == null || rhs.value == null) {
 			result = false;
@@ -186,10 +186,16 @@ public class Script {
 			String str = rhs.value.toString();
 			if (lhs.value instanceof Chr) {
 				String name = ((Chr) lhs.value).getName();
-				result = name.toLowerCase().indexOf(str.toLowerCase()) != -1;
+				if (partialMatch)
+					result = name.toLowerCase().indexOf(str.toLowerCase()) != -1;
+				else
+					result = name.toLowerCase().equals(str.toLowerCase());
 			} else if (lhs.value instanceof Obj) {
 				String name = ((Obj) lhs.value).getName();
-				result = name.toLowerCase().indexOf(str.toLowerCase()) != -1;
+				if (partialMatch)
+					result = name.toLowerCase().indexOf(str.toLowerCase()) != -1;
+				else
+					result = name.toLowerCase().equals(str.toLowerCase());
 			}
 		}
 		return result;
@@ -200,9 +206,9 @@ public class Script {
 		Boolean result = null;
 		if (op.equals("=")) {
 			if (lhs.type == Operand.CLICK_INPUT) {
-				result = evalClickEquality(lhs, rhs);
+				result = evalClickEquality(lhs, rhs, true);
 			} else if (rhs.type == Operand.CLICK_INPUT) {
-				result = evalClickEquality(rhs, lhs);
+				result = evalClickEquality(rhs, lhs, true);
 			} else {
 				List<PairEvaluator> handlers = new ArrayList<PairEvaluator>();
 				handlers.add(new PairEvaluator(Operand.NUMBER, Operand.NUMBER) {
@@ -405,9 +411,9 @@ public class Script {
 		} else if (op.equals("==") || op.equals(">>")) {
 			// TODO: check if >> can be used for click inputs and if == can be used for other things
 			if (op.equals("==") && lhs.type == Operand.CLICK_INPUT) {
-				result = evalClickEquality(lhs, rhs);
+				result = evalClickEquality(lhs, rhs, false);
 			} else if (op.equals("==") && rhs.type == Operand.CLICK_INPUT) {
-				result = evalClickEquality(rhs, lhs);
+				result = evalClickEquality(rhs, lhs, false);
 			} else {
 				// exact string match
 				if (lhs.type == Operand.TEXT_INPUT) {
