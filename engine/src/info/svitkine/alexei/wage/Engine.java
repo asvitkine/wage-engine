@@ -156,7 +156,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 			monster = null;
 			running = null;
 			offer = null;
-			for (Chr chr : playerScene.getChrs()) {
+			for (Chr chr : playerScene.getState().getChrs()) {
 				if (!chr.isPlayerCharacter()) {
 					monster = chr;
 					shouldEncounter = true;
@@ -372,7 +372,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 			if (!npc.getInventory().isEmpty())
 				hat.addTokens(OFFER, npc.getLosingOffer() + 1);
 		}
-		List<Obj> objs = npc.getCurrentScene().getObjs();
+		List<Obj> objs = npc.getCurrentScene().getState().getObjs();
 		if (npc.getInventory().size() < npc.getMaximumCarriedObjects()) {
 			for (int i = 0; i < objs.size(); i++) {
 				Obj o = objs.get(i);
@@ -490,7 +490,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 				int destX = currentScene.getWorldX() + dx[dir];
 				int destY = currentScene.getWorldY() + dy[dir];
 				Scene scene = world.getSceneAt(destX, destY);
-				if (scene != null && scene.getChrs().size() == 0) {
+				if (scene != null && scene.getState().getChrs().size() == 0) {
 					directions |= (1 << dir);
 				}
 			}

@@ -161,7 +161,7 @@ public class GameWindow extends JFrame {
 
 	private void doCommand(String line) {
 		if (line.equals("debug")) {
-			for (Obj o : world.getPlayer().getCurrentScene().getObjs())
+			for (Obj o : world.getPlayer().getCurrentScene().getState().getObjs())
 				System.out.println(o.getName());
 			return;
 		}
