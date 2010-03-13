@@ -79,13 +79,14 @@ public class StateManager {
 
 		// players experience
 		state.setExp(in.readInt());
+
+		state.setAim(in.readShort());
+		state.setOpponentAim(in.readShort());
 		
 		// TODO: 
-		System.out.println("UNKNOWN 5:" + in.readShort());	// Usually = 0002
-		System.out.println("UNKNOWN 6:" + in.readShort());	// Usually = 0001 / 0002 / 0003
+		System.out.println("UNKNOWN 5:" + in.readShort());	// Usually = 0000
+		System.out.println("UNKNOWN 6:" + in.readShort());	// Usually = 0000, but was 0002 when i froze an enemy
 		System.out.println("UNKNOWN 7:" + in.readShort());	// Usually = 0000
-		System.out.println("UNKNOWN 8:" + in.readShort());	// Usually = 0000, but was 0002 when i froze an enemy
-		System.out.println("UNKNOWN 9:" + in.readShort());	// Usually = 0000
 		
 		// Base character stats
 		state.setBasePhysStr(in.readUnsignedByte());
@@ -99,7 +100,7 @@ public class StateManager {
 		state.setBaseRunSpeed(in.readUnsignedByte());
 		
 		// TODO:
-		System.out.println("UNKNOWN 10: " + in.readUnsignedByte());	// Usually = 0A or FF
+		System.out.println("UNKNOWN 8: " + in.readUnsignedByte());	// Usually = 0A or FF
 		
 		// read user variables
 		short[] userVars = parseUserVars(in);
@@ -183,10 +184,11 @@ public class StateManager {
 
 		// players experience points
 		out.writeInt(state.getExp());
-		
+
+		out.writeShort(state.getAim());
+		out.writeShort(state.getOpponentAim());
+
 		// TODO:
-		out.writeShort(0x0002);	// anything but 2 seems to report "enhanced physical/spiritual conditions to "status"
-		out.writeShort(0x0002);	// this is usually 2, but i've seen 1 and 3 as well
 		out.writeShort(0x0000);	// always 0
 		out.writeShort(0x0000);	// always 0
 		out.writeShort(0x0000);	// always 0
@@ -222,7 +224,7 @@ public class StateManager {
 		out.close();
 	}
 	
-	public boolean updateState(Chr monster, Chr running, int loopNum) {
+	public boolean updateState(Chr monster, Chr running, int loopNum, int aim, int opponentAim) {
 		// The base initial state that was created when the world was loaded
 		// initialized a lot of the state variables (number of scenes/chrs/objs, hex offsets, etc.)
 		// so we only have to initialize the ones that could possibly change
@@ -258,6 +260,9 @@ public class StateManager {
 		// set experience
 		state.setExp(playerContext.getExperience());
 
+		state.setAim(aim);
+		state.setOpponentAim(opponentAim);
+		
 		// Current Monster
 		state.setPresCharHexOffset(state.getHexOffsetForChr(monster));
 

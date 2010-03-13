@@ -24,11 +24,13 @@ public class State {
 	private int worldSignature;
 	
 	// global status vars
-	private int visitNum = 0;
-	private int loopNum = 0;
-	private int killNum = 0;
-	private int exp = 0;
-	
+	private int visitNum;
+	private int loopNum;
+	private int killNum;
+	private int exp;
+	private int aim;
+	private int opponentAim;
+
 	// information about player character
 	private int basePhysStr;
 	private int basePhysHp;
@@ -116,6 +118,18 @@ public class State {
 	}
 	public void setExp(int exp) {
 		this.exp = exp;
+	}
+	public int getAim() {
+		return aim;
+	}
+	public void setAim(int aim) {
+		this.aim = aim;
+	}
+	public int getOpponentAim() {
+		return opponentAim;
+	}
+	public void setOpponentAim(int opponentAim) {
+		this.opponentAim = opponentAim;
 	}
 	public int getBasePhysStr() {
 		return basePhysStr;
