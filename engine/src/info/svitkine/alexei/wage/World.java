@@ -70,7 +70,7 @@ public class World {
 		orderedScenes.add(room);
 	}
 
-	public void addObj(Obj obj) {
+	public void addObj(ObjImpl obj) {
 		objs.put(obj.getName().toLowerCase(), obj);
 		obj.setIndex(orderedObjs.size());
 		orderedObjs.add(obj);

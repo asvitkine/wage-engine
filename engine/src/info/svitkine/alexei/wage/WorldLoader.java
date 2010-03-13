@@ -200,7 +200,7 @@ public class WorldLoader {
 
 		if (objs != null) {
 			for (Resource r : objs.getResArray()) {
-				Obj obj = parseObjData(r.getName(), r.getData());
+				ObjImpl obj = parseObjData(r.getName(), r.getData());
 				obj.setResourceID(r.getID());
 
 				world.addObj(obj);
@@ -373,9 +373,9 @@ public class WorldLoader {
 		}
 		return chr;
 	}
-	
-	private Obj parseObjData(String objName, byte[] data) {
-		Obj obj = new Obj();
+
+	private ObjImpl parseObjData(String objName, byte[] data) {
+		ObjImpl obj = new ObjImpl();
 		obj.setName(objName);
 		obj.setDesign(new Design(data));
 		try {

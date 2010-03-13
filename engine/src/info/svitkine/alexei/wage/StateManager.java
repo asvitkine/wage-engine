@@ -663,12 +663,12 @@ public class StateManager {
 		in.readByte();
 
 		// update object stats
-		obj.setAccuracy(in.readUnsignedByte());
-		obj.setValue(in.readUnsignedByte());
-		obj.setType(in.readUnsignedByte());
-		obj.setDamage(in.readUnsignedByte());
-		obj.setAttackType(in.readUnsignedByte());
-		obj.setNumberOfUses(in.readShort());
+		state.setAccuracy(in.readUnsignedByte());
+		state.setValue(in.readUnsignedByte());
+		state.setType(in.readUnsignedByte());
+		state.setDamage(in.readUnsignedByte());
+		state.setAttackType(in.readUnsignedByte());
+		state.setNumberOfUses(in.readShort());
 		return state;
 	}
 		
