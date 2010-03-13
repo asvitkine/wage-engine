@@ -219,6 +219,19 @@ public class Script {
 						evalResult = ((Scene) o2.value).getObjs().contains((Obj) o1.value);
 					}
 				});
+				handlers.add(new PairEvaluator(Operand.STRING, Operand.CHR) {
+					@Override
+					public void evaluatePair(Operand o1, Operand o2) {
+						evalResult = (o1 == o2);
+					}
+				});
+				handlers.add(new PairEvaluator(Operand.CHR, Operand.STRING) {
+					@Override
+					public void evaluatePair(Operand o1, Operand o2) {
+						evalResult = ((Chr)o1.value).getName().toLowerCase().contains(o2.value.toString().toLowerCase());
+					}
+				});
+				handlers.add(handlers.get(handlers.size() - 1).reverse());
 				handlers.add(new PairEvaluator(Operand.CHR, Operand.SCENE) {
 					@Override
 					public void evaluatePair(Operand o1, Operand o2) {
@@ -241,16 +254,7 @@ public class Script {
 						}
 					}
 				});
-				handlers.add(new PairEvaluator(Operand.TEXT_INPUT, Operand.STRING) {
-					@Override
-					public void evaluatePair(Operand o1, Operand o2) {
-						if (inputText != null) {
-							evalResult = inputText.toLowerCase().contains(((String) o2.value).toLowerCase());
-						} else {
-							evalResult = false;
-						}
-					}
-				});
+				handlers.add(handlers.get(handlers.size() - 1).reverse());
 				handlers.add(new PairEvaluator(Operand.NUMBER, Operand.TEXT_INPUT) {
 					@Override
 					public void evaluatePair(Operand o1, Operand o2) {
@@ -261,16 +265,7 @@ public class Script {
 						}
 					}
 				});
-				handlers.add(new PairEvaluator(Operand.TEXT_INPUT, Operand.NUMBER) {
-					@Override
-					public void evaluatePair(Operand o1, Operand o2) {
-						if (inputText != null) {
-							evalResult = inputText.contains(o2.value.toString());
-						} else {
-							evalResult = false;
-						}
-					}
-				});
+				handlers.add(handlers.get(handlers.size() - 1).reverse());
 				evaluatePair(handlers, lhs, rhs);
 				result = (Boolean) evalResult;
 			}
@@ -297,16 +292,7 @@ public class Script {
 					}
 				}
 			});
-			handlers.add(new PairEvaluator(Operand.TEXT_INPUT, Operand.STRING) {
-				@Override
-				public void evaluatePair(Operand o1, Operand o2) {
-					if (inputText != null) {
-						evalResult = !inputText.toLowerCase().contains(((String) o2.value).toLowerCase());
-					} else {
-						evalResult = false;
-					}
-				}
-			});
+			handlers.add(handlers.get(handlers.size() - 1).reverse());
 			handlers.add(new PairEvaluator(Operand.OBJ, Operand.CHR) {
 				@Override
 				public void evaluatePair(Operand o1, Operand o2) {
@@ -315,14 +301,7 @@ public class Script {
 					evalResult = (o.getCurrentOwner() != c);
 				}
 			});
-			handlers.add(new PairEvaluator(Operand.CHR, Operand.OBJ) {
-				@Override
-				public void evaluatePair(Operand o1, Operand o2) {
-					Chr c = (Chr) o1.value;
-					Obj o = (Obj) o2.value;
-					evalResult = (o.getCurrentOwner() != c);
-				}
-			});
+			handlers.add(handlers.get(handlers.size() - 1).reverse());
 			handlers.add(new PairEvaluator(Operand.OBJ, Operand.SCENE) {
 				@Override
 				public void evaluatePair(Operand o1, Operand o2) {
@@ -613,8 +592,16 @@ public class Script {
 			this.rhsType = rhsType;
 		}
 		public abstract void evaluatePair(Operand o1, Operand o2);
+		public PairEvaluator reverse() {
+			return new PairEvaluator(rhsType, lhsType) {
+				@Override
+				public void evaluatePair(Operand o1, Operand o2) {
+					PairEvaluator.this.evaluatePair(o2, o1);
+				}
+			};
+		}
 	}
-
+	
 	private Operand convertOperand(Operand operand, int type) {
 		if (operand.type == type)
 			return operand;

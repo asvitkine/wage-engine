@@ -22,7 +22,8 @@ public class Engine implements Script.Callbacks, MoveListener {
 	private Chr running;
 	private Obj offer;
 	private boolean commandWasQuick;
-	private int aim = -1;
+	private int aim = Chr.CHEST;
+	private int opponentAim = Chr.CHEST; // TODO: use this ... let monsters aim...
 	private boolean temporarilyHidden;
 
 	public interface Callbacks {
@@ -120,7 +121,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 
 	public void saveState(File toFile) throws IOException {
 		// updates state variables with current world info
-		boolean success = stateManager.updateState(monster, running, loopCount);
+		boolean success = stateManager.updateState(monster, running, loopCount, aim, opponentAim);
 		// output state info to disk
 		if (success) {
 			stateManager.writeSaveData(toFile);
@@ -134,17 +135,13 @@ public class Engine implements Script.Callbacks, MoveListener {
 			System.err.println("Error reverting to last saved game!");
 			return;
 		}
-		
-		//TODO: make sure that armor in the inventory gets put on if we are wearing it
+
 		loopCount = world.getCurrentState().getLoopNum();
-		
-		// let the engine know if there is a npc in the current scene
-		int presMonHexOffset = world.getCurrentState().getPresCharHexOffset();
-		if (presMonHexOffset != 0xffff)
-			monster = world.getCharByHexOffset(presMonHexOffset);
-		
-		this.callbacks.clearOutput();
-		
+		monster = world.getCharByHexOffset(world.getCurrentState().getPresCharHexOffset());		
+		aim = world.getCurrentState().getAim();
+		opponentAim = world.getCurrentState().getOpponentAim();
+
+		callbacks.clearOutput();
 		processTurn("look", null);
 	}
 
@@ -300,7 +297,9 @@ public class Engine implements Script.Callbacks, MoveListener {
 					Scene scene = getSceneByName(returnToSceneName);
 					if (scene != null && scene != world.getStorageScene()) {
 						world.move(chr, scene);
-						return;
+						// To avoid sleeping twice, return if the above move command would cause a sleep.
+						if (scene == currentScene)
+							return;
 					}
 				}
 			} else if (event.getTo() == player.getCurrentScene()) {
@@ -340,6 +339,8 @@ public class Engine implements Script.Callbacks, MoveListener {
 	}
 	
 	public void performCombatAction(Chr npc, Chr player) {
+		if (npc.getContext().isFrozen())
+			return;
 		final int WEAPONS = -400;
 		final int MAGIC = -300;
 		final int RUN = -200;
@@ -515,65 +516,119 @@ public class Engine implements Script.Callbacks, MoveListener {
 		world.move(chr, world.getSceneAt(destX, destY));
 	}
 
+	public void performMagicAttack(Chr attacker, Chr victim, Obj weapon) {
+		int chance = (int) (Math.random() * 255);
+		// TODO: what about object accuracy
+		if (chance < attacker.getSpiritualAccuracy()) {
+			switch (weapon.getAttackType()) {
+			case Obj.FREEZES_OPPONENT:
+			case Obj.CAUSES_PHYSICAL_DAMAGE:
+			case Obj.CAUSES_SPIRITUAL_DAMAGE:
+			case Obj.CAUSES_PHYSICAL_AND_SPIRITUAL_DAMAGE:
+				break;
+			}			
+			appendText("The spell is effective!");
+		} else {
+			
+		}
+
+	}
+
 	public void performAttack(Chr attacker, Chr victim, Weapon weapon) {
 		if (world.isWeaponsMenuDisabled())
 			return;
+
+		// TODO: verify that a player not aiming will always target the chest??
+		int targetIndex = -1;
 		String[] targets = new String[] { "head", "chest", "side" };
-		int targetIndex = (attacker.isPlayerCharacter() && aim != -1 ? aim : (int) (Math.random()*targets.length));
-		String target = targets[targetIndex];
-		if (!attacker.isPlayerCharacter()) {
-			appendText("%s %ss %s at %s's %s.",
+		if (weapon.getType() != Obj.MAGICAL_OBJECT) {
+			targetIndex = (attacker.isPlayerCharacter() ? aim : (opponentAim = 1 + (int) (Math.random()*targets.length))) - 1;
+			if (!attacker.isPlayerCharacter()) {
+				appendText("%s %ss %s at %s's %s.",
 					getNameWithDefiniteArticle(attacker, true),
 					weapon.getOperativeVerb(),
 					TextUtils.prependGenderSpecificPronoun(weapon.getName(), attacker.getGender()),
 					getNameWithDefiniteArticle(victim, false),
-					target);
+					targets[targetIndex]);
+			}
 		}
+
 		playSound(weapon.getSound());
+
 		int chance = (int) (Math.random() * 255);
+		// TODO: what about obj accuracy
 		if (chance < attacker.getPhysicalAccuracy()) {
-			if (victim.getArmor()[targetIndex] != null) {
-				// TODO: Absorb some damage.
-				appendText("%s's %s weakens the impact of %s's %s.",
+			if (targetIndex != -1) {
+				if (victim.getArmor()[targetIndex] != null) {
+					// TODO: Absorb some damage.
+					appendText("%s's %s weakens the impact of %s's %s.",
 						getNameWithDefiniteArticle(victim, true),
 						victim.getArmor()[targetIndex].getName(),
 						getNameWithDefiniteArticle(attacker, false),
 						weapon.getName());
-			} else {
-				appendText("A hit to the %s.", target);
+				} else {
+					appendText("A hit to the %s.", targets[targetIndex]);
+				}
+				playSound(attacker.getScoresHitSound());
+				appendText(attacker.getScoresHitComment());
+				playSound(victim.getReceivesHitSound());
+				appendText(victim.getReceivesHitComment());
+			} else if (weapon.getType() == Obj.MAGICAL_OBJECT) {
+				appendText(((Obj) weapon).getUseMessage());
+				appendText("The spell is effective!");
 			}
-			playSound(attacker.getScoresHitSound());
-			appendText(attacker.getScoresHitComment());
-			playSound(victim.getReceivesHitSound());
-			appendText(victim.getReceivesHitComment());
+
+			boolean causesPhysicalDamage = true;
+			boolean causesSpiritualDamage = false;
+			boolean freezesOpponent = false;
+
 			if (weapon.getType() == Obj.THROW_WEAPON) {
 				world.move((Obj) weapon, victim.getCurrentScene());
+			} else if (weapon.getType() == Obj.MAGICAL_OBJECT) {
+				int type = (((Obj) weapon).getAttackType());
+				causesPhysicalDamage = (type == Obj.CAUSES_PHYSICAL_DAMAGE || type == Obj.CAUSES_PHYSICAL_AND_SPIRITUAL_DAMAGE);
+				causesSpiritualDamage = (type == Obj.CAUSES_SPIRITUAL_DAMAGE || type == Obj.CAUSES_PHYSICAL_AND_SPIRITUAL_DAMAGE);
+				freezesOpponent = (type == Obj.FREEZES_OPPONENT);
 			}
-			Context victimContext = victim.getContext();
-			int victimHp = victim.getContext().getStatVariable(Context.PHYS_HIT_CUR);
-			victimHp -= weapon.getDamage();
-			victimContext.setStatVariable(Context.PHYS_HIT_CUR, victimHp);
-			if (victimHp < 0) {
-				playSound(victim.getDyingSound());
-				appendText(victim.getDyingWords());
-				appendText("%s is dead.", getNameWithDefiniteArticle(victim, true));
-				Context attackerContext = attacker.getContext();
-				attackerContext.setKills(attackerContext.getKills() + 1);
-				attackerContext.setExperience(attackerContext.getExperience() + 1 + victim.getPhysicalHp());
-				if (!victim.isPlayerCharacter() && !victim.getInventory().isEmpty()) {
-					for (int i = victim.getInventory().size() - 1; i >= 0; i--) {
-						world.move(victim.getInventory().get(i), victim.getCurrentScene());
+
+			if (causesPhysicalDamage) {
+				Context victimContext = victim.getContext();
+				int victimHp = victim.getContext().getStatVariable(Context.PHYS_HIT_CUR);
+				victimHp -= weapon.getDamage();
+				victimContext.setStatVariable(Context.PHYS_HIT_CUR, victimHp);
+				if (victimHp < 0) {
+					playSound(victim.getDyingSound());
+					appendText(victim.getDyingWords());
+					appendText("%s is dead.", getNameWithDefiniteArticle(victim, true));
+					Context attackerContext = attacker.getContext();
+					attackerContext.setKills(attackerContext.getKills() + 1);
+					attackerContext.setExperience(attackerContext.getExperience() + 1 + victim.getPhysicalHp());
+					if (!victim.isPlayerCharacter() && !victim.getInventory().isEmpty()) {
+						for (int i = victim.getInventory().size() - 1; i >= 0; i--) {
+							world.move(victim.getInventory().get(i), victim.getCurrentScene());
+						}
+						appendText(Script.getGroundItemsList(victim.getCurrentScene()));
 					}
-					appendText(Script.getGroundItemsList(victim.getCurrentScene()));
+					world.move(victim, world.getStorageScene());
+				} else if (attacker.isPlayerCharacter()) {
+					appendText("%s's condition appears to be %s.",
+						getNameWithDefiniteArticle(victim, true),
+						Script.getPercentMessage(victim, Context.PHYS_HIT_CUR, Context.PHYS_HIT_BAS));
 				}
-				world.move(victim, world.getStorageScene());
-			} else if (attacker.isPlayerCharacter()) {
-				appendText("%s's condition appears to be %s.",
-					getNameWithDefiniteArticle(victim, true),
-					Script.getPercentMessage(victim, Context.PHYS_HIT_CUR, Context.PHYS_HIT_BAS));
 			}
+			
+			if (causesSpiritualDamage) {
+				/* TODO */
+			}
+
+			if (freezesOpponent) {
+				victim.getContext().setFrozen(true);
+			}
+
 		} else if (weapon.getFailureMessage() != null) {
 			appendText(weapon.getFailureMessage());
+		} else if (weapon.getType() == Obj.MAGICAL_OBJECT) {
+			appendText("The spell has no effect.");
 		} else {
 			appendText("A miss!");
 		}
