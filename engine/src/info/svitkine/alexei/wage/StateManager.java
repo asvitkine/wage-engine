@@ -85,7 +85,7 @@ public class StateManager {
 		
 		// TODO: 
 		System.out.println("UNKNOWN 5:" + in.readShort());	// Usually = 0000
-		System.out.println("UNKNOWN 6:" + in.readShort());	// Usually = 0000, but was 0002 when i froze an enemy
+		System.out.println("UNKNOWN 6:" + in.readShort());	// Usually = 0000, but was 0002 (0003?) when i froze an enemy
 		System.out.println("UNKNOWN 7:" + in.readShort());	// Usually = 0000
 		
 		// Base character stats

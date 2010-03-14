@@ -430,7 +430,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 			/* TODO: choose in a smarter way? */
 			appendText("%s offers %s.",
 				getNameWithDefiniteArticle(attacker, true),
-				o.isNamePlural() ? o.getName() :
+				o.isNamePlural() ? "some " + o.getName() :
 				TextUtils.prependIndefiniteArticle(o.getName()));
 			offer = o;
 			return;
