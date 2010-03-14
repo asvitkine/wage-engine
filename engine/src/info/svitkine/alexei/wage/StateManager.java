@@ -315,7 +315,6 @@ public class StateManager {
 				}
 
 				world.setPlayer(player);
-				player.setPlayerCharacter(true);
 
 				// set current scene
 				Scene s = world.getSceneByHexOffset(state.getCurSceneHexOffset());

@@ -177,7 +177,7 @@ public class WorldLoader {
 		short charCount = 0;
 		if (chrs != null) {
 			for (Resource r : chrs.getResArray()) {
-				Chr chr = parseChrData(r.getName(), r.getData());
+				ChrImpl chr = parseChrData(r.getName(), r.getData());
 				chr.setResourceID(r.getID());
 				world.addChr(chr);
 				// TODO: What if there's more than one player character?
@@ -290,8 +290,8 @@ public class WorldLoader {
 		}
 	}
 	
-	private Chr parseChrData(String chrName, byte[] data) {
-		Chr chr = new Chr();
+	private ChrImpl parseChrData(String chrName, byte[] data) {
+		ChrImpl chr = new ChrImpl();
 		chr.setName(chrName);
 		chr.setDesign(new Design(data));
 		try {

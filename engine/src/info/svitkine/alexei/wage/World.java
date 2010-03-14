@@ -77,7 +77,7 @@ public class World {
 		orderedObjs.add(obj);
 	}
 
-	public void addChr(Chr chr) {
+	public void addChr(ChrImpl chr) {
 		chrs.put(chr.getName().toLowerCase(), chr);
 		chr.setIndex(orderedChrs.size());
 		orderedChrs.add(chr);
