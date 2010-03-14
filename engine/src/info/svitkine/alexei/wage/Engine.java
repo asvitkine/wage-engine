@@ -632,10 +632,10 @@ public class Engine implements Script.Callbacks, MoveListener {
 				victim.getContext().setFrozen(true);
 			}
 
-		} else if (weapon.getFailureMessage() != null) {
-			appendText(weapon.getFailureMessage());
 		} else if (weapon.getType() == Obj.MAGICAL_OBJECT) {
 			appendText("The spell has no effect.");
+		} else if (weapon.getFailureMessage() != null) {
+			appendText(weapon.getFailureMessage());
 		} else {
 			appendText("A miss!");
 		}
