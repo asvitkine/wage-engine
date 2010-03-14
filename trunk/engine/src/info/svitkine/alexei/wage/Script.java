@@ -1006,7 +1006,7 @@ public class Script {
 			if (!obj.isNamePlural())
 				sb.append(TextUtils.prependIndefiniteArticle(obj.getName()));
 			else
-				sb.append(obj.getName());
+				sb.append("some " + obj.getName());
 			if (i == objs.size() - 1) {
 				sb.append(".");
 			} else if (i == objs.size() - 2) {
