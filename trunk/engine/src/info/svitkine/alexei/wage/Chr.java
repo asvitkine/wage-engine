@@ -30,8 +30,8 @@ public class Chr {
 	private int physicalHp;
 	private int naturalArmor;
 	private int physicalAccuracy;
-	private int spiritualStength;
-	private int spiritialHp;
+	private int spiritualStrength;
+	private int spiritualHp;
 	private int resistanceToMagic;
 	private int spiritualAccuracy;
 	private int runningSpeed;
@@ -79,12 +79,49 @@ public class Chr {
 	private State state;
 	
 	public static class State {
+		private int basePhysicalStrength;
+		private int currentPhysicalStrength;
+		private int basePhysicalHp;
+		private int currentPhysicalHp;
+		private int baseNaturalArmor; // aka physicalArmor
+		private int currentNaturalArmor; // aka physicalArmor
+		private int basePhysicalAccuracy;
+		private int currentPhysicalAccuracy;
+		private int baseSpiritualStrength;
+		private int currentSpiritualStrength;
+		private int baseSpiritualHp;
+		private int currentSpiritualHp;
+		private int baseResistanceToMagic; // aka spiritualArmor
+		private int currentResistanceToMagic; // aka spiritualArmor
+		private int baseSpiritualAccuracy;
+		private int currentSpiritualAccuracy;
+		private int baseRunningSpeed;
+		private int currentRunningSpeed;
+
+		private int rejectsOffers;
+		private int followsOpponent;
+
+		private int weaponDamage1;
+		private int weaponDamage2;
+
 		private Scene currentScene;
 		private List<Obj> inventory = new ArrayList<Obj>();
 		private Obj[] armor = new Obj[4];
-
+		
 		public State(Chr chr) {
-			
+			basePhysicalStrength = currentPhysicalStrength = chr.getPhysicalStrength();
+			basePhysicalHp = currentPhysicalHp = chr.getPhysicalHp();
+			baseNaturalArmor = currentNaturalArmor = chr.getNaturalArmor();
+			basePhysicalAccuracy = currentPhysicalAccuracy = chr.getPhysicalAccuracy();
+			baseSpiritualStrength = currentSpiritualStrength = chr.getSpiritualStrength();
+			baseSpiritualHp = currentSpiritualHp = chr.getSpiritualHp();
+			baseResistanceToMagic = currentResistanceToMagic = chr.getResistanceToMagic();
+			baseSpiritualAccuracy = currentSpiritualAccuracy = chr.getSpiritualAccuracy();
+			baseRunningSpeed = currentRunningSpeed = chr.getRunningSpeed();
+			rejectsOffers = chr.getRejectsOffers();
+			followsOpponent = chr.getFollowsOpponent();
+			weaponDamage1 = chr.getWeaponDamage1();
+			weaponDamage2 = chr.getWeaponDamage2();
 		}
 		
 		public List<Obj> getInventory() {
@@ -105,6 +142,182 @@ public class Chr {
 
 		public void setArmor(int type, Obj obj) {
 			armor[type] = obj;
+		}
+
+		public int getBasePhysicalStrength() {
+			return basePhysicalStrength;
+		}
+
+		public void setBasePhysicalStrength(int basePhysicalStrength) {
+			this.basePhysicalStrength = basePhysicalStrength;
+		}
+
+		public int getCurrentPhysicalStrength() {
+			return currentPhysicalStrength;
+		}
+
+		public void setCurrentPhysicalStrength(int currentPhysicalStrength) {
+			this.currentPhysicalStrength = currentPhysicalStrength;
+		}
+
+		public int getBasePhysicalHp() {
+			return basePhysicalHp;
+		}
+
+		public void setBasePhysicalHp(int basePhysicalHp) {
+			this.basePhysicalHp = basePhysicalHp;
+		}
+
+		public int getCurrentPhysicalHp() {
+			return currentPhysicalHp;
+		}
+
+		public void setCurrentPhysicalHp(int currentPhysicalHp) {
+			this.currentPhysicalHp = currentPhysicalHp;
+		}
+
+		public int getBaseNaturalArmor() {
+			return baseNaturalArmor;
+		}
+
+		public void setBaseNaturalArmor(int baseNaturalArmor) {
+			this.baseNaturalArmor = baseNaturalArmor;
+		}
+
+		public int getCurrentNaturalArmor() {
+			return currentNaturalArmor;
+		}
+
+		public void setCurrentNaturalArmor(int currentNaturalArmor) {
+			this.currentNaturalArmor = currentNaturalArmor;
+		}
+
+		public int getBasePhysicalAccuracy() {
+			return basePhysicalAccuracy;
+		}
+
+		public void setBasePhysicalAccuracy(int basePhysicalAccuracy) {
+			this.basePhysicalAccuracy = basePhysicalAccuracy;
+		}
+
+		public int getCurrentPhysicalAccuracy() {
+			return currentPhysicalAccuracy;
+		}
+
+		public void setCurrentPhysicalAccuracy(int currentPhysicalAccuracy) {
+			this.currentPhysicalAccuracy = currentPhysicalAccuracy;
+		}
+
+		public int getBaseSpiritualStrength() {
+			return baseSpiritualStrength;
+		}
+
+		public void setBaseSpiritualStrength(int baseSpiritualStrength) {
+			this.baseSpiritualStrength = baseSpiritualStrength;
+		}
+
+		public int getCurrentSpiritualStrength() {
+			return currentSpiritualStrength;
+		}
+
+		public void setCurrentSpiritualStrength(int currentSpiritualStrength) {
+			this.currentSpiritualStrength = currentSpiritualStrength;
+		}
+
+		public int getBaseSpiritualHp() {
+			return baseSpiritualHp;
+		}
+
+		public void setBaseSpiritualHp(int baseSpiritualHp) {
+			this.baseSpiritualHp = baseSpiritualHp;
+		}
+
+		public int getCurrentSpiritualHp() {
+			return currentSpiritualHp;
+		}
+
+		public void setCurrentSpiritualHp(int currentSpiritualHp) {
+			this.currentSpiritualHp = currentSpiritualHp;
+		}
+
+		public int getBaseResistanceToMagic() {
+			return baseResistanceToMagic;
+		}
+
+		public void setBaseResistanceToMagic(int baseResistanceToMagic) {
+			this.baseResistanceToMagic = baseResistanceToMagic;
+		}
+
+		public int getCurrentResistanceToMagic() {
+			return currentResistanceToMagic;
+		}
+
+		public void setCurrentResistanceToMagic(int currentResistanceToMagic) {
+			this.currentResistanceToMagic = currentResistanceToMagic;
+		}
+
+		public int getBaseSpiritualAccuracy() {
+			return baseSpiritualAccuracy;
+		}
+
+		public void setBaseSpiritualAccuracy(int baseSpiritualAccuracy) {
+			this.baseSpiritualAccuracy = baseSpiritualAccuracy;
+		}
+
+		public int getCurrentSpiritualAccuracy() {
+			return currentSpiritualAccuracy;
+		}
+
+		public void setCurrentSpiritualAccuracy(int currentSpiritualAccuracy) {
+			this.currentSpiritualAccuracy = currentSpiritualAccuracy;
+		}
+
+		public int getBaseRunningSpeed() {
+			return baseRunningSpeed;
+		}
+
+		public void setBaseRunningSpeed(int baseRunningSpeed) {
+			this.baseRunningSpeed = baseRunningSpeed;
+		}
+
+		public int getCurrentRunningSpeed() {
+			return currentRunningSpeed;
+		}
+
+		public void setCurrentRunningSpeed(int currentRunningSpeed) {
+			this.currentRunningSpeed = currentRunningSpeed;
+		}
+
+		public int getRejectsOffers() {
+			return rejectsOffers;
+		}
+
+		public void setRejectsOffers(int rejectsOffers) {
+			this.rejectsOffers = rejectsOffers;
+		}
+
+		public int getFollowsOpponent() {
+			return followsOpponent;
+		}
+
+		public void setFollowsOpponent(int followsOpponent) {
+			this.followsOpponent = followsOpponent;
+		}
+
+		public int getWeaponDamage1() {
+			return weaponDamage1;
+		}
+
+		public void setWeaponDamage1(int weaponDamage1) {
+			this.weaponDamage1 = weaponDamage1;
+		}
+
+		public int getWeaponDamage2() {
+			return weaponDamage2;
+		}
+
+		public void setWeaponDamage2(int weaponDamage2) {
+			this.weaponDamage2 = weaponDamage2;
 		}
 	}
 
@@ -433,12 +646,12 @@ public class Chr {
 		this.scoresHitSound = scoresHitSound;
 	}
 
-	public int getSpiritialHp() {
-		return spiritialHp;
+	public int getSpiritualHp() {
+		return spiritualHp;
 	}
 
-	public void setSpiritialHp(int spiritialHp) {
-		this.spiritialHp = spiritialHp;
+	public void setSpiritialHp(int spiritualHp) {
+		this.spiritualHp = spiritualHp;
 	}
 
 	public int getSpiritualAccuracy() {
@@ -449,12 +662,12 @@ public class Chr {
 		this.spiritualAccuracy = spiritualAccuracy;
 	}
 
-	public int getSpiritualStength() {
-		return spiritualStength;
+	public int getSpiritualStrength() {
+		return spiritualStrength;
 	}
 
-	public void setSpiritualStength(int spiritualStength) {
-		this.spiritualStength = spiritualStength;
+	public void setSpiritualStrength(int spiritualStrength) {
+		this.spiritualStrength = spiritualStrength;
 	}
 
 	public int getWeaponDamage1() {

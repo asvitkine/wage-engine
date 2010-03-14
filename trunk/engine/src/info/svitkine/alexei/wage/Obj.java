@@ -35,14 +35,20 @@ public interface Obj extends Weapon {
 		private int numberOfUses;
 		
 		public State(Obj obj) {
+			this(obj, null, null);
+		}
+
+		public State(Obj obj, Chr currentOwner, Scene currentScene) {
 			this.accuracy = obj.getAccuracy();
 			this.value = obj.getValue();
 			this.type = obj.getType();
 			this.damage = obj.getDamage();
 			this.attackType = obj.getAttackType();
 			this.numberOfUses = obj.getNumberOfUses();
+			this.currentOwner = currentOwner;
+			this.currentScene = currentScene;
 		}
-		
+
 		public Scene getCurrentScene() {
 			return currentScene;
 		}
