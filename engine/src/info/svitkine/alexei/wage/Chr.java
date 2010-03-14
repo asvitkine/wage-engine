@@ -70,32 +70,58 @@ public class Chr {
 	private String acceptsOfferComment;
 	private String dyingWords;
 
-	private Scene currentScene;
-	private List<Obj> inventory = new ArrayList<Obj>();
-
 	public static final int HEAD_ARMOR = 0;
 	public static final int BODY_ARMOR = 1;
 	public static final int SHIELD_ARMOR = 2;
 	public static final int MAGIC_ARMOR = 3;
+	public static final int NUMBER_OF_ARMOR_TYPES = 4;
 
-	private Obj[] armor = new Obj[4];
+	private State state;
+	
+	public static class State {
+		private Scene currentScene;
+		private List<Obj> inventory = new ArrayList<Obj>();
+		private Obj[] armor = new Obj[4];
+
+		public State(Chr chr) {
+			
+		}
+		
+		public List<Obj> getInventory() {
+			return inventory;
+		}
+
+		public Scene getCurrentScene() {
+			return currentScene;
+		}
+
+		public void setCurrentScene(Scene currentScene) {
+			this.currentScene = currentScene;
+		}
+
+		public Obj getArmor(int type) {
+			return armor[type];
+		}
+
+		public void setArmor(int type, Obj obj) {
+			armor[type] = obj;
+		}
+	}
 
 	private Context context = new Context();
 
 	public Context getContext() {
 		return context;
 	}
-
-	public List<Obj> getInventory() {
-		return inventory;
+	
+	public State getState() {
+		if (state == null)
+			state = new State(this);
+		return state;
 	}
 
-	public Scene getCurrentScene() {
-		return currentScene;
-	}
-
-	public void setCurrentScene(Scene currentScene) {
-		this.currentScene = currentScene;
+	public void setState(State state) {
+		this.state = state;
 	}
 
 	public Rectangle getDesignBounds() {
@@ -195,10 +221,6 @@ public class Chr {
 		this.makesOfferComment = makesOfferComment;
 	}
 
-	public Obj[] getArmor() {
-		return armor;
-	}
-
 	public Weapon[] getWeapons() {
 		ArrayList<Weapon> weapons = new ArrayList<Weapon>();
 		if (hasNativeWeapon1()) {
@@ -251,7 +273,7 @@ public class Chr {
 				}
 			});
 		}
-		for (Obj o : getInventory()) {
+		for (Obj o : state.getInventory()) {
 			switch (o.getType()) {
 				case Obj.REGULAR_WEAPON:
 				case Obj.THROW_WEAPON:
@@ -265,7 +287,7 @@ public class Chr {
 
 	public Obj[] getMagicalObjects() {
 		ArrayList<Obj> magic = new ArrayList<Obj>();
-		for (Obj obj : getInventory()) {
+		for (Obj obj : state.getInventory()) {
 			if (obj.getType() == Obj.MAGICAL_OBJECT) {
 				magic.add(obj);
 			}

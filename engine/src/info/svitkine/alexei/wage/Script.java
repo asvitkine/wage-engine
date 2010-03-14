@@ -48,7 +48,7 @@ public class Script {
 		} else if (data[index] == (byte) 0xC0) { // STORAGE@
 			result = new Operand(world.getStorageScene(), Operand.SCENE);
 		} else if (data[index] == (byte) 0xC1) { // SCENE@
-			result = new Operand(world.getPlayer().getCurrentScene(), Operand.SCENE);
+			result = new Operand(world.getPlayerScene(), Operand.SCENE);
 		} else if (data[index] == (byte) 0xC2) { // PLAYER@
 			result = new Operand(world.getPlayer(), Operand.CHR);
 		} else if (data[index] == (byte) 0xC3) { // MONSTER@
@@ -234,7 +234,7 @@ public class Script {
 				handlers.add(new PairEvaluator(Operand.OBJ, Operand.CHR) {
 					@Override
 					public void evaluatePair(Operand o1, Operand o2) {
-						evalResult = ((Chr) o2.value).getInventory().contains((Obj) o1.value);
+						evalResult = ((Chr) o2.value).getState().getInventory().contains((Obj) o1.value);
 					}
 				});
 				handlers.add(new PairEvaluator(Operand.CHR, Operand.CHR) {
@@ -415,7 +415,7 @@ public class Script {
 				public void evaluatePair(Operand o1, Operand o2) {
 					Chr c = (Chr) o1.value;
 					Scene s = (Scene) o2.value;
-					evalResult = (c != null && c.getCurrentScene() != s);
+					evalResult = (c != null && c.getState().getCurrentScene() != s);
 				}
 			});
 			evaluatePair(handlers, lhs, rhs);
@@ -773,9 +773,9 @@ public class Script {
 					return true;
 				} else if (data[index] == (byte) 0x89) { // MOVE
 					index++;
-					Scene currentScene = world.getPlayer().getCurrentScene();
+					Scene currentScene = world.getPlayerScene();
 					processMove();
-					if (world.getPlayer().getCurrentScene() != currentScene)
+					if (world.getPlayerScene() != currentScene)
 						return true;
 				} else if (data[index] == (byte) 0x8B) { // PRINT
 					index++;
@@ -901,7 +901,7 @@ public class Script {
 		Chr player = world.getPlayer();
 		Chr enemy = callbacks.getMonster();
 		if (enemy != null) {
-			for (Obj o : player.getInventory()) {
+			for (Obj o : player.getState().getInventory()) {
 				if (target.contains(o.getName().toLowerCase())) {
 					// TODO
 					if (true) {
@@ -923,7 +923,7 @@ public class Script {
 		Chr chr = offer.getState().getCurrentOwner();
 		appendText("%s lays the %s on the ground and departs peacefully.",
 			Engine.getNameWithDefiniteArticle(chr, true), offer.getName());
-		world.move(offer, chr.getCurrentScene());
+		world.move(offer, chr.getState().getCurrentScene());
 		world.move(chr, world.getStorageScene());
 	}
 
@@ -951,8 +951,8 @@ public class Script {
 	}
 
 	private boolean isWearing(Chr chr, Obj obj) {
-		for (Obj wearingObj : chr.getArmor()) {
-			if (obj == wearingObj) {
+		for (int i = 0; i < Chr.NUMBER_OF_ARMOR_TYPES; i++) {
+			if (chr.getState().getArmor(i) == obj) {
 				return true;
 			}
 		}
@@ -962,7 +962,7 @@ public class Script {
 	private void handleInventoryCommand() {
 		Chr player = world.getPlayer();
 		List<Obj> objs = new ArrayList<Obj>();
-		for (Obj obj : player.getInventory()) {
+		for (Obj obj : player.getState().getInventory()) {
 			if (!isWearing(player, obj)) {
 				objs.add(obj);
 			}
@@ -977,7 +977,7 @@ public class Script {
 	}
 	
 	private void handleLookCommand() {
-		Scene playerScene = world.getPlayer().getCurrentScene();
+		Scene playerScene = world.getPlayerScene();
 		appendText(playerScene.getText());
 		String items = getGroundItemsList(playerScene);
 		if (items != null) {
@@ -1024,17 +1024,22 @@ public class Script {
 		appendText("Character name: " + player.getName());
 		appendText("Experience: " + player.getContext().getExperience());
 		int wealth = 0;
-		for (Obj o : player.getInventory())
+		for (Obj o : player.getState().getInventory())
 			wealth += o.getValue();
 		appendText("Wealth: " + wealth);
-		Obj[] armor = player.getArmor();
-		if (armor[Chr.HEAD_ARMOR] != null)
-			appendText("Head protection: " + armor[Chr.HEAD_ARMOR].getName());
-		if (armor[Chr.BODY_ARMOR] != null)
-			appendText("Chest protection: " + armor[Chr.BODY_ARMOR].getName());
-		if (armor[Chr.MAGIC_ARMOR] != null)
-			appendText("Magical protection: " + armor[Chr.MAGIC_ARMOR].getName());
-		for (Obj o : player.getInventory()) {
+		String[] armorMessages = new String[] {
+			"Head protection: ",
+			"Chest protection: ",
+			"Shield protection: ", // TODO: check message
+			"Magical protection: "
+		};
+		for (int i = 0; i < Chr.NUMBER_OF_ARMOR_TYPES; i++) {
+			Obj armor = player.getState().getArmor(i);
+			if (armor != null) {
+				appendText(armorMessages[i] + armor);
+			}
+		}
+		for (Obj o : player.getState().getInventory()) {
 			if (o.getNumberOfUses() > 0) {
 				appendText(String.format("Your %s has %d uses left.", o.getName(), o.getNumberOfUses()));
 			}
@@ -1080,29 +1085,29 @@ public class Script {
 
 	private void takeObj(Obj obj) {
 		Chr player = world.getPlayer();
-		if (player.getInventory().size() >= player.getMaximumCarriedObjects()) {
+		if (player.getState().getInventory().size() >= player.getMaximumCarriedObjects()) {
 			appendText("Your pack is full, you must drop something.");
 		} else {
 			world.move(obj, world.getPlayer());
 			System.out.println("Take Object: " + obj + " for player: " + world.getPlayer());
 			if (obj.getType() == Obj.HELMET) {
-				if (player.getArmor()[Chr.HEAD_ARMOR] == null) {
-					player.getArmor()[Chr.HEAD_ARMOR] = obj;
+				if (player.getState().getArmor(Chr.HEAD_ARMOR) == null) {
+					player.getState().setArmor(Chr.HEAD_ARMOR, obj);
 					appendText("You are now wearing the " + obj.getName() + ".");
 				}
 			} else if (obj.getType() == Obj.CHEST_ARMOR) {
-				if (player.getArmor()[Chr.BODY_ARMOR] == null) {
-					player.getArmor()[Chr.BODY_ARMOR] = obj;
+				if (player.getState().getArmor(Chr.BODY_ARMOR) == null) {
+					player.getState().setArmor(Chr.BODY_ARMOR, obj);
 					appendText("You are now wearing the " + obj.getName() + ".");
 				}
 			} else if (obj.getType() == Obj.SHIELD) {
-				if (player.getArmor()[Chr.SHIELD_ARMOR] == null) {
-					player.getArmor()[Chr.SHIELD_ARMOR] = obj;
+				if (player.getState().getArmor(Chr.SHIELD_ARMOR) == null) {
+					player.getState().setArmor(Chr.SHIELD_ARMOR, obj);
 					appendText("You are now wearing the " + obj.getName() + ".");
 				}
 			} else if (obj.getType() == Obj.SPIRITUAL_ARMOR) {
-				if (player.getArmor()[Chr.MAGIC_ARMOR] == null) {
-					player.getArmor()[Chr.MAGIC_ARMOR] = obj;
+				if (player.getState().getArmor(Chr.MAGIC_ARMOR) == null) {
+					player.getState().setArmor(Chr.MAGIC_ARMOR, obj);
 					appendText("You are now wearing the " + obj.getName() + ".");
 				}
 			} else {
@@ -1113,7 +1118,7 @@ public class Script {
 	}
 	
 	private void handleTakeCommand(String target) {
-		for (Obj o : world.getPlayer().getCurrentScene().getState().getObjs()) {
+		for (Obj o : world.getPlayerScene().getState().getObjs()) {
 			if (target.contains(o.getName().toLowerCase())) {
 				if (o.getType() == Obj.IMMOBILE_OBJECT) {
 					appendText("You can't move it.");
@@ -1126,10 +1131,10 @@ public class Script {
 	}
 
 	private void handleDropCommand(String target) {
-		for (Obj o : world.getPlayer().getInventory()) {
+		for (Obj o : world.getPlayer().getState().getInventory()) {
 			if (target.contains(o.getName().toLowerCase())) {
 				appendText("You no longer have the " + o.getName() + ".");
-				world.move(o, world.getPlayer().getCurrentScene());
+				world.move(o, world.getPlayerScene());
 				break;
 			}
 		}
@@ -1137,20 +1142,20 @@ public class Script {
 
 	private void wearObj(Obj o, int pos) {
 		Chr player = world.getPlayer();
-		if (player.getArmor()[pos] == o) {
+		if (player.getState().getArmor(pos) == o) {
 			appendText("You are already wearing the " + o.getName() + ".");
 		} else {
-			if (player.getArmor()[pos] != null) {
-				appendText("You are no longer wearing the " + player.getArmor()[pos].getName() + ".");
+			if (player.getState().getArmor(pos) != null) {
+				appendText("You are no longer wearing the " + player.getState().getArmor(pos).getName() + ".");
 			}
-			player.getArmor()[pos] = o;
+			player.getState().setArmor(pos, o);
 			appendText("You are now wearing the " + o.getName() + ".");
 		}
 	}
 	
 	private void handleWearCommand(String target) {
 		Chr player = world.getPlayer();
-		for (Obj o : player.getInventory()) {
+		for (Obj o : player.getState().getInventory()) {
 			if (target.contains(o.getName().toLowerCase())) {
 				if (o.getType() == Obj.HELMET) {
 					wearObj(o, Chr.HEAD_ARMOR);
@@ -1169,8 +1174,7 @@ public class Script {
 	}
 
 	private void handleMoveCommand(int dir, String dirName) {
-		Chr player = world.getPlayer();
-		Scene playerScene = player.getCurrentScene();
+		Scene playerScene = world.getPlayerScene();
 		String msg = playerScene.getDirMessage(dir);
 		if (!playerScene.isDirBlocked(dir)) {
 			int dx[] = new int[] { 0, 0, 1, -1 };
@@ -1182,7 +1186,7 @@ public class Script {
 				if (msg != null && msg.length() > 0) {
 					appendText(msg);
 				}
-				world.move(player, scene);
+				world.move(world.getPlayer(), scene);
 				return;
 			}
  		}

@@ -128,7 +128,7 @@ public class GameWindow extends JFrame {
 	}
 	
 	private void redrawScene() {
-		final Scene currentScene = world.getPlayer().getCurrentScene();
+		final Scene currentScene = world.getPlayerScene();
 		if (currentScene != null) {
 			Runnable repainter = new Runnable() {
 				public void run() {
@@ -161,7 +161,7 @@ public class GameWindow extends JFrame {
 
 	private void doCommand(String line) {
 		if (line.equals("debug")) {
-			for (Obj o : world.getPlayer().getCurrentScene().getState().getObjs())
+			for (Obj o : world.getPlayerScene().getState().getObjs())
 				System.out.println(o.getName());
 			return;
 		}
@@ -451,7 +451,7 @@ public class GameWindow extends JFrame {
 		}
 
 		public void run() {
-			if (world.getPlayer().getCurrentScene() == scene) {
+			if (world.getPlayerScene() == scene) {
 				sound.play();
 			}
 		}
@@ -474,7 +474,7 @@ public class GameWindow extends JFrame {
 			soundTimer.cancel();
 			soundTimer = null;
 		}
-		if (world.getPlayer().getCurrentScene() != scene)
+		if (world.getPlayerScene() != scene)
 			return;
 		if (scene.getSoundFrequency() > 0 && scene.getSoundName() != null && scene.getSoundName().length() > 0) {
 			final Sound sound = world.getSounds().get(scene.getSoundName().toLowerCase());

@@ -230,7 +230,7 @@ public class StateManager {
 		// so we only have to initialize the ones that could possibly change
 		
 		Chr player = world.getPlayer();
-		Scene curScene = player.getCurrentScene();
+		Scene curScene = player.getState().getCurrentScene();
 		Context playerContext = world.getPlayerContext();
 		
 		// update player stats
@@ -270,16 +270,16 @@ public class StateManager {
 		state.setRunCharHexOffset(state.getHexOffsetForChr(running));
 
 		// Helmet		
-		state.setHelmetIndex(state.getHexOffsetForObj(player.getArmor()[Chr.HEAD_ARMOR]));
+		state.setHelmetIndex(state.getHexOffsetForObj(player.getState().getArmor(Chr.HEAD_ARMOR)));
 
 		// Shield
-		state.setShieldIndex(state.getHexOffsetForObj(player.getArmor()[Chr.SHIELD_ARMOR]));
+		state.setShieldIndex(state.getHexOffsetForObj(player.getState().getArmor(Chr.SHIELD_ARMOR)));
 
 		// Chest Armor
-		state.setChestArmIndex(state.getHexOffsetForObj(player.getArmor()[Chr.BODY_ARMOR]));
+		state.setChestArmIndex(state.getHexOffsetForObj(player.getState().getArmor(Chr.BODY_ARMOR)));
 
 		// Spiritual Armor
-		state.setSprtArmIndex(state.getHexOffsetForObj(player.getArmor()[Chr.MAGIC_ARMOR]));
+		state.setSprtArmIndex(state.getHexOffsetForObj(player.getState().getArmor(Chr.MAGIC_ARMOR)));
 		
 		// update user vars
 		updateStateUserVars();
@@ -324,10 +324,10 @@ public class StateManager {
 					return false;
 				}
 
-				player.setCurrentScene(s);
+				player.getState().setCurrentScene(s);
 
 				// clear the players inventory list
-				player.getInventory().clear();
+				player.getState().getInventory().clear();
 
 				// set player stats
 				player.setPhysicalStrength(state.getBasePhysStr());
@@ -404,7 +404,7 @@ public class StateManager {
 
 					if (armor != null) {
 						world.move(armor, player);
-						player.getArmor()[type] = armor;
+						player.getState().setArmor(type, armor);
 					}
 				}
 
@@ -473,7 +473,7 @@ public class StateManager {
 				//       then we just do chr.setState(state)
 				stream.writeShort(chr.getResourceID());
 
-				Scene scene = chr.getCurrentScene();
+				Scene scene = chr.getState().getCurrentScene();
 
 				stream.writeShort(scene.getResourceID());
 

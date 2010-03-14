@@ -146,7 +146,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 	}
 
 	private void processTurnInternal(String textInput, Object clickInput) {
-		Scene playerScene = world.getPlayer().getCurrentScene();
+		Scene playerScene = world.getPlayerScene();
 		if (playerScene == world.getStorageScene())
 			return;
 		boolean shouldEncounter = false;
@@ -166,7 +166,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 		}
 		boolean monsterWasNull = (monster == null);
 		boolean handled = playerScene.getScript().execute(world, loopCount++, textInput, clickInput, this);
-		playerScene = world.getPlayer().getCurrentScene();
+		playerScene = world.getPlayerScene();
 		if (playerScene == world.getStorageScene())
 			return;
 		if (playerScene != lastScene) {
@@ -198,15 +198,15 @@ public class Engine implements Script.Callbacks, MoveListener {
 			temporarilyHidden = false;
 		}
 		commandWasQuick = false;
-		Scene prevScene = world.getPlayer().getCurrentScene();
+		Scene prevScene = world.getPlayerScene();
 		Chr prevMonster = getMonster();
 		processTurnInternal(textInput, clickInput);
-		Scene playerScene = world.getPlayer().getCurrentScene();
+		Scene playerScene = world.getPlayerScene();
 		if (prevScene != playerScene && playerScene != world.getStorageScene()) {
 			if (prevMonster != null) {
 				boolean followed = false;
 				if (getMonster() == null) {
-					Set<Scene> scenes = world.getAdjacentScenes(prevMonster.getCurrentScene());
+					Set<Scene> scenes = world.getAdjacentScenes(prevMonster.getState().getCurrentScene());
 					// TODO: adjacent scenes doesn't contain up/down etc... verify that monsters can't follow these...
 					if (scenes.contains(playerScene)) {
 						int chance = (int) (Math.random() * 255);
@@ -243,7 +243,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 	}
 
 	public Chr getMonster() {
-		if (monster != null && monster.getCurrentScene() != world.getPlayer().getCurrentScene()) {
+		if (monster != null && monster.getState().getCurrentScene() != world.getPlayerScene()) {
 			monster = null;
 		}
 		return monster;
@@ -252,7 +252,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 	public Obj getOffer() {
 		if (offer != null) {
 			Chr owner = offer.getState().getCurrentOwner();
-			if (owner == null || owner.isPlayerCharacter() || owner.getCurrentScene() != world.getPlayer().getCurrentScene()) {
+			if (owner == null || owner.isPlayerCharacter() || owner.getState().getCurrentScene() != world.getPlayerScene()) {
 				offer = null;
 			}
 		}
@@ -278,7 +278,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 
 	public void onMove(MoveEvent event) {
 		Chr player = world.getPlayer();
-		Scene currentScene = player.getCurrentScene();
+		Scene currentScene = player.getState().getCurrentScene();
 		if (currentScene == world.getStorageScene()) {
 			callbacks.gameOver();
 			return;
@@ -302,7 +302,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 							return;
 					}
 				}
-			} else if (event.getTo() == player.getCurrentScene()) {
+			} else if (event.getTo() == player.getState().getCurrentScene()) {
 				if (getMonster() == null) {
 					monster = chr;
 					encounter(player, chr);
@@ -358,7 +358,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 			}
 			if (validMoves != 0)
 				hat.addTokens(RUN, npc.getWinningRun() + 1);
-			if (!npc.getInventory().isEmpty())
+			if (!npc.getState().getInventory().isEmpty())
 				hat.addTokens(OFFER, npc.getWinningOffer() + 1);
 		} else {
 			if (!world.isWeaponsMenuDisabled()) {
@@ -369,11 +369,11 @@ public class Engine implements Script.Callbacks, MoveListener {
 			}
 			if (validMoves != 0)
 				hat.addTokens(RUN, npc.getLosingRun() + 1);
-			if (!npc.getInventory().isEmpty())
+			if (!npc.getState().getInventory().isEmpty())
 				hat.addTokens(OFFER, npc.getLosingOffer() + 1);
 		}
-		List<Obj> objs = npc.getCurrentScene().getState().getObjs();
-		if (npc.getInventory().size() < npc.getMaximumCarriedObjects()) {
+		List<Obj> objs = npc.getState().getCurrentScene().getState().getObjs();
+		if (npc.getState().getInventory().size() < npc.getMaximumCarriedObjects()) {
 			for (int i = 0; i < objs.size(); i++) {
 				Obj o = objs.get(i);
 				if (o.getType() != Obj.IMMOBILE_OBJECT) {
@@ -427,7 +427,8 @@ public class Engine implements Script.Callbacks, MoveListener {
 	}
 
 	private void performOffer(Chr attacker, Chr victim) {
-		for (Obj o : attacker.getInventory()) {
+		for (Obj o : attacker.getState().getInventory()) {
+			/* TODO: choose in a smarter way? */
 			appendText("%s offers %s.",
 				getNameWithDefiniteArticle(attacker, true),
 				o.isNamePlural() ? o.getName() :
@@ -482,7 +483,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 
 	private int getValidMoveDirections(Chr npc) {
 		int directions = 0;
-		Scene currentScene = npc.getCurrentScene();
+		Scene currentScene = npc.getState().getCurrentScene();
 		int dx[] = new int[] { 0, 0, 1, -1 };
 		int dy[] = new int[] { -1, 1, 0, 0 };
 		for (int dir = 0; dir < 4; dir++) {
@@ -510,7 +511,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 		running = chr;
 		int dx[] = new int[] { 0, 0, 1, -1 };
 		int dy[] = new int[] { -1, 1, 0, 0 };
-		Scene currentScene = chr.getCurrentScene();
+		Scene currentScene = chr.getState().getCurrentScene();
 		int destX = currentScene.getWorldX() + dx[dir];
 		int destY = currentScene.getWorldY() + dy[dir];
 		world.move(chr, world.getSceneAt(destX, destY));
@@ -559,11 +560,11 @@ public class Engine implements Script.Callbacks, MoveListener {
 		// TODO: what about obj accuracy
 		if (chance < attacker.getPhysicalAccuracy()) {
 			if (targetIndex != -1) {
-				if (victim.getArmor()[targetIndex] != null) {
+				if (victim.getState().getArmor(targetIndex) != null) {
 					// TODO: Absorb some damage.
 					appendText("%s's %s weakens the impact of %s's %s.",
 						getNameWithDefiniteArticle(victim, true),
-						victim.getArmor()[targetIndex].getName(),
+						victim.getState().getArmor(targetIndex).getName(),
 						getNameWithDefiniteArticle(attacker, false),
 						weapon.getName());
 				} else {
@@ -583,7 +584,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 			boolean freezesOpponent = false;
 
 			if (weapon.getType() == Obj.THROW_WEAPON) {
-				world.move((Obj) weapon, victim.getCurrentScene());
+				world.move((Obj) weapon, victim.getState().getCurrentScene());
 			} else if (weapon.getType() == Obj.MAGICAL_OBJECT) {
 				int type = (((Obj) weapon).getAttackType());
 				causesPhysicalDamage = (type == Obj.CAUSES_PHYSICAL_DAMAGE || type == Obj.CAUSES_PHYSICAL_AND_SPIRITUAL_DAMAGE);
@@ -603,11 +604,11 @@ public class Engine implements Script.Callbacks, MoveListener {
 					Context attackerContext = attacker.getContext();
 					attackerContext.setKills(attackerContext.getKills() + 1);
 					attackerContext.setExperience(attackerContext.getExperience() + 1 + victim.getPhysicalHp());
-					if (!victim.isPlayerCharacter() && !victim.getInventory().isEmpty()) {
-						for (int i = victim.getInventory().size() - 1; i >= 0; i--) {
-							world.move(victim.getInventory().get(i), victim.getCurrentScene());
+					if (!victim.isPlayerCharacter() && !victim.getState().getInventory().isEmpty()) {
+						for (int i = victim.getState().getInventory().size() - 1; i >= 0; i--) {
+							world.move(victim.getState().getInventory().get(i), victim.getState().getCurrentScene());
 						}
-						appendText(Script.getGroundItemsList(victim.getCurrentScene()));
+						appendText(Script.getGroundItemsList(victim.getState().getCurrentScene()));
 					}
 					world.move(victim, world.getStorageScene());
 				} else if (attacker.isPlayerCharacter()) {

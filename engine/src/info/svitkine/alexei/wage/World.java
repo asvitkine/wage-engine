@@ -33,7 +33,7 @@ public class World {
 	private Scene storageScene;
 	private Chr player;
 	private List<MoveListener> moveListeners;
-	
+
 	private State currentState;
 	
 	public World(Script globalScript) {
@@ -90,6 +90,10 @@ public class World {
 
 	public Context getPlayerContext() {
 		return player.getContext();
+	}
+
+	public Scene getPlayerScene() {
+		return player.getState().getCurrentScene();
 	}
 
 	public Script getGlobalScript() {
@@ -250,17 +254,16 @@ public class World {
 	private Chr removeFromChr(Obj obj) {
 		Chr owner = obj.getState().getCurrentOwner();
 		if (owner != null) {
-			owner.getInventory().remove(obj);
-			Obj[] armor = obj.getState().getCurrentOwner().getArmor();
-			for (int i = 0; i < armor.length; i++) {
-				if (armor[i] == obj) {
-					armor[i] = null;
+			owner.getState().getInventory().remove(obj);
+			for (int i = 0; i < Chr.NUMBER_OF_ARMOR_TYPES; i++) {
+				if (owner.getState().getArmor(i) == obj) {
+					owner.getState().setArmor(i, null);
 				}
 			}
 		}
 		return owner;
 	}
-	
+
 	public void move(Obj obj, Chr chr) {
 		if (obj == null)
 			return;
@@ -270,8 +273,8 @@ public class World {
 			from = obj.getState().getCurrentScene();
 		}
 		obj.getState().setCurrentOwner(chr);
-		chr.getInventory().add(obj);
-		sortObjs(chr.getInventory());
+		chr.getState().getInventory().add(obj);
+		sortObjs(chr.getState().getInventory());
 		fireMoveEvent(new MoveEvent(obj, from, chr));
 	}
 
@@ -316,20 +319,19 @@ public class World {
 	public void move(Chr chr, Scene scene) {
 		if (chr == null)
 			return;
-		Scene from = chr.getCurrentScene();
+		Scene from = chr.getState().getCurrentScene();
 		if (from != scene) {
 			if (from != null)
 				from.getState().getChrs().remove(chr);
-			chr.setCurrentScene(scene);
+			chr.getState().setCurrentScene(scene);
 			scene.getState().getChrs().add(chr);
 			sortChrs(scene.getState().getChrs());
 			if (from == storageScene) {
 				initChrContext(chr);
-			} else {
-				if (chr.isPlayerCharacter()) {
-					scene.getState().setVisited(true);
-				}
-				chr.getContext().setVisits(chr.getContext().getVisits() + 1);
+			} else if (chr.isPlayerCharacter()) {
+				scene.getState().setVisited(true);
+				Context context = getPlayerContext();
+				context.setVisits(context.getVisits() + 1);
 			}
 			fireMoveEvent(new MoveEvent(chr, from, scene));
 		}
