@@ -292,30 +292,6 @@ public class World {
 		fireMoveEvent(new MoveEvent(obj, from, scene));
 	}
 
-	private void initChrContext(Chr chr) {
-		Context context = chr.getContext();
-		context.setStatVariable(Context.PHYS_ACC_BAS, chr.getPhysicalAccuracy());
-		context.setStatVariable(Context.PHYS_ACC_CUR, chr.getPhysicalAccuracy());
-		context.setStatVariable(Context.PHYS_ARM_BAS, chr.getNaturalArmor());
-		context.setStatVariable(Context.PHYS_ARM_CUR, chr.getNaturalArmor());
-		context.setStatVariable(Context.PHYS_HIT_BAS, chr.getPhysicalHp());
-		context.setStatVariable(Context.PHYS_HIT_CUR, chr.getPhysicalHp());
-		context.setStatVariable(Context.PHYS_SPE_BAS, chr.getRunningSpeed());
-		context.setStatVariable(Context.PHYS_SPE_CUR, chr.getRunningSpeed());
-		context.setStatVariable(Context.PHYS_STR_BAS, chr.getPhysicalStrength());
-		context.setStatVariable(Context.PHYS_STR_CUR, chr.getPhysicalStrength());
-		context.setStatVariable(Context.SPIR_ACC_BAS, chr.getSpiritualAccuracy());
-		context.setStatVariable(Context.SPIR_ACC_CUR, chr.getSpiritualAccuracy());
-		context.setStatVariable(Context.SPIR_ARM_BAS, chr.getResistanceToMagic());
-		context.setStatVariable(Context.SPIR_ARM_CUR, chr.getResistanceToMagic());
-		context.setStatVariable(Context.SPIR_HIT_BAS, chr.getSpiritialHp());
-		context.setStatVariable(Context.SPIR_HIT_CUR, chr.getSpiritialHp());
-		context.setStatVariable(Context.SPIR_STR_BAS, chr.getSpiritualStength());
-		context.setStatVariable(Context.SPIR_STR_CUR, chr.getSpiritualStength());
-		context.setVisits(1);
-		context.setKills(0);
-	}
-
 	public void move(Chr chr, Scene scene) {
 		if (chr == null)
 			return;
@@ -323,16 +299,16 @@ public class World {
 		if (from != scene) {
 			if (from != null)
 				from.getState().getChrs().remove(chr);
-			chr.getState().setCurrentScene(scene);
 			scene.getState().getChrs().add(chr);
 			sortChrs(scene.getState().getChrs());
-			if (from == storageScene) {
-				initChrContext(chr);
+			if (scene == storageScene) {
+				chr.setState(new Chr.State(chr));
 			} else if (chr.isPlayerCharacter()) {
 				scene.getState().setVisited(true);
 				Context context = getPlayerContext();
 				context.setVisits(context.getVisits() + 1);
 			}
+			chr.getState().setCurrentScene(scene);
 			fireMoveEvent(new MoveEvent(chr, from, scene));
 		}
 	}

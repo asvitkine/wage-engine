@@ -304,7 +304,7 @@ public class WorldLoader {
 			chr.setNaturalArmor(in.readUnsignedByte());
 			chr.setPhysicalAccuracy(in.readUnsignedByte());
 			
-			chr.setSpiritualStength(in.readUnsignedByte());
+			chr.setSpiritualStrength(in.readUnsignedByte());
 			chr.setSpiritialHp(in.readUnsignedByte());
 			chr.setResistanceToMagic(in.readUnsignedByte());
 			chr.setSpiritualAccuracy(in.readUnsignedByte());

@@ -346,8 +346,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 		final int RUN = -200;
 		final int OFFER = -100;
 		RandomHat<Integer> hat = new RandomHat<Integer>();
-		boolean winning = npc.getContext().getStatVariable(Context.PHYS_HIT_CUR) >
-			player.getContext().getStatVariable(Context.PHYS_HIT_CUR);
+		boolean winning = (npc.getState().getCurrentPhysicalHp() > player.getState().getCurrentPhysicalHp());
 		int validMoves = getValidMoveDirections(npc);
 		if (winning) {
 			if (!world.isWeaponsMenuDisabled()) {
@@ -416,13 +415,13 @@ public class Engine implements Script.Callbacks, MoveListener {
 	}
 
 	public void regen() {
-		Context context = world.getPlayerContext();
-		int curHp = context.getStatVariable(Context.PHYS_HIT_CUR);
-		int maxHp = context.getStatVariable(Context.PHYS_HIT_BAS);
+		Chr player = world.getPlayer();
+		int curHp = player.getState().getCurrentPhysicalHp();
+		int maxHp = player.getState().getBasePhysicalHp();
 		int delta = maxHp - curHp;
 		if (delta > 0) {
 			int bonus = (int) (delta / (8 + 2 * Math.random()));
-			context.setStatVariable(Context.PHYS_HIT_CUR, curHp + bonus);
+			player.getState().setCurrentPhysicalHp(curHp + bonus);
 		}
 	}
 
@@ -444,23 +443,27 @@ public class Engine implements Script.Callbacks, MoveListener {
 			int type = magicalObject.getAttackType();
 
 			if (type == Obj.HEALS_PHYSICAL_DAMAGE || type == Obj.HEALS_PHYSICAL_AND_SPIRITUAL_DAMAGE) {
-				int hp = chr.getContext().getStatVariable(Context.PHYS_HIT_CUR);
+				int hp = chr.getState().getCurrentPhysicalHp();
 				hp += magicalObject.getDamage();
-				chr.getContext().setStatVariable(Context.PHYS_HIT_CUR, hp);
+				chr.getState().setCurrentPhysicalHp(hp);
 			}
 			
 			if (type == Obj.HEALS_SPIRITUAL_DAMAGE || type == Obj.HEALS_PHYSICAL_AND_SPIRITUAL_DAMAGE) {
-				int spirit = chr.getContext().getStatVariable(Context.SPIR_HIT_CUR);
+				int spirit = chr.getState().getCurrentSpiritualHp();
 				spirit += magicalObject.getDamage();
-				chr.getContext().setStatVariable(Context.SPIR_HIT_CUR, spirit);
+				chr.getState().setCurrentSpiritualHp(spirit);
 			}
 
 			playSound(magicalObject.getSound());
 			appendText(magicalObject.getUseMessage());
 
 			// TODO: what if enemy heals himself?
-			appendText("Your physical condition is " + Script.getPercentMessage(chr, Context.PHYS_HIT_CUR, Context.PHYS_HIT_BAS) + ".");
-			appendText("Your spiritual condition is " + Script.getPercentMessage(chr, Context.SPIR_HIT_CUR, Context.SPIR_HIT_BAS) + ".");
+			if (chr.isPlayerCharacter()) {
+				double physicalPercent = (double) chr.getState().getCurrentPhysicalHp() / chr.getState().getBasePhysicalHp();
+				double spiritualPercent = (double) chr.getState().getCurrentSpiritualHp() / chr.getState().getBaseSpiritualHp();
+				appendText("Your physical condition is " + Script.getPercentMessage(chr, physicalPercent) + ".");
+				appendText("Your spiritual condition is " + Script.getPercentMessage(chr, spiritualPercent) + ".");
+			}
 
 		} else if (magicalObject.getFailureMessage() != null) {
 			// TODO: what if it's null?
@@ -593,10 +596,9 @@ public class Engine implements Script.Callbacks, MoveListener {
 			}
 
 			if (causesPhysicalDamage) {
-				Context victimContext = victim.getContext();
-				int victimHp = victim.getContext().getStatVariable(Context.PHYS_HIT_CUR);
+				int victimHp = victim.getState().getCurrentPhysicalHp();
 				victimHp -= weapon.getDamage();
-				victimContext.setStatVariable(Context.PHYS_HIT_CUR, victimHp);
+				victim.getState().setCurrentPhysicalHp(victimHp);
 				if (victimHp < 0) {
 					playSound(victim.getDyingSound());
 					appendText(victim.getDyingWords());
@@ -604,17 +606,21 @@ public class Engine implements Script.Callbacks, MoveListener {
 					Context attackerContext = attacker.getContext();
 					attackerContext.setKills(attackerContext.getKills() + 1);
 					attackerContext.setExperience(attackerContext.getExperience() + 1 + victim.getPhysicalHp());
-					if (!victim.isPlayerCharacter() && !victim.getState().getInventory().isEmpty()) {
-						for (int i = victim.getState().getInventory().size() - 1; i >= 0; i--) {
-							world.move(victim.getState().getInventory().get(i), victim.getState().getCurrentScene());
+
+					List<Obj> inventory = victim.getState().getInventory();
+					if (!victim.isPlayerCharacter() && !inventory.isEmpty()) {
+						Scene currentScene = victim.getState().getCurrentScene();
+						for (int i = inventory.size() - 1; i >= 0; i--) {
+							world.move(inventory.get(i), currentScene);
 						}
-						appendText(Script.getGroundItemsList(victim.getState().getCurrentScene()));
+						appendText(Script.getGroundItemsList(currentScene));
 					}
 					world.move(victim, world.getStorageScene());
 				} else if (attacker.isPlayerCharacter()) {
+					double physicalPercent = (double) victim.getState().getCurrentPhysicalHp() / victim.getState().getBasePhysicalHp();
 					appendText("%s's condition appears to be %s.",
 						getNameWithDefiniteArticle(victim, true),
-						Script.getPercentMessage(victim, Context.PHYS_HIT_CUR, Context.PHYS_HIT_BAS));
+						Script.getPercentMessage(victim, physicalPercent));
 				}
 			}
 			
@@ -645,12 +651,12 @@ public class Engine implements Script.Callbacks, MoveListener {
 			if (numberOfUses > 0) {
 				obj.getState().setNumberOfUses(numberOfUses);
 			} else {
-				obj.setState(new Obj.State(obj));
 				if (obj.getReturnToRandomScene()) {
 					world.move(obj, world.getRandomScene());
 				} else {
 					world.move(obj, world.getStorageScene());
 				}
+				obj.setState(new Obj.State(obj, obj.getState().getCurrentOwner(), obj.getState().getCurrentScene()));
 			}
 		}
 	}

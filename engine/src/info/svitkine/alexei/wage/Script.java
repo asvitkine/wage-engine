@@ -83,41 +83,41 @@ public class Script {
 			value -= 1;
 			result = new Operand(world.getPlayerContext().getUserVariable(value), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xD0) {
-			result = new Operand(world.getPlayerContext().getStatVariable(Context.PHYS_STR_BAS), Operand.NUMBER);
+			result = new Operand(world.getPlayer().getState().getBasePhysicalStrength(), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xD1) {
-			result = new Operand(world.getPlayerContext().getStatVariable(Context.PHYS_HIT_BAS), Operand.NUMBER);
+			result = new Operand(world.getPlayer().getState().getBasePhysicalHp(), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xD2) {
-			result = new Operand(world.getPlayerContext().getStatVariable(Context.PHYS_ARM_BAS), Operand.NUMBER);
+			result = new Operand(world.getPlayer().getState().getBaseNaturalArmor(), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xD3) {
-			result = new Operand(world.getPlayerContext().getStatVariable(Context.PHYS_ACC_BAS), Operand.NUMBER);
+			result = new Operand(world.getPlayer().getState().getBasePhysicalAccuracy(), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xD4) {
-			result = new Operand(world.getPlayerContext().getStatVariable(Context.SPIR_STR_BAS), Operand.NUMBER);
+			result = new Operand(world.getPlayer().getState().getBaseSpiritualStrength(), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xD5) {
-			result = new Operand(world.getPlayerContext().getStatVariable(Context.SPIR_HIT_BAS), Operand.NUMBER);
+			result = new Operand(world.getPlayer().getState().getBaseSpiritualHp(), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xD6) {
-			result = new Operand(world.getPlayerContext().getStatVariable(Context.SPIR_ARM_BAS), Operand.NUMBER);
+			result = new Operand(world.getPlayer().getState().getBaseResistanceToMagic(), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xD7) {
-			result = new Operand(world.getPlayerContext().getStatVariable(Context.SPIR_ACC_BAS), Operand.NUMBER);
+			result = new Operand(world.getPlayer().getState().getBaseSpiritualAccuracy(), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xD8) {
-			result = new Operand(world.getPlayerContext().getStatVariable(Context.PHYS_SPE_BAS), Operand.NUMBER);
+			result = new Operand(world.getPlayer().getState().getBaseRunningSpeed(), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xE0) {
-			result = new Operand(world.getPlayerContext().getStatVariable(Context.PHYS_STR_CUR), Operand.NUMBER);
+			result = new Operand(world.getPlayer().getState().getCurrentPhysicalStrength(), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xE1) {
-			result = new Operand(world.getPlayerContext().getStatVariable(Context.PHYS_HIT_CUR), Operand.NUMBER);
+			result = new Operand(world.getPlayer().getState().getCurrentPhysicalHp(), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xE2) {
-			result = new Operand(world.getPlayerContext().getStatVariable(Context.PHYS_ARM_CUR), Operand.NUMBER);
+			result = new Operand(world.getPlayer().getState().getCurrentNaturalArmor(), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xE3) {
-			result = new Operand(world.getPlayerContext().getStatVariable(Context.PHYS_ACC_CUR), Operand.NUMBER);
+			result = new Operand(world.getPlayer().getState().getCurrentPhysicalAccuracy(), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xE4) {
-			result = new Operand(world.getPlayerContext().getStatVariable(Context.SPIR_STR_CUR), Operand.NUMBER);
+			result = new Operand(world.getPlayer().getState().getCurrentSpiritualStrength(), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xE5) {
-			result = new Operand(world.getPlayerContext().getStatVariable(Context.SPIR_HIT_CUR), Operand.NUMBER);
+			result = new Operand(world.getPlayer().getState().getCurrentSpiritualHp(), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xE6) {
-			result = new Operand(world.getPlayerContext().getStatVariable(Context.SPIR_ARM_CUR), Operand.NUMBER);
+			result = new Operand(world.getPlayer().getState().getCurrentResistanceToMagic(), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xE7) {
-			result = new Operand(world.getPlayerContext().getStatVariable(Context.SPIR_ACC_CUR), Operand.NUMBER);
+			result = new Operand(world.getPlayer().getState().getCurrentSpiritualAccuracy(), Operand.NUMBER);
 		} else if (data[index] == (byte) 0xE8) {
-			result = new Operand(world.getPlayerContext().getStatVariable(Context.PHYS_SPE_CUR), Operand.NUMBER);
+			result = new Operand(world.getPlayer().getState().getCurrentRunningSpeed(), Operand.NUMBER);
 		} else if (Character.isDefined(data[index])) {
 			result = readStringOperand();
 			index--;
@@ -545,48 +545,48 @@ public class Script {
 	}
 	
 	private void assign(int index, short value) {
-		Context context = world.getPlayerContext();
+		Chr.State state = world.getPlayer().getState();
 		if (data[index] == (byte) 0xFF) { // user variable
 			int var = data[++index];
 			if (var < 0) var += 256;
 			var -= 1;
-			context.setUserVariable(var, value);
+			world.getPlayerContext().setUserVariable(var, value);
 		} else if (data[index] == (byte) 0xD0) {
-			context.setStatVariable(Context.PHYS_STR_BAS, value);
+			state.setBasePhysicalStrength(value);
 		} else if (data[index] == (byte) 0xD1) {
-			context.setStatVariable(Context.PHYS_HIT_BAS, value);
+			state.setBasePhysicalHp(value);
 		} else if (data[index] == (byte) 0xD2) {
-			context.setStatVariable(Context.PHYS_ARM_BAS, value);
+			state.setBaseNaturalArmor(value);
 		} else if (data[index] == (byte) 0xD3) {
-			context.setStatVariable(Context.PHYS_ACC_BAS, value);
+			state.setBasePhysicalAccuracy(value);
 		} else if (data[index] == (byte) 0xD4) {
-			context.setStatVariable(Context.SPIR_STR_BAS, value);
+			state.setBaseSpiritualStrength(value);
 		} else if (data[index] == (byte) 0xD5) {
-			context.setStatVariable(Context.SPIR_HIT_BAS, value);
+			state.setBaseSpiritualHp(value);
 		} else if (data[index] == (byte) 0xD6) {
-			context.setStatVariable(Context.SPIR_ARM_BAS, value);
+			state.setBaseResistanceToMagic(value);
 		} else if (data[index] == (byte) 0xD7) {
-			context.setStatVariable(Context.SPIR_ACC_BAS, value);
+			state.setBaseSpiritualAccuracy(value);
 		} else if (data[index] == (byte) 0xD8) {
-			context.setStatVariable(Context.PHYS_SPE_BAS, value);
+			state.setBaseRunningSpeed(value);
 		} else if (data[index] == (byte) 0xE0) {
-			context.setStatVariable(Context.PHYS_STR_CUR, value);
+			state.setCurrentPhysicalStrength(value);
 		} else if (data[index] == (byte) 0xE1) {
-			context.setStatVariable(Context.PHYS_HIT_CUR, value);
+			state.setCurrentPhysicalHp(value);
 		} else if (data[index] == (byte) 0xE2) {
-			context.setStatVariable(Context.PHYS_ARM_CUR, value);
+			state.setCurrentNaturalArmor(value);
 		} else if (data[index] == (byte) 0xE3) {
-			context.setStatVariable(Context.PHYS_ACC_CUR, value);
+			state.setCurrentPhysicalAccuracy(value);
 		} else if (data[index] == (byte) 0xE4) {
-			context.setStatVariable(Context.SPIR_STR_CUR, value);
+			state.setCurrentSpiritualStrength(value);
 		} else if (data[index] == (byte) 0xE5) {
-			context.setStatVariable(Context.SPIR_HIT_CUR, value);
+			state.setCurrentSpiritualHp(value);
 		} else if (data[index] == (byte) 0xE6) {
-			context.setStatVariable(Context.SPIR_ARM_CUR, value);
+			state.setCurrentResistanceToMagic(value);
 		} else if (data[index] == (byte) 0xE7) {
-			context.setStatVariable(Context.SPIR_ACC_CUR, value);
+			state.setCurrentSpiritualAccuracy(value);
 		} else if (data[index] == (byte) 0xE8) {
-			context.setStatVariable(Context.PHYS_SPE_CUR, value);
+			state.setCurrentRunningSpeed(value);
 		} else {
 			System.err.printf("No idea what I'm supposed to assign! (%x at %d)!\n", data[index], index);
 		}
@@ -1048,9 +1048,7 @@ public class Script {
 		callbacks.setCommandWasQuick();
 	}
 	
-	public static String getPercentMessage(Chr chr, int cur, int bas) {
-		Context context = chr.getContext();
-		double percent = (double) context.getStatVariable(cur) / context.getStatVariable(bas);
+	public static String getPercentMessage(Chr chr, double percent) {
 		if (percent < 0.40) {
 			return "very bad";
 		} else if (percent < 0.55) {
@@ -1067,8 +1065,10 @@ public class Script {
 	}
 
 	private void printPlayerCondition(Chr player) {
-		appendText("Your physical condition is " + getPercentMessage(player, Context.PHYS_HIT_CUR, Context.PHYS_HIT_BAS) + ".");
-		appendText("Your spiritual condition is " + getPercentMessage(player, Context.SPIR_HIT_CUR, Context.SPIR_HIT_BAS) + ".");
+		double physicalPercent = (double) player.getState().getCurrentPhysicalHp() / player.getState().getBasePhysicalHp();
+		double spiritualPercent = (double) player.getState().getCurrentSpiritualHp() / player.getState().getBaseSpiritualHp();
+		appendText("Your physical condition is " + getPercentMessage(player, physicalPercent) + ".");
+		appendText("Your spiritual condition is " + getPercentMessage(player, spiritualPercent) + ".");
 	}
 
 	private void handleRestCommand() {

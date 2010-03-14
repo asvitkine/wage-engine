@@ -43,11 +43,9 @@ public class Context {
 	private short experience;
 	private boolean frozen;
 	private short[] userVariables;
-	private short[] statVariables;
 
 	public Context() {
 		userVariables = new short[26 * 9];
-		statVariables = new short[18];
 	}
 	
 	public short[] getUserVariables() {
@@ -96,17 +94,5 @@ public class Context {
 
 	public void setFrozen(boolean frozen) {
 		this.frozen = frozen;
-	}
-
-	public short getStatVariable(int index) {
-		return statVariables[index];
-	}
-
-	public void setStatVariable(int index, short value) {
-		statVariables[index] = value;
-	}
-
-	public void setStatVariable(int index, int value) {
-		statVariables[index] = (short) value;
 	}
 }

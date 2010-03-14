@@ -231,18 +231,19 @@ public class StateManager {
 		
 		Chr player = world.getPlayer();
 		Scene curScene = player.getState().getCurrentScene();
+		Chr.State playerState = player.getState();
 		Context playerContext = world.getPlayerContext();
 		
 		// update player stats
-		state.setBasePhysStr(playerContext.getStatVariable(Context.PHYS_STR_BAS));
-		state.setBasePhysHp(playerContext.getStatVariable(Context.PHYS_HIT_BAS));
-		state.setBasePhysArm(playerContext.getStatVariable(Context.PHYS_ARM_BAS));
-		state.setBasePhysAcc(playerContext.getStatVariable(Context.PHYS_ACC_BAS));
-		state.setBaseSprtStr(playerContext.getStatVariable(Context.SPIR_STR_BAS));
-		state.setBaseSprtHp(playerContext.getStatVariable(Context.SPIR_HIT_BAS));
-		state.setBaseSprtArm(playerContext.getStatVariable(Context.SPIR_ARM_BAS));
-		state.setBaseSprtAcc(playerContext.getStatVariable(Context.SPIR_ACC_BAS));
-		state.setBaseRunSpeed(playerContext.getStatVariable(Context.PHYS_SPE_BAS));
+		state.setBasePhysStr(playerState.getBasePhysicalStrength());
+		state.setBasePhysHp(playerState.getBasePhysicalHp());
+		state.setBasePhysArm(playerState.getBaseNaturalArmor());
+		state.setBasePhysAcc(playerState.getBasePhysicalAccuracy());
+		state.setBaseSprtStr(playerState.getBaseSpiritualStrength());
+		state.setBaseSprtHp(playerState.getBaseSpiritualHp());
+		state.setBaseSprtArm(playerState.getBaseResistanceToMagic());
+		state.setBaseSprtAcc(playerState.getBaseSpiritualAccuracy());
+		state.setBaseRunSpeed(playerState.getBaseRunningSpeed());
 		
 		// set current scene
 		state.setCurSceneHexOffset(state.getHexOffsetForScene(curScene));
@@ -330,34 +331,15 @@ public class StateManager {
 				player.getState().getInventory().clear();
 
 				// set player stats
-				player.setPhysicalStrength(state.getBasePhysStr());
-				player.setPhysicalHp(state.getBasePhysHp());
-				player.setNaturalArmor(state.getBasePhysArm());
-				player.setPhysicalAccuracy(state.getBasePhysAcc());
-				player.setSpiritualStength(state.getBaseSprtStr());
-				player.setSpiritialHp(state.getBaseSprtHp());
-				player.setResistanceToMagic(state.getBaseSprtArm());
-				player.setSpiritualAccuracy(state.getBaseSprtAcc());
-				player.setRunningSpeed(state.getBaseRunSpeed());
-
-				world.getPlayerContext().setStatVariable(Context.PHYS_STR_BAS,
-						state.getBasePhysStr());
-				world.getPlayerContext().setStatVariable(Context.PHYS_HIT_BAS,
-						state.getBasePhysHp());
-				world.getPlayerContext().setStatVariable(Context.PHYS_ARM_BAS,
-						state.getBasePhysArm());
-				world.getPlayerContext().setStatVariable(Context.PHYS_ACC_BAS,
-						state.getBasePhysAcc());
-				world.getPlayerContext().setStatVariable(Context.SPIR_STR_BAS,
-						state.getBaseSprtStr());
-				world.getPlayerContext().setStatVariable(Context.SPIR_HIT_BAS,
-						state.getBaseSprtHp());
-				world.getPlayerContext().setStatVariable(Context.SPIR_ARM_BAS,
-						state.getBaseSprtArm());
-				world.getPlayerContext().setStatVariable(Context.SPIR_ACC_BAS,
-						state.getBaseSprtAcc());
-				world.getPlayerContext().setStatVariable(Context.PHYS_SPE_BAS,
-						state.getBaseRunSpeed());
+				player.getState().setBasePhysicalStrength(state.getBasePhysStr());
+				player.getState().setBasePhysicalHp(state.getBasePhysHp());
+				player.getState().setBaseNaturalArmor(state.getBasePhysArm());
+				player.getState().setBasePhysicalAccuracy(state.getBasePhysAcc());
+				player.getState().setBaseSpiritualStrength(state.getBaseSprtStr());
+				player.getState().setBaseSpiritualHp(state.getBaseSprtHp());
+				player.getState().setBaseResistanceToMagic(state.getBaseSprtArm());
+				player.getState().setBaseSpiritualAccuracy(state.getBaseSprtAcc());
+				player.getState().setBaseRunningSpeed(state.getBaseRunSpeed());
 
 				// set visit#
 				world.getPlayerContext().setVisits(state.getVisitNum());
@@ -387,6 +369,23 @@ public class StateManager {
 
 				// update all object locations and stats
 				updateObjsWithBinaryData(state.getObjData());
+
+				// update inventories and scene contents
+				for (Obj obj : world.getOrderedObjs()) {
+					Chr chr = obj.getState().getCurrentOwner();
+					if (chr != null) {
+						chr.getState().getInventory().add(obj);
+					} else {
+						Scene scene = obj.getState().getCurrentScene();
+						scene.getState().getObjs().add(obj);
+					}
+				}
+
+				// update scene chrs
+				for (Chr chr : world.getOrderedChrs()) {
+					Scene scene = chr.getState().getCurrentScene();
+					scene.getState().getChrs().add(chr);
+				}
 
 				// move all worn helmets, shields, chest armors and spiritual
 				// armors to player
@@ -463,52 +462,40 @@ public class StateManager {
 		state.setSceneData(bout.toByteArray());
 	}
 	
+	private static void writeChrState(DataOutputStream stream, Chr.State state) throws IOException {
+		stream.writeShort(state.getCurrentScene().getResourceID());
+		stream.writeByte(state.getCurrentPhysicalStrength());
+		stream.writeByte(state.getCurrentPhysicalHp());
+		stream.writeByte(state.getCurrentNaturalArmor());
+		stream.writeByte(state.getCurrentPhysicalAccuracy());
+		stream.writeByte(state.getCurrentSpiritualStrength());
+		stream.writeByte(state.getCurrentSpiritualHp());
+		stream.writeByte(state.getCurrentResistanceToMagic());
+		stream.writeByte(state.getCurrentSpiritualAccuracy());
+		stream.writeByte(state.getCurrentRunningSpeed());
+		stream.writeByte(state.getRejectsOffers());
+		stream.writeByte(state.getFollowsOpponent());
+		// bytes 16-20 are unknown
+		stream.writeByte(0);
+		stream.writeByte(0);
+		stream.writeByte(0);
+		stream.writeByte(0);
+		stream.writeByte(0);
+		stream.writeByte(state.getWeaponDamage1());
+		stream.writeByte(state.getWeaponDamage2());
+	}
+	
 	private void updateStateCharData() {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		DataOutputStream stream = new DataOutputStream(bout);
 
 		try {
 			for (Chr chr : world.getOrderedChrs()) {
-				// TODO: make Chr.State, Obj.State, Scene.State classes...
-				//       then we just do chr.setState(state)
 				stream.writeShort(chr.getResourceID());
-
-				Scene scene = chr.getState().getCurrentScene();
-
-				stream.writeShort(scene.getResourceID());
-
-				// TODO: Moving characters is a little poorly designed -- it was coded with only an
-				// initial state in mind, so that moving a character triggers initializing both the 
-				// base and current stat values for the character to one value.  this should be fixed,
-				// as what i have below only works for the player character because the base stats for
-				// other characters are not stored in the save file.
-
-				stream.writeByte(chr.getContext().getStatVariable(Context.PHYS_STR_CUR));
-				stream.writeByte(chr.getContext().getStatVariable(Context.PHYS_HIT_CUR));
-				stream.writeByte(chr.getContext().getStatVariable(Context.PHYS_ARM_CUR));
-				stream.writeByte(chr.getContext().getStatVariable(Context.PHYS_ACC_CUR));
-				stream.writeByte(chr.getContext().getStatVariable(Context.SPIR_STR_CUR));
-				stream.writeByte(chr.getContext().getStatVariable(Context.SPIR_HIT_CUR));
-				stream.writeByte(chr.getContext().getStatVariable(Context.SPIR_ARM_CUR));
-				stream.writeByte(chr.getContext().getStatVariable(Context.SPIR_ACC_CUR));
-				stream.writeByte(chr.getContext().getStatVariable(Context.PHYS_SPE_CUR));
-
-				stream.writeByte(chr.getRejectsOffers());
-				stream.writeByte(chr.getFollowsOpponent());
-
-				// bytes 16-20 are unknown
-				stream.writeByte(0);
-				stream.writeByte(0);
-				stream.writeByte(0);
-				stream.writeByte(0);
-				stream.writeByte(0);
-
-				stream.writeByte(chr.getWeaponDamage1());
-				stream.writeByte(chr.getWeaponDamage2());
+				writeChrState(stream, chr.getState());
 			}
 
 			stream.flush();
-		
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -598,6 +585,31 @@ public class StateManager {
 			e.printStackTrace();
 		}
 	}
+	
+	private Chr.State readChrState(DataInputStream in, Chr chr) throws IOException {
+		Chr.State state = new Chr.State(chr);
+		state.setCurrentScene(world.getSceneByID(in.readShort()));
+		state.setCurrentPhysicalStrength(in.readUnsignedByte());
+		state.setCurrentPhysicalHp(in.readUnsignedByte());
+		state.setCurrentNaturalArmor(in.readUnsignedByte());
+		state.setCurrentPhysicalAccuracy(in.readUnsignedByte());
+		state.setCurrentSpiritualStrength(in.readUnsignedByte());
+		state.setCurrentSpiritualHp(in.readUnsignedByte());
+		state.setCurrentResistanceToMagic(in.readUnsignedByte());
+		state.setCurrentSpiritualAccuracy(in.readUnsignedByte());
+		state.setCurrentRunningSpeed(in.readUnsignedByte());
+		state.setRejectsOffers(in.readUnsignedByte());
+		state.setFollowsOpponent(in.readUnsignedByte());
+		// bytes 16-20 are unknown
+		in.readByte();
+		in.readByte();
+		in.readByte();
+		in.readByte();
+		in.readByte();
+		state.setWeaponDamage1(in.readUnsignedByte());
+		state.setWeaponDamage2(in.readUnsignedByte());
+		return state;
+	}
 
 	public void updateChrsWithBinaryData(byte[] data) {
 		DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
@@ -611,34 +623,7 @@ public class StateManager {
 					return;
 				}
 
-				short sceneLoc = in.readShort();
-
-				world.move(chr, world.getSceneByID(sceneLoc));
-
-				// TODO: When does a context get created?  For non-player characters?  It looks like it's
-				// only when a character is moved from storage
-
-				chr.getContext().setStatVariable(Context.PHYS_STR_CUR, in.readUnsignedByte());
-				chr.getContext().setStatVariable(Context.PHYS_HIT_CUR, in.readUnsignedByte());
-				chr.getContext().setStatVariable(Context.PHYS_ARM_CUR, in.readUnsignedByte());
-				chr.getContext().setStatVariable(Context.PHYS_ACC_CUR, in.readUnsignedByte());
-				chr.getContext().setStatVariable(Context.SPIR_STR_CUR, in.readUnsignedByte());
-				chr.getContext().setStatVariable(Context.SPIR_HIT_CUR, in.readUnsignedByte());
-				chr.getContext().setStatVariable(Context.SPIR_ARM_CUR, in.readUnsignedByte());
-				chr.getContext().setStatVariable(Context.SPIR_ACC_CUR, in.readUnsignedByte());
-				chr.getContext().setStatVariable(Context.PHYS_SPE_CUR, in.readUnsignedByte());
-				chr.setRejectsOffers(in.readUnsignedByte());
-				chr.setFollowsOpponent(in.readUnsignedByte());
-
-				// bytes 16-20 are unknown
-				in.readByte();
-				in.readByte();
-				in.readByte();
-				in.readByte();
-				in.readByte();
-
-				chr.setWeaponDamage1(in.readUnsignedByte());
-				chr.setWeaponDamage2(in.readUnsignedByte());
+				chr.setState(readChrState(in, chr));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
