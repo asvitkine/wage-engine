@@ -175,7 +175,7 @@ public class ChrImpl implements Chr {
 		this.makesOfferComment = makesOfferComment;
 	}
 
-	public Weapon[] getWeapons() {
+	public Weapon[] getWeapons(boolean includeMagic) {
 		ArrayList<Weapon> weapons = new ArrayList<Weapon>();
 		if (hasNativeWeapon1()) {
 			weapons.add(new Weapon() {
@@ -231,8 +231,12 @@ public class ChrImpl implements Chr {
 			switch (o.getType()) {
 				case Obj.REGULAR_WEAPON:
 				case Obj.THROW_WEAPON:
-				case Obj.MAGICAL_OBJECT:
 					weapons.add(o);
+					break;
+				case Obj.MAGICAL_OBJECT:
+					if (includeMagic) {
+						weapons.add(o);
+					}
 			}
 		}
 		return (Weapon[]) weapons.toArray(new Weapon[0]);

@@ -278,7 +278,7 @@ public interface Chr {
 	public int getLosingRun();
 	public int getLosingWeapons();
 	public String getMakesOfferComment();
-	public Weapon[] getWeapons();
+	public Weapon[] getWeapons(boolean includeMagic);
 	public Obj[] getMagicalObjects();
 	public boolean hasNativeWeapon1();
 	public boolean hasNativeWeapon2();

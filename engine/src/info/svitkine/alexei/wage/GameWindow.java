@@ -86,8 +86,9 @@ public class GameWindow extends JFrame {
 				});
 			}
 		});
-		engine.processTurn("look", null);
-		textArea.getOut().append("\n");
+		synchronized (engine) {
+			engine.processTurn("look", null);
+		}
 		viewer.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(final MouseEvent e) {
@@ -97,7 +98,6 @@ public class GameWindow extends JFrame {
 							final Object target = viewer.getClickTarget(e);
 							if (target != null) {
 								engine.processTurn(null, target);
-								textArea.getOut().append("\n");
 							}
 						}
 					}
@@ -178,7 +178,6 @@ public class GameWindow extends JFrame {
 			line = line.replaceAll("\\s+", " ");
 		synchronized (engine) {
 			engine.processTurn(line, null);
-			textArea.getOut().append("\n");
 		}
 	}
 	
@@ -345,7 +344,7 @@ public class GameWindow extends JFrame {
 			public void menuSelected(MenuEvent e) {
 				menu.removeAll();
 				Chr player = world.getPlayer();
-				for (Weapon obj : player.getWeapons()) {
+				for (Weapon obj : player.getWeapons(true)) {
 					if (obj.getType() == Obj.REGULAR_WEAPON ||
 						obj.getType() == Obj.THROW_WEAPON ||
 						obj.getType() == Obj.MAGICAL_OBJECT) {

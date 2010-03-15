@@ -1,6 +1,8 @@
 package info.svitkine.alexei.wage;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 
@@ -857,7 +859,7 @@ public class Script {
 				handleAcceptCommand();
 			} else {
 				Chr player = world.getPlayer();
-				for (Weapon weapon : player.getWeapons()) {
+				for (Weapon weapon : player.getWeapons(true)) {
 					if (tryAttack(weapon, input)) {
 						handleAttack(weapon);
 						break;
@@ -970,6 +972,12 @@ public class Script {
 		if (objs.isEmpty()) {
 			appendText("Your pack is empty.");			
 		} else {
+			/* TODO: May want to keep the actual inventory sorted versus sorting here. */
+			Collections.sort(objs, new Comparator<Obj>() {
+				public int compare(Obj o1, Obj o2) {
+					return o1.getIndex() - o2.getIndex();
+				}
+			});
 			StringBuilder sb = new StringBuilder("Your pack contains ");
 			appendObjNames(sb, objs);
 			appendText(sb.toString());
