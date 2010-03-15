@@ -274,7 +274,11 @@ public class World {
 		}
 		obj.getState().setCurrentOwner(chr);
 		chr.getState().getInventory().add(obj);
-		sortObjs(chr.getState().getInventory());
+		Collections.sort(chr.getState().getInventory(), new Comparator<Obj>() {
+			public int compare(Obj o1, Obj o2) {
+				return o1.getIndex() - o2.getIndex();
+			}
+		});
 		fireMoveEvent(new MoveEvent(obj, from, chr));
 	}
 
@@ -288,7 +292,16 @@ public class World {
 		}
 		obj.getState().setCurrentScene(scene);
 		scene.getState().getObjs().add(obj);
-		sortObjs(scene.getState().getObjs());
+		Collections.sort(scene.getState().getObjs(), new Comparator<Obj>() {
+			public int compare(Obj o1, Obj o2) {
+				boolean o1Immobile = (o1.getType() == Obj.IMMOBILE_OBJECT);
+				boolean o2Immobile = (o2.getType() == Obj.IMMOBILE_OBJECT);
+				if (o1Immobile == o2Immobile) {
+					return o1.getIndex() - o2.getIndex();					
+				}
+				return (o1Immobile ? -1 : 1);
+			}
+		});
 		fireMoveEvent(new MoveEvent(obj, from, scene));
 	}
 
@@ -313,19 +326,6 @@ public class World {
 		}
 	}
 
-	private void sortObjs(List<Obj> objs) {
-		Collections.sort(objs, new Comparator<Obj>() {
-			public int compare(Obj o1, Obj o2) {
-				boolean o1Immobile = (o1.getType() == Obj.IMMOBILE_OBJECT);
-				boolean o2Immobile = (o2.getType() == Obj.IMMOBILE_OBJECT);
-				if (o1Immobile == o2Immobile) {
-					return o1.getIndex() - o2.getIndex();					
-				}
-				return (o1Immobile ? -1 : 1);
-			}
-		});
-	}
-	
 	private void sortChrs(List<Chr> chrs) {
 		Collections.sort(chrs, new Comparator<Chr>() {
 			public int compare(Chr c1, Chr c2) {

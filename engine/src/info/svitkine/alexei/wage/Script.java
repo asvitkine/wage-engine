@@ -972,12 +972,6 @@ public class Script {
 		if (objs.isEmpty()) {
 			appendText("Your pack is empty.");			
 		} else {
-			/* TODO: May want to keep the actual inventory sorted versus sorting here. */
-			Collections.sort(objs, new Comparator<Obj>() {
-				public int compare(Obj o1, Obj o2) {
-					return o1.getIndex() - o2.getIndex();
-				}
-			});
 			StringBuilder sb = new StringBuilder("Your pack contains ");
 			appendObjNames(sb, objs);
 			appendText(sb.toString());
