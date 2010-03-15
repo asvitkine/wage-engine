@@ -177,11 +177,11 @@ public class Engine implements Script.Callbacks, MoveListener {
 			callbacks.redrawScene();
 			temporarilyHidden = false;
 		} else if (loopCount == 1) {
-			if (shouldEncounter && monster != null) {
+			if (shouldEncounter && getMonster() != null) {
 				encounter(world.getPlayer(), monster);
 			}
 		} else if (textInput != null && !handled) {
-			if (monsterWasNull && monster != null)
+			if (monsterWasNull && getMonster() != null)
 				return;
 			String[] messages = { "What?", "Huh?" };
 			appendText(messages[(int) (Math.random()*messages.length)]);
@@ -348,12 +348,14 @@ public class Engine implements Script.Callbacks, MoveListener {
 		RandomHat<Integer> hat = new RandomHat<Integer>();
 		boolean winning = (npc.getState().getCurrentPhysicalHp() > player.getState().getCurrentPhysicalHp());
 		int validMoves = getValidMoveDirections(npc);
+		// TODO: Figure out under what circumstances we need to add +1
+		// for the chance (e.g. only when all values were set to 0?).
 		if (winning) {
 			if (!world.isWeaponsMenuDisabled()) {
-				if (npc.getWeapons().length > 0)
+				if (npc.getWeapons(false).length > 0)
 					hat.addTokens(WEAPONS, npc.getWinningWeapons() + 1);
 				if (npc.getMagicalObjects().length > 0)
-					hat.addTokens(MAGIC, npc.getWinningMagic() + 1);
+					hat.addTokens(MAGIC, npc.getWinningMagic());
 			}
 			if (validMoves != 0)
 				hat.addTokens(RUN, npc.getWinningRun() + 1);
@@ -361,10 +363,10 @@ public class Engine implements Script.Callbacks, MoveListener {
 				hat.addTokens(OFFER, npc.getWinningOffer() + 1);
 		} else {
 			if (!world.isWeaponsMenuDisabled()) {
-				if (npc.getWeapons().length > 0)
+				if (npc.getWeapons(false).length > 0)
 					hat.addTokens(WEAPONS, npc.getLosingWeapons() + 1);
 				if (npc.getMagicalObjects().length > 0)
-					hat.addTokens(MAGIC, npc.getLosingMagic() + 1);
+					hat.addTokens(MAGIC, npc.getLosingMagic());
 			}
 			if (validMoves != 0)
 				hat.addTokens(RUN, npc.getLosingRun() + 1);
@@ -384,7 +386,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 		int token = hat.drawToken();
 		switch (token) {
 			case WEAPONS:
-				Weapon[] weapons = npc.getWeapons();
+				Weapon[] weapons = npc.getWeapons(false);
 				Weapon weapon = weapons[(int) (Math.random()*weapons.length)];
 				// TODO: I think the monster should choose the "best" weapon.
 				performAttack(npc, player, weapon);
@@ -438,6 +440,14 @@ public class Engine implements Script.Callbacks, MoveListener {
 	}
 
 	private void performHealingMagic(Chr chr, Obj magicalObject) {
+
+		if (!chr.isPlayerCharacter()) {
+			appendText("%s %ss %s.",
+				getNameWithDefiniteArticle(chr, true),
+				magicalObject.getOperativeVerb(),
+				TextUtils.prependIndefiniteArticle(magicalObject.getName()));
+		}
+
 		int chance = (int) (Math.random() * 255);
 		if (chance < magicalObject.getAccuracy()) {
 			int type = magicalObject.getAttackType();
@@ -464,10 +474,6 @@ public class Engine implements Script.Callbacks, MoveListener {
 				appendText("Your physical condition is " + Script.getPercentMessage(chr, physicalPercent) + ".");
 				appendText("Your spiritual condition is " + Script.getPercentMessage(chr, spiritualPercent) + ".");
 			}
-
-		} else if (magicalObject.getFailureMessage() != null) {
-			// TODO: what if it's null?
-			appendText(magicalObject.getFailureMessage());
 		}
 
 		decrementUses(magicalObject);
@@ -555,10 +561,17 @@ public class Engine implements Script.Callbacks, MoveListener {
 					getNameWithDefiniteArticle(victim, false),
 					targets[targetIndex]);
 			}
+		} else if (!attacker.isPlayerCharacter()) {
+			appendText("%s %ss %s at %s.",
+				getNameWithDefiniteArticle(attacker, true),
+				weapon.getOperativeVerb(),
+				TextUtils.prependGenderSpecificPronoun(weapon.getName(), attacker.getGender()),
+				getNameWithDefiniteArticle(victim, false));
 		}
 
 		playSound(weapon.getSound());
 
+		boolean usesDecremented = false;
 		int chance = (int) (Math.random() * 255);
 		// TODO: what about obj accuracy
 		if (chance < attacker.getPhysicalAccuracy()) {
@@ -599,6 +612,13 @@ public class Engine implements Script.Callbacks, MoveListener {
 				int victimHp = victim.getState().getCurrentPhysicalHp();
 				victimHp -= weapon.getDamage();
 				victim.getState().setCurrentPhysicalHp(victimHp);
+
+				if (weapon instanceof Obj) {
+					/* Do it here to get the right order of messages in case of death. */
+					decrementUses((Obj) weapon);
+					usesDecremented = true;
+				}
+
 				if (victimHp < 0) {
 					playSound(victim.getDyingSound());
 					appendText(victim.getDyingWords());
@@ -632,14 +652,13 @@ public class Engine implements Script.Callbacks, MoveListener {
 				victim.getContext().setFrozen(true);
 			}
 
-		} else if (weapon.getType() == Obj.MAGICAL_OBJECT) {
-			appendText("The spell has no effect.");
-		} else if (weapon.getFailureMessage() != null) {
-			appendText(weapon.getFailureMessage());
-		} else {
+		} else if (weapon.getType() != Obj.MAGICAL_OBJECT) {
 			appendText("A miss!");
+		} else if (attacker.isPlayerCharacter()) {
+			appendText("The spell has no effect.");
 		}
-		if (weapon instanceof Obj) {
+
+		if (!usesDecremented && (weapon instanceof Obj)) {
 			decrementUses((Obj) weapon);
 		}
 	}
@@ -651,6 +670,9 @@ public class Engine implements Script.Callbacks, MoveListener {
 			if (numberOfUses > 0) {
 				obj.getState().setNumberOfUses(numberOfUses);
 			} else {
+				if (obj.getFailureMessage() != null) {
+					appendText(obj.getFailureMessage());
+				}
 				if (obj.getReturnToRandomScene()) {
 					world.move(obj, world.getRandomScene());
 				} else {
