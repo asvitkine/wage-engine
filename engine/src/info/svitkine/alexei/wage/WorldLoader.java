@@ -20,15 +20,16 @@ import javax.swing.JFrame;
 import org.freeshell.gbsmith.rescafe.resourcemanager.*;
 import org.freeshell.gbsmith.rescafe.MacBinaryHeader;
 
-import com.fizzysoft.sdu.RecentDocumentsManager;
+//import com.fizzysoft.sdu.RecentDocumentsManager;
 
 
 public class WorldLoader {
 	private static WorldLoader instance;
 
-	private RecentDocumentsManager rdm;
+	//private RecentDocumentsManager rdm;
 	
 	protected WorldLoader() {
+		/*
 		rdm = new RecentDocumentsManager() {
 			private Preferences getPreferences() {
 				return Preferences.userNodeForPackage(WorldLoader.class);
@@ -49,6 +50,7 @@ public class WorldLoader {
 				// TODO Auto-generated method stub
 			}
 		};
+		*/
 	}
 
 	public static WorldLoader getInstance() {
@@ -57,9 +59,10 @@ public class WorldLoader {
 		return instance;
 	}
 	
+	/*
 	public RecentDocumentsManager getRecentDocumentsManager() {
 		return rdm;
-	}
+	}*/
 
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 		System.setProperty("apple.awt.graphics.UseQuartz", "true");
@@ -102,7 +105,7 @@ public class WorldLoader {
 	}
 
 	public World loadWorld(ResourceModel model, File file) throws UnsupportedEncodingException {
-		rdm.addDocument(file, null);
+		//rdm.addDocument(file, null);
 		World world = new World(new Script(model.getResource("GCOD", (short) 0).getData()));
 		State initialState = new State();
 		
