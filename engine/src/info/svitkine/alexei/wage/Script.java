@@ -1,8 +1,6 @@
 package info.svitkine.alexei.wage;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 
@@ -869,10 +867,12 @@ public class Script {
 			// TODO: weapons, offer, etc...
 		} else if (inputClick instanceof Obj) {
 			Obj obj = (Obj) inputClick;
-			if (obj.getType() != Obj.IMMOBILE_OBJECT) {
-				takeObj(obj);
-			} else {
-				appendText(obj.getClickMessage());
+			if (obj.getState().getCurrentScene() == world.getPlayerScene()) {
+				if (obj.getType() != Obj.IMMOBILE_OBJECT) {
+					takeObj(obj);
+				} else {
+					appendText(obj.getClickMessage());
+				}
 			}
 		}
 		return handled;
@@ -1092,26 +1092,15 @@ public class Script {
 		} else {
 			world.move(obj, world.getPlayer());
 			System.out.println("Take Object: " + obj + " for player: " + world.getPlayer());
-			if (obj.getType() == Obj.HELMET) {
-				if (player.getState().getArmor(Chr.HEAD_ARMOR) == null) {
-					player.getState().setArmor(Chr.HEAD_ARMOR, obj);
-					appendText("You are now wearing the " + obj.getName() + ".");
-				}
-			} else if (obj.getType() == Obj.CHEST_ARMOR) {
-				if (player.getState().getArmor(Chr.BODY_ARMOR) == null) {
-					player.getState().setArmor(Chr.BODY_ARMOR, obj);
-					appendText("You are now wearing the " + obj.getName() + ".");
-				}
-			} else if (obj.getType() == Obj.SHIELD) {
-				if (player.getState().getArmor(Chr.SHIELD_ARMOR) == null) {
-					player.getState().setArmor(Chr.SHIELD_ARMOR, obj);
-					appendText("You are now wearing the " + obj.getName() + ".");
-				}
-			} else if (obj.getType() == Obj.SPIRITUAL_ARMOR) {
-				if (player.getState().getArmor(Chr.MAGIC_ARMOR) == null) {
-					player.getState().setArmor(Chr.MAGIC_ARMOR, obj);
-					appendText("You are now wearing the " + obj.getName() + ".");
-				}
+			int type = Engine.wearObjIfPossible(player, obj);
+			if (type == Chr.HEAD_ARMOR) {
+				appendText("You are now wearing the " + obj.getName() + ".");
+			} else if (type == Chr.BODY_ARMOR) {
+				appendText("You are now wearing the " + obj.getName() + ".");
+			} else if (type == Chr.SHIELD_ARMOR) {
+				appendText("You are now wearing the " + obj.getName() + ".");
+			} else if (type == Chr.MAGIC_ARMOR) {
+				appendText("You are now wearing the " + obj.getName() + ".");
 			} else {
 				appendText("You now have the " + obj.getName() + ".");
 			}

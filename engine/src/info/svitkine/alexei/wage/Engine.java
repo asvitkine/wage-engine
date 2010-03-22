@@ -87,12 +87,44 @@ public class Engine implements Script.Callbacks, MoveListener {
 					playerPlaced = true;
 				}
 			}
+			wearObjs(chr);
 		}
 		if (!playerPlaced) {
 			world.move(world.getPlayer(), world.getRandomScene());
 		}
 	}
 	
+	public static void wearObjs(Chr chr) {
+		for (Obj obj : chr.getState().getInventory()) {
+			Engine.wearObjIfPossible(chr, obj);
+		}
+	}
+
+	public static int wearObjIfPossible(Chr chr, Obj obj) {
+		if (obj.getType() == Obj.HELMET) {
+			if (chr.getState().getArmor(Chr.HEAD_ARMOR) == null) {
+				chr.getState().setArmor(Chr.HEAD_ARMOR, obj);
+				return Chr.HEAD_ARMOR;
+			}
+		} else if (obj.getType() == Obj.CHEST_ARMOR) {
+			if (chr.getState().getArmor(Chr.BODY_ARMOR) == null) {
+				chr.getState().setArmor(Chr.BODY_ARMOR, obj);
+				return Chr.BODY_ARMOR;
+			}
+		} else if (obj.getType() == Obj.SHIELD) {
+			if (chr.getState().getArmor(Chr.SHIELD_ARMOR) == null) {
+				chr.getState().setArmor(Chr.SHIELD_ARMOR, obj);
+				return Chr.SHIELD_ARMOR;
+			}
+		} else if (obj.getType() == Obj.SPIRITUAL_ARMOR) {
+			if (chr.getState().getArmor(Chr.MAGIC_ARMOR) == null) {
+				chr.getState().setArmor(Chr.MAGIC_ARMOR, obj);
+				return Chr.MAGIC_ARMOR;
+			}
+		}
+		return 0;
+	}
+
 	public void loadState(File file) throws IOException {
 		// parse the save file
 		stateManager.readSaveData(file);
@@ -331,8 +363,25 @@ public class Engine implements Script.Callbacks, MoveListener {
 		appendText(sb.toString());
 		if (chr.getInitialComment() != null && chr.getInitialComment().length() > 0)
 			appendText(chr.getInitialComment());
+		if (chr.getState().getArmor(Chr.HEAD_ARMOR) != null) {
+			Obj obj = chr.getState().getArmor(Chr.HEAD_ARMOR);
+			appendText(String.format("%s is wearing %s.", 
+				getNameWithDefiniteArticle(chr, true),
+				TextUtils.prependIndefiniteArticle(obj.getName())));
+		}
+		if (chr.getState().getArmor(Chr.BODY_ARMOR) != null) {
+			Obj obj = chr.getState().getArmor(Chr.BODY_ARMOR);
+			appendText(String.format("%s is protected by %s.",
+				TextUtils.getGenderSpecificPronoun(chr.getGender(), true),
+				TextUtils.prependGenderSpecificPronoun(obj.getName(), chr.getGender())));
+		}
+		if (chr.getState().getArmor(Chr.SHIELD_ARMOR) != null) {
+			Obj obj = chr.getState().getArmor(Chr.SHIELD_ARMOR);
+			appendText(String.format("%s carries %s.",
+				TextUtils.getGenderSpecificPronoun(chr.getGender(), true),
+				obj.isNamePlural() ? obj.getName() : TextUtils.prependIndefiniteArticle(obj.getName())));
+		}
 	}
-
 
 	public void setAim(int aim) {
 		this.aim = aim;
