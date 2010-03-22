@@ -384,6 +384,9 @@ public class StateManager {
 				for (Chr chr : world.getOrderedChrs()) {
 					Scene scene = chr.getState().getCurrentScene();
 					scene.getState().getChrs().add(chr);
+					if (chr != player) {
+						Engine.wearObjs(chr);
+					}
 				}
 
 				// move all worn helmets, shields, chest armors and spiritual

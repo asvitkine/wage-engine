@@ -14,6 +14,15 @@ public class TextUtils {
 			return "its " + word;
 	}
 
+	public static String getGenderSpecificPronoun(int gender, boolean capitalize) {
+		if (gender == GENDER_HE)
+			return capitalize ? "He" : "he";
+		else if (gender == GENDER_SHE)
+			return capitalize ? "She" : "she";
+		else
+			return capitalize ? "It" : "it";
+	}
+	
 	public static String prependIndefiniteArticle(String word) {
 		switch (word.charAt(0)) {
 			case 'a': case 'A':
