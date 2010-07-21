@@ -21,6 +21,8 @@ public class World {
 	private String soundLibrary2;
 	private boolean weaponsMenuDisabled;
 	private Script globalScript;
+	private String defaultCommandsMenu =
+		"North/N;South/S;East/E;West/W;Up/U;Down/D;(-;Look/L;Rest/R;Status/T;Inventory/I;Search/F;(-;Open;Close";
 	private Map<String, Scene> scenes;
 	private Map<String, Obj> objs;
 	private Map<String, Chr> chrs;
@@ -404,5 +406,13 @@ public class World {
 
 	public int getSignature() {
 		return signature;
+	}
+
+	public void setDefaultCommandsMenu(String defaultCommandsMenu) {
+		this.defaultCommandsMenu = defaultCommandsMenu;
+	}
+	
+	public String getDefaultCommandsMenu() {
+		return defaultCommandsMenu;
 	}
 }
