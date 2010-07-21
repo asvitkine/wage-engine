@@ -671,7 +671,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 				if (victimHp < 0) {
 					playSound(victim.getDyingSound());
 					appendText(victim.getDyingWords());
-					appendText("%s is dead.", getNameWithDefiniteArticle(victim, true));
+					appendText("%s is dead!", getNameWithDefiniteArticle(victim, true));
 					Context attackerContext = attacker.getContext();
 					attackerContext.setKills(attackerContext.getKills() + 1);
 					attackerContext.setExperience(attackerContext.getExperience() + 1 + victim.getPhysicalHp());

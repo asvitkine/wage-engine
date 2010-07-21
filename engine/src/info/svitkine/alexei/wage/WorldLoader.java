@@ -302,14 +302,15 @@ public class WorldLoader {
 			if ((enableFlags & (1 << menuItemNumber)) == 0) {
 				sb.append('(');
 			}
-			in.readFully(itemData);
-			if ((itemData[3] & 1) != 0) {
-				sb.append("<B");
-			}
-			if ((itemData[3] & 2) != 0) {
-				sb.append("<I");
-			}
 			sb.append(menuItem);
+			in.readFully(itemData);
+			char[] styles = new char[] {'B', 'I', 'U', 'O', 'S', 'C', 'E'};
+			for (int i = 0; i < styles.length; i++) {
+				if ((itemData[3] & (1 << i)) != 0) {
+					sb.append('<');
+					sb.append(styles[i]);
+				}
+			}
 			if (itemData[1] != 0) {
 				sb.append('/');
 				sb.append((char)itemData[1]);
