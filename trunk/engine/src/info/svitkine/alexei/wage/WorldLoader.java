@@ -138,6 +138,7 @@ public class WorldLoader {
 				e.printStackTrace();
 			}
 		}
+		
 		ResourceType scenes = model.getResourceType("ASCN");
 		short sceneCount = 0;
 		
@@ -264,11 +265,59 @@ public class WorldLoader {
 				}
 			}
 		}
-	
+
+		ResourceType menus = model.getResourceType("MENU");
+		if (menus != null) {
+			Resource r = menus.getResource((short) 2004);
+			if (r != null) {
+				try {
+					// open related mctb for custom colors!
+					DataInputStream in = new DataInputStream(new ByteArrayInputStream(r.getData()));
+					String[] menu = readMenu(in);
+					world.setDefaultCommandsMenu(menu[1]);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
 		// store global info in state object for use with save/load actions
 		world.setCurrentState(initialState);	// pass off the state object to the world
 		
 		return world;
+	}
+	
+	private String[] readMenu(DataInputStream in) throws IOException {
+		in.skip(10);
+		int enableFlags = in.readInt();
+		String menuName = readPascalString(in);
+		String menuItem = readPascalString(in);
+		int menuItemNumber = 1;
+		StringBuilder sb = new StringBuilder();
+		byte[] itemData = new byte[4];
+		while (menuItem.length() > 0) {
+			if (sb.length() > 0) {
+				sb.append(';');
+			}
+			if ((enableFlags & (1 << menuItemNumber)) == 0) {
+				sb.append('(');
+			}
+			in.readFully(itemData);
+			if ((itemData[3] & 1) != 0) {
+				sb.append("<B");
+			}
+			if ((itemData[3] & 2) != 0) {
+				sb.append("<I");
+			}
+			sb.append(menuItem);
+			if (itemData[1] != 0) {
+				sb.append('/');
+				sb.append((char)itemData[1]);
+			}
+			menuItem = readPascalString(in);
+			menuItemNumber++;
+		}
+		return new String[] { menuName, sb.toString() }; 
 	}
 
 	private void loadExternalSounds(World world, File worldFile, String soundsFileName) {

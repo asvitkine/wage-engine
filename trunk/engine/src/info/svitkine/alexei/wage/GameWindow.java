@@ -374,7 +374,7 @@ public class GameWindow extends JFrame {
 
 	private JMenu createCommandsMenu() {
 		JMenu menu = new JMenu("Commands");
-		updateMenuFromString(menu, "North/N;South/S;East/E;West/W;Up/U;Down/D;(-;Look/L;Rest/R;Status/T;Inventory/I;Search/F;(-;Open;Close");
+		updateMenuFromString(menu, world.getDefaultCommandsMenu());
 		return menu;
 	}
 	
@@ -394,6 +394,16 @@ public class GameWindow extends JFrame {
 						style |= Font.BOLD;
 					} else if (c == 'I') {
 						style |= Font.ITALIC;
+					} else if (c == 'U') {
+						// underline?
+					} else if (c == 'O') {
+						// outline?
+					} else if (c == 'S') {
+						// shadow?
+					} else if (c == 'C') {
+						// condensed?
+					} else if (c == 'E') {
+						// extended?
 					}
 					item = item.substring(0, item.length() - 2);
 				}
