@@ -380,6 +380,16 @@ public class Script {
 					evalResult = (left > right);
 				}
 			});
+			handlers.add(new PairEvaluator(Operand.TEXT_INPUT, Operand.STRING) {
+				@Override
+				public void evaluatePair(Operand o1, Operand o2) {
+					if (inputText != null) {
+						evalResult = !inputText.toLowerCase().contains(((String) o2.value).toLowerCase());
+					} else {
+						evalResult = false;
+					}
+				}
+			});
 			/*
 			FIXME: this prevents the below cases from working due to exact
 			matches taking precedence over conversions...
