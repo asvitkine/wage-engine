@@ -268,23 +268,41 @@ public class WorldLoader {
 
 		ResourceType menus = model.getResourceType("MENU");
 		if (menus != null) {
-			Resource r = menus.getResource((short) 2004);
-			if (r != null) {
-				try {
-					// open related mctb for custom colors!
-					DataInputStream in = new DataInputStream(new ByteArrayInputStream(r.getData()));
-					String[] menu = readMenu(in);
-					world.setDefaultCommandsMenu(menu[1]);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+			String[] appleMenu = readMenu(menus, 2001);
+			if (appleMenu != null) {
+				String aboutMenuItemName = appleMenu[1].split(";")[0];
+				world.setAboutMenuItemName(aboutMenuItemName);
 			}
+			String[] commandsMenu = readMenu(menus, 2004);
+			if (commandsMenu != null) {
+				world.setCommandsMenuName(commandsMenu[0]);
+				world.setDefaultCommandsMenu(commandsMenu[1]);
+			}
+			String[] weaponsMenu = readMenu(menus, 2005);
+			if (weaponsMenu != null) {
+				world.setWeaponsMenuName(weaponsMenu[0]);
+			}
+			// Read Apple menu and get the name of that menu item..
 		}
 
 		// store global info in state object for use with save/load actions
 		world.setCurrentState(initialState);	// pass off the state object to the world
 		
 		return world;
+	}
+	
+	private String[] readMenu(ResourceType menus, int resourceId) {
+		Resource r = menus.getResource((short) resourceId);
+		if (r != null) {
+			try {
+				// open related mctb for custom colors!
+				DataInputStream in = new DataInputStream(new ByteArrayInputStream(r.getData()));
+				return readMenu(in);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
 	}
 	
 	private String[] readMenu(DataInputStream in) throws IOException {
