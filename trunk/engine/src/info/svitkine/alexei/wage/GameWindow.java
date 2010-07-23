@@ -190,9 +190,8 @@ public class GameWindow extends JFrame {
 	}
 
 	private JMenu createAppleMenu() {
-		// TODO: extract info (such as about name), out of the MENU resource
 		JMenu menu = new JMenu("\uF8FF");
-		JMenuItem menuItem = new JMenuItem("About " + world.getName() + "...");
+		JMenuItem menuItem = new JMenuItem(world.getAboutMenuItemName());
 		menuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String aboutMessage = world.getAboutMessage();
@@ -339,7 +338,7 @@ public class GameWindow extends JFrame {
 	}
 	
 	private JMenu createWeaponsMenu() {
-		final JMenu menu = new JMenu("Weapons");
+		final JMenu menu = new JMenu(world.getWeaponsMenuName());
 		menu.addMenuListener(new MenuListener() {
 			public void menuSelected(MenuEvent e) {
 				menu.removeAll();
@@ -373,7 +372,7 @@ public class GameWindow extends JFrame {
 	}
 
 	private JMenu createCommandsMenu() {
-		JMenu menu = new JMenu("Commands");
+		JMenu menu = new JMenu(world.getCommandsMenuName());
 		updateMenuFromString(menu, world.getDefaultCommandsMenu());
 		return menu;
 	}

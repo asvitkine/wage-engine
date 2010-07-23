@@ -21,6 +21,9 @@ public class World {
 	private String soundLibrary2;
 	private boolean weaponsMenuDisabled;
 	private Script globalScript;
+	private String aboutMenuItemName;
+	private String weaponsMenuName = "Weapons";
+	private String commandsMenuName = "Commands";
 	private String defaultCommandsMenu =
 		"North/N;South/S;East/E;West/W;Up/U;Down/D;(-;Look/L;Rest/R;Status/T;Inventory/I;Search/F;(-;Open;Close";
 	private Map<String, Scene> scenes;
@@ -414,5 +417,33 @@ public class World {
 	
 	public String getDefaultCommandsMenu() {
 		return defaultCommandsMenu;
+	}
+
+	public String getWeaponsMenuName() {
+		return weaponsMenuName;
+	}
+
+	public void setWeaponsMenuName(String weaponsMenuName) {
+		this.weaponsMenuName = weaponsMenuName;
+	}
+
+	public String getCommandsMenuName() {
+		return commandsMenuName;
+	}
+
+	public void setCommandsMenuName(String commandsMenuName) {
+		this.commandsMenuName = commandsMenuName;
+	}
+	
+	public void setAboutMenuItemName(String aboutMenuItemName) {
+		this.aboutMenuItemName = aboutMenuItemName;
+		
+	}
+	
+	public String getAboutMenuItemName() {
+		if (aboutMenuItemName == null) {
+			return "About " + getName() + "...";
+		}
+		return aboutMenuItemName.replaceAll("@", getName());
 	}
 }
