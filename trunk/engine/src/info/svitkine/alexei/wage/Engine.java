@@ -122,7 +122,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 				return Chr.MAGIC_ARMOR;
 			}
 		}
-		return 0;
+		return -1;
 	}
 
 	public void loadState(File file) throws IOException {
