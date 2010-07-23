@@ -915,8 +915,7 @@ public class Script {
 		if (enemy != null) {
 			for (Obj o : player.getState().getInventory()) {
 				if (target.contains(o.getName().toLowerCase())) {
-					// TODO
-					if (true) {
+					if (o.getValue() < enemy.getRejectsOffers()) {
 						appendText("Your offer is rejected.");
 					} else {
 						appendText("Your offer is accepted.");
