@@ -48,7 +48,6 @@ public class SceneImpl implements Scene {
 
 	public void setDesignBounds(Rectangle bounds) {
 		this.designBounds = new Rectangle(bounds);
-		design.setBounds(bounds);
 	}
 
 	public Rectangle getTextBounds() {
