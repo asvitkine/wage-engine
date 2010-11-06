@@ -209,6 +209,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 			callbacks.redrawScene();
 			temporarilyHidden = false;
 		} else if (loopCount == 1) {
+			callbacks.redrawScene();
 			if (shouldEncounter && getMonster() != null) {
 				encounter(world.getPlayer(), monster);
 			}
@@ -226,7 +227,6 @@ public class Engine implements Script.Callbacks, MoveListener {
 		if (turn == 0) {
 			temporarilyHidden = true;
 			performInitialSetup();
-			callbacks.redrawScene();
 			temporarilyHidden = false;
 		}
 		commandWasQuick = false;
@@ -295,11 +295,15 @@ public class Engine implements Script.Callbacks, MoveListener {
 		if (soundName != null) {
 			final Sound sound = world.getSounds().get(soundName.toLowerCase());
 			if (sound != null) {
-				new Thread(new Runnable() {
-					public void run() {
-						sound.play();
-					}
-				}).start();
+				if (loopCount == 1) {
+					sound.play();
+				} else {
+					new Thread(new Runnable() {
+						public void run() {
+							sound.play();
+						}
+					}).start();
+				}
 			}
 		}
 	}
