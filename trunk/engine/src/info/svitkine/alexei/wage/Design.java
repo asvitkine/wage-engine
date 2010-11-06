@@ -28,42 +28,33 @@ public class Design {
 		try {
 			this.data = new byte[in.readShort() - 2];
 			System.arraycopy(data, 2, this.data, 0, this.data.length);
+			bounds = computeBounds();
 			//System.err.println("Extra = " + (data.length - this.data.length - 2));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-
-	public void setBounds(Rectangle bounds) {
-		this.bounds = new Rectangle(bounds);
-	}
 	
-	public Rectangle getBounds() {
-		return new Rectangle(bounds);
-	}
-	
-	private void paintShape(Graphics2D g2d, TexturePaint[] patterns,
+	private void paintShape(Canvas g2d, TexturePaint[] patterns,
 			Shape outer, Shape inner, byte borderFillType, byte fillType) {
 		Area border;
-		if (borderFillType <= patterns.length && borderFillType > 0) {
+		if (setPattern(g2d, patterns, borderFillType - 1)) {
 			border = new Area(outer);
 			border.subtract(new Area(inner));
-			g2d.setPaint(patterns[borderFillType - 1]);
 			g2d.fill(border);
 		}
-		if (fillType <= patterns.length && fillType > 0) {
-			g2d.setPaint(patterns[fillType - 1]);
+		if (setPattern(g2d, patterns, fillType - 1)) {
 			g2d.fill(inner);
 		}
 	}
 	
-	private void realPaint(Graphics2D g2d, TexturePaint[] patterns, boolean mask) throws IOException {
+	private void realPaint(Canvas canvas, TexturePaint[] patterns, boolean mask) throws IOException {
 		DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
 		if (mask) {
-			g2d.setColor(Color.WHITE);
-			g2d.fillRect(0, 0, bounds.width, bounds.height);
-			g2d.setColor(Color.BLACK);
+			canvas.setColor(Color.WHITE);
+			canvas.fillRect(0, 0, bounds.width, bounds.height);
+			canvas.setColor(Color.BLACK);
 		}
 		while (in.available() > 0) {
 			byte fillType = in.readByte();
@@ -72,20 +63,20 @@ public class Design {
 			int type = in.readByte();
 			switch (type) {
 			case 4:
-				drawRect(g2d, in, mask, patterns, fillType, borderThickness, borderFillType);
+				drawRect(canvas, in, mask, patterns, fillType, borderThickness, borderFillType);
 				break;
 			case 8:
-				drawRoundRect(g2d, in, mask, patterns, fillType, borderThickness, borderFillType);
+				drawRoundRect(canvas, in, mask, patterns, fillType, borderThickness, borderFillType);
 				break;
 			case 12:
-				drawOval(g2d, in, mask, patterns, fillType, borderThickness, borderFillType);
+				drawOval(canvas, in, mask, patterns, fillType, borderThickness, borderFillType);
 				break;
 			case 16:
 			case 20:
-				drawPolygon(g2d, in, mask, patterns, fillType, borderThickness, borderFillType);
+				drawPolygon(canvas, in, mask, patterns, fillType, borderThickness, borderFillType);
 				break;
 			case 24:
-				drawBitmap(g2d, in, mask);
+				drawBitmap(canvas, in, mask);
 				break;
 			default:
 				System.err.println("Unknown type => " + type);
@@ -94,7 +85,7 @@ public class Design {
 		}
 	}
 
-	private void drawRect(Graphics2D g2d, DataInputStream in, boolean mask,
+	private void drawRect(Canvas g2d, DataInputStream in, boolean mask,
 			TexturePaint[] patterns, byte fillType, byte borderThickness, byte borderFillType) throws IOException
 	{
 		short y = in.readShort();
@@ -110,7 +101,7 @@ public class Design {
 		paintShape(g2d, patterns, outer, inner, borderFillType, fillType);
 	}
 
-	private void drawOval(Graphics2D g2d, DataInputStream in, boolean mask,
+	private void drawOval(Canvas g2d, DataInputStream in, boolean mask,
 			TexturePaint[] patterns, byte fillType, byte borderThickness, byte borderFillType) throws IOException
 	{
 		short y = in.readShort();
@@ -126,7 +117,7 @@ public class Design {
 		paintShape(g2d, patterns, outer, inner, borderFillType, fillType);
 	}
 	
-	private void drawRoundRect(Graphics2D g2d, DataInputStream in, boolean mask,
+	private void drawRoundRect(Canvas g2d, DataInputStream in, boolean mask,
 			TexturePaint[] patterns, byte fillType, byte borderThickness, byte borderFillType) throws IOException
 	{
 		short y = in.readShort();
@@ -143,7 +134,14 @@ public class Design {
 		paintShape(g2d, patterns, outer, inner, borderFillType, fillType);
 	}
 	
-	private void drawPolygon(Graphics2D g2d, DataInputStream in, boolean mask,
+	private boolean setPattern(Canvas canvas, TexturePaint[] patterns, int index) {
+		if (patterns != null) {
+			 return (index < patterns.length && index > 0);
+		}
+		return true;
+	}
+	
+	private void drawPolygon(Canvas g2d, DataInputStream in, boolean mask,
 		TexturePaint[] patterns, byte fillType, byte borderThickness, byte borderFillType) throws IOException
 	{
 		g2d.setColor(Color.BLACK);
@@ -226,8 +224,7 @@ public class Design {
 	//	System.out.println(borderFillType);
 		//g2d.setColor(Color.black);
 		//if (1==0)
-		if (borderThickness > 0 && borderFillType <= patterns.length && borderFillType > 0) {
-			g2d.setPaint(patterns[borderFillType - 1]);
+		if (borderThickness > 0 && setPattern(g2d, patterns, borderFillType - 1)) {
 			Stroke oldStroke = g2d.getStroke();
 			//if (borderThickness != 1)
 			g2d.setStroke(new BasicStroke(borderThickness - 0.5f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_BEVEL));
@@ -237,7 +234,7 @@ public class Design {
 		}
 	}
 	
-	private void drawBitmap(Graphics2D g2d, DataInputStream in, boolean mask) throws IOException {
+	private void drawBitmap(Canvas g2d, DataInputStream in, boolean mask) throws IOException {
 		// http://developer.apple.com/technotes/tn/tn1023.html
 		//System.out.print("Not the bits!\n");
 		int numBytes = in.readShort();
@@ -285,52 +282,67 @@ public class Design {
 					if (!mask) {
 						g2d.setColor(canvas[xx][yy]);
 					}
-					g2d.drawRect(x1+xx, y1+yy, 0, 0);
+					g2d.fillPixel(x1+xx, y1+yy);
 				}
 			}
 		}
 		in.reset();
-		for (int i = 0; i < numBytes - 10; i++)
-			in.readByte();
+		in.skip(numBytes - 10);
 	}
 
-	public boolean isPointOpaque(int x, int y) {
+	private BufferedImage getMaskImage() {
 		if (maskImage == null) {
-			maskImage = new BufferedImage(bounds.width, bounds.height, BufferedImage.TYPE_BYTE_BINARY);
+			maskImage = new BufferedImage(1024, 1024, BufferedImage.TYPE_BYTE_BINARY);
 			try {
-				realPaint(maskImage.createGraphics(), null, true);
+				Graphics2D g2d = maskImage.createGraphics();
+				g2d.translate(-bounds.x, -bounds.y);
+				Canvas canvas = new Graphics2DCanvas(g2d);
+				realPaint(canvas, null, true);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-		if (x >= 0 && y >= 0 && x < maskImage.getWidth() && y < maskImage.getHeight()) {
-			return (maskImage.getRGB(x, y) & 0xFF) == 0;	
+		return maskImage;
+	}
+	
+	public boolean isPointOpaque(int x, int y) {
+		BufferedImage maskImage = getMaskImage();
+		if (x >= bounds.x && y >= bounds.y && x < bounds.width && y < bounds.height) {
+			return (maskImage.getRGB(x - bounds.x, y - bounds.y) & 0xFF) == 0;	
 		}
 		return false;
 	}
 
+	private Rectangle computeBounds() {
+		MeasureCanvas canvas = new MeasureCanvas();
+		try {
+			realPaint(canvas, null, false);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return canvas.getBounds();
+	}
+	
 	public void paint(Graphics2D g, TexturePaint[] patterns) {
+		if (bounds.width == 0)
+			return;
 		if (image == null) {
 		    image = g.getDeviceConfiguration().createCompatibleImage(bounds.width, bounds.height, Transparency.BITMASK);
 			try {
-				realPaint(image.createGraphics(), patterns, false);
+				Graphics2D g2d = image.createGraphics();
+				g2d.translate(-bounds.x, -bounds.y);
+				Canvas canvas = new Graphics2DCanvas(g2d);
+				realPaint(canvas, patterns, false);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-		g.drawImage(image, 0, 0, bounds.width, bounds.height, null);
+		g.drawImage(image, bounds.x, bounds.y, bounds.width, bounds.height, null);
 	}
 
 	public void paintMask(Graphics2D g) {
-		if (maskImage == null) {
-			maskImage = new BufferedImage(bounds.width, bounds.height, BufferedImage.TYPE_BYTE_BINARY);
-			try {
-				realPaint(maskImage.createGraphics(), null, true);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		/*
+		BufferedImage maskImage = getMaskImage();
+		
 		g.setColor(Color.BLACK);
 		for (int x = 0; x < bounds.width; x++) {
 			for (int y = 0; y < bounds.height; y++) {
@@ -339,7 +351,7 @@ public class Design {
 				}
 			}
 		}
-		*/
-		g.drawImage(maskImage, 0, 0, bounds.width, bounds.height, null);
+		
+		//g.drawImage(maskImage, bounds.x, bounds.y, bounds.width, bounds.height, null);
 	}
 }

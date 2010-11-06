@@ -84,7 +84,6 @@ public class ChrImpl implements Chr {
 
 	public void setDesignBounds(Rectangle bounds) {
 		this.designBounds = new Rectangle(bounds);
-		design.setBounds(bounds);
 	}
 	
 	public String getAcceptsOfferComment() {

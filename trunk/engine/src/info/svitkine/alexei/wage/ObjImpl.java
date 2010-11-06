@@ -50,7 +50,6 @@ public class ObjImpl implements Obj {
 
 	public void setDesignBounds(Rectangle bounds) {
 		this.designBounds = new Rectangle(bounds);
-		design.setBounds(bounds);
 	}
 	
 	public String getName() {
