@@ -101,9 +101,16 @@ public class WindowBorder extends AbstractBorder {
 			// TODO: This "Chicago" is not faithful to the original one on the Mac.
 			Font f = new Font("Chicago", Font.BOLD, 12);
 			int w = g.getFontMetrics(f).stringWidth(title) + 6;
+			int maxWidth = width - size*2 - 7;
+			if (w > maxWidth) {
+				w = maxWidth;
+			}
 			drawBox(g, (width - w) / 2, y, w, size);
 			g.setFont(f);
+			Shape clip = g.getClip();
+			g.setClip((width - w) / 2, y, w, size);
 			g.drawString(title, (width - w) / 2 + 3, y + size - 4);
+			g.setClip(clip);
 		}
 
 		g.setColor(oldColor);
