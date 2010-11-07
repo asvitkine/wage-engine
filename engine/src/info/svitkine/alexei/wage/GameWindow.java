@@ -183,7 +183,7 @@ public class GameWindow extends JFrame {
 	
 	private void gameOver() {
 		if (isVisible()) {
-			JOptionPane.showMessageDialog(GameWindow.this, "Game over!");
+			JOptionPane.showMessageDialog(GameWindow.this, world.getGameOverMessage());
 			setVisible(false);
 			dispose();
 		}
