@@ -105,11 +105,11 @@ public class WindowBorder extends AbstractBorder {
 			if (w > maxWidth) {
 				w = maxWidth;
 			}
-			drawBox(g, (width - w) / 2, y, w, size);
+			drawBox(g, x + (width - w) / 2, y, w, size);
 			g.setFont(f);
 			Shape clip = g.getClip();
-			g.setClip((width - w) / 2, y, w, size);
-			g.drawString(title, (width - w) / 2 + 3, y + size - 4);
+			g.setClip(x + (width - w) / 2, y, w, size);
+			g.drawString(title, x + (width - w) / 2 + 3, y + size - 4);
 			g.setClip(clip);
 		}
 
