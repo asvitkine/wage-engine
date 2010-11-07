@@ -104,6 +104,28 @@ public class WorldLoader {
 		return model;
 	}
 
+	private String loadStringFromDITL(ResourceModel model, int resourceId, int itemIndex) {
+		Resource ditl = model.getResource("DITL", (short) resourceId);
+		if (ditl != null) {
+			byte[] data = ditl.getData();
+			try {
+				DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));			
+				int itemCount = in.readShort();
+				for (int i = 0; i <= itemCount; i++) {
+					// int placeholder; short rect[4]; byte flags; pstring str;
+					in.skip(13);
+					String message = readPascalString(in);
+					if (i == itemIndex) {
+						return message;
+					}
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
+
 	public World loadWorld(ResourceModel model, File file) throws UnsupportedEncodingException {
 		//rdm.addDocument(file, null);
 		World world = new World(new Script(model.getResource("GCOD", (short) 0).getData()));
@@ -137,6 +159,20 @@ public class WorldLoader {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		}
+		
+		String message;
+		if ((message = loadStringFromDITL(model, 2910, 1)) != null) {
+			world.setGameOverMessage(message.trim());
+		}
+		if ((message = loadStringFromDITL(model, 2480, 3)) != null) {
+			world.setSaveBeforeQuitMessage(message.trim());
+		}
+		if ((message = loadStringFromDITL(model, 2490, 3)) != null) {
+			world.setSaveBeforeCloseMessage(message.trim());
+		}
+		if ((message = loadStringFromDITL(model, 2940, 2)) != null) {
+			world.setRevertMessage(message);
 		}
 		
 		ResourceType scenes = model.getResourceType("ASCN");

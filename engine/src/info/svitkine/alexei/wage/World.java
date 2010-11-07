@@ -26,6 +26,10 @@ public class World {
 	private String commandsMenuName = "Commands";
 	private String defaultCommandsMenu =
 		"North/N;South/S;East/E;West/W;Up/U;Down/D;(-;Look/L;Rest/R;Status/T;Inventory/I;Search/F;(-;Open;Close";
+	private String saveBeforeCloseMessage = "Save changes before closing?";
+	private String saveBeforeQuitMessage = "Save changes before quiting?";
+	private String gameOverMessage = "Game Over!";
+	private String revertMessage = "Revert to the last saved version?";
 	private Map<String, Scene> scenes;
 	private Map<String, Obj> objs;
 	private Map<String, Chr> chrs;
@@ -445,5 +449,37 @@ public class World {
 			return "About " + getName() + "...";
 		}
 		return aboutMenuItemName.replaceAll("@", getName());
+	}
+
+	public String getSaveBeforeCloseMessage() {
+		return saveBeforeCloseMessage;
+	}
+
+	public void setSaveBeforeCloseMessage(String saveMessage) {
+		this.saveBeforeCloseMessage = saveMessage;
+	}
+
+	public String getSaveBeforeQuitMessage() {
+		return saveBeforeQuitMessage;
+	}
+
+	public void setSaveBeforeQuitMessage(String saveMessage) {
+		this.saveBeforeQuitMessage = saveMessage;
+	}
+
+	public String getGameOverMessage() {
+		return gameOverMessage;
+	}
+
+	public void setGameOverMessage(String gameOverMessage) {
+		this.gameOverMessage = gameOverMessage;
+	}
+
+	public String getRevertMessage() {
+		return revertMessage;
+	}
+
+	public void setRevertMessage(String revertMessage) {
+		this.revertMessage = revertMessage;
 	}
 }
