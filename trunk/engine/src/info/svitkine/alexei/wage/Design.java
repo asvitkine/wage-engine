@@ -136,7 +136,11 @@ public class Design {
 	
 	private boolean setPattern(Canvas canvas, TexturePaint[] patterns, int index) {
 		if (patterns != null) {
-			 return (index < patterns.length && index > 0);
+			if (index < patterns.length && index >= 0) {
+				canvas.setPaint(patterns[index]);
+				return true;
+			}
+			return false;
 		}
 		return true;
 	}
@@ -217,8 +221,7 @@ public class Design {
 			}
 			return;
 		}
-		if (fillType <= patterns.length && fillType > 0) {
-			g2d.setPaint(patterns[fillType - 1]);
+		if (setPattern(g2d, patterns, fillType - 1)) {
 			g2d.fillPolygon(xpoints, ypoints, npoints);
 		}
 	//	System.out.println(borderFillType);
