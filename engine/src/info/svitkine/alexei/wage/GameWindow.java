@@ -1,39 +1,13 @@
 package info.svitkine.alexei.wage;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.FileDialog;
-import java.awt.Font;
-import java.awt.Frame;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.TexturePaint;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.swing.AbstractAction;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
@@ -49,6 +23,24 @@ public class GameWindow extends JFrame {
 
 	public GameWindow(final World world, TexturePaint[] patterns) {
 		this.world = world;
+		Utils.setupCloseWindowKeyStrokes(this, getRootPane());
+		wm = new WindowManager();
+		viewer = new SceneViewer(patterns);
+		textArea = createTextArea();
+		panel = wrapInPanel(wrapInScrollPane(textArea));
+		wm.add(viewer);
+		wm.setComponentZOrder(viewer, 0);
+		wm.add(panel);
+		((WindowBorder) panel.getBorder()).setScrollable(true);
+		wm.setComponentZOrder(viewer, 1);
+		initializeGame();
+		setContentPane(wm);
+		setSize(640, 480);
+		setLocationRelativeTo(null);
+		setVisible(true);
+	}
+	
+	private void initializeGame() {
 		JMenuBar menubar = new JMenuBar();
 		JMenu fileMenu = createFileMenu();
 		JMenu editMenu = createEditMenu();
@@ -59,17 +51,7 @@ public class GameWindow extends JFrame {
 		menubar.add(commandsMenu);
 		if (!world.isWeaponsMenuDisabled())
 			menubar.add(createWeaponsMenu());
-		Utils.setupCloseWindowKeyStrokes(this, getRootPane());
-		wm = new WindowManager();
-		viewer = new SceneViewer(patterns);
-		textArea = createTextArea();
-		final JScrollPane scrollPane = wrapInScrollPane(textArea);
-		panel = wrapInPanel(scrollPane);
-		wm.add(viewer);
-		wm.setComponentZOrder(viewer, 0);
-		wm.add(panel);
-		((WindowBorder) panel.getBorder()).setScrollable(true);
-		wm.setComponentZOrder(viewer, 1);
+		setJMenuBar(menubar);
 		engine = new Engine(world, textArea.getOut(), new Engine.Callbacks() {
 			public void setCommandsMenu(String format) {
 				updateMenuFromString(commandsMenu, format);
@@ -124,11 +106,6 @@ public class GameWindow extends JFrame {
 				}
 			}
 		}).start();
-		setJMenuBar(menubar);
-		setContentPane(wm);
-		setSize(640, 480);
-		setLocationRelativeTo(null);
-		setVisible(true);
 	}
 	
 	private void redrawScene() {
