@@ -157,8 +157,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 		// output state info to disk
 		if (success) {
 			stateManager.writeSaveData(toFile);
-			// TODO: We should get the creator code from the game app.
-			Utils.setFileTypeAndCreator(toFile.getAbsolutePath(), "WDOC", "WEDT");
+			Utils.setFileTypeAndCreator(toFile.getAbsolutePath(), "WDOC", world.getCreatorCode());
 		}	
 	}
 	
@@ -532,17 +531,6 @@ public class Engine implements Script.Callbacks, MoveListener {
 		decrementUses(magicalObject);
 	}
 
-	public void performMagic(Chr attacker, Chr victim, Obj magicalObject) {
-		switch (magicalObject.getAttackType()) {
-			case Obj.HEALS_PHYSICAL_DAMAGE:
-			case Obj.HEALS_SPIRITUAL_DAMAGE:
-			case Obj.HEALS_PHYSICAL_AND_SPIRITUAL_DAMAGE:
-				performHealingMagic(attacker, magicalObject);
-				return;
-		}
-		performAttack(attacker, victim, (Weapon) magicalObject);
-	}
-
 	private int getValidMoveDirections(Chr npc) {
 		int directions = 0;
 		Scene currentScene = npc.getState().getCurrentScene();
@@ -577,6 +565,17 @@ public class Engine implements Script.Callbacks, MoveListener {
 		int destX = currentScene.getWorldX() + dx[dir];
 		int destY = currentScene.getWorldY() + dy[dir];
 		world.move(chr, world.getSceneAt(destX, destY));
+	}
+
+	public void performMagic(Chr attacker, Chr victim, Obj magicalObject) {
+		switch (magicalObject.getAttackType()) {
+			case Obj.HEALS_PHYSICAL_DAMAGE:
+			case Obj.HEALS_SPIRITUAL_DAMAGE:
+			case Obj.HEALS_PHYSICAL_AND_SPIRITUAL_DAMAGE:
+				performHealingMagic(attacker, magicalObject);
+				return;
+		}
+		performAttack(attacker, victim, (Weapon) magicalObject);
 	}
 
 	public void performMagicAttack(Chr attacker, Chr victim, Obj weapon) {
