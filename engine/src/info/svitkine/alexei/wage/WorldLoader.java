@@ -3,7 +3,6 @@ package info.svitkine.alexei.wage;
 import java.awt.FileDialog;
 import java.awt.Frame;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -11,7 +10,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
-import java.util.prefs.Preferences;
 
 import javax.swing.JFrame;
 //import javax.swing.JMenu;
@@ -128,9 +126,15 @@ public class WorldLoader {
 
 	public World loadWorld(ResourceModel model, File file) throws UnsupportedEncodingException {
 		//rdm.addDocument(file, null);
+
 		World world = new World(new Script(model.getResource("GCOD", (short) 0).getData()));
 		State initialState = new State();
-		
+
+		String[] typeAndCreator = Utils.getFileTypeAndCreator(file.getAbsolutePath());
+		if (typeAndCreator != null) {
+			world.setCreatorCode(typeAndCreator[1]);
+		}
+
 		world.setName(file.getName());
 		ResourceType vers = model.getResourceType("VERS");
 		if (vers != null) {
