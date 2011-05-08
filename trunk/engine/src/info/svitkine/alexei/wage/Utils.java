@@ -19,6 +19,16 @@ public abstract class Utils {
 		return (str.charAt(0) << 24) + (str.charAt(1) << 16) + (str.charAt(2) << 8) + str.charAt(3);
 	}
 	
+	public static String intToFourChars(int value) {
+		char[] chars = {
+			(char) (0xFF & (value >> 24)),
+			(char) (0xFF & (value >> 16)),
+			(char) (0xFF & (value >> 8)),
+			(char) (0xFF & value)
+		};
+		return new String(chars);
+	}
+	
 	public static void setFileTypeAndCreator(String path, String type, String creator) {
 		int typeInt = fourCharsToInt(type);
 		int creatorInt = fourCharsToInt(creator);
@@ -31,6 +41,21 @@ public abstract class Utils {
 			setFileCreatorMethod.invoke(null, new Object[] { path, new Integer(creatorInt) });
 		} catch (Throwable e) {
 		}
+	}
+	
+	public static String[] getFileTypeAndCreator(String path) {
+		// TODO: What about MacBinary files?
+		try {
+			Class<?> fileManagerClass = Class.forName("com.apple.eio.FileManager");
+			Class<?>[] argTypes = new Class[] { String.class };
+			Method getFileTypeMethod = fileManagerClass.getDeclaredMethod("getFileType", argTypes);
+			Method getFileCreatorMethod = fileManagerClass.getDeclaredMethod("getFileCreator", argTypes);
+			Integer type = (Integer) getFileTypeMethod.invoke(null, new Object[] { path });
+			Integer creator = (Integer) getFileCreatorMethod.invoke(null, new Object[] { path });
+			return new String[] { intToFourChars(type), intToFourChars(creator) };
+		} catch (Throwable e) {
+		}
+		return null;
 	}
 
 	public static Action setupCloseWindowKeyStrokes(Window window, JRootPane rootPane) {

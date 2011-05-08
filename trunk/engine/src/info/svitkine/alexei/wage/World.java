@@ -16,6 +16,7 @@ public class World {
 
 	private String name;
 	private int signature;
+	private String creatorCode = "WEDT";
 	private String aboutMessage;
 	private String soundLibrary1;
 	private String soundLibrary2;
@@ -481,5 +482,13 @@ public class World {
 
 	public void setRevertMessage(String revertMessage) {
 		this.revertMessage = revertMessage;
+	}
+
+	public String getCreatorCode() {
+		return creatorCode;
+	}
+
+	public void setCreatorCode(String creatorCode) {
+		this.creatorCode = creatorCode;
 	}
 }
