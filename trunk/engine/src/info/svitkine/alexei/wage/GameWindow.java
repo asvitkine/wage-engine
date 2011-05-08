@@ -22,6 +22,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.swing.AbstractAction;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -44,7 +45,8 @@ public class GameWindow extends JFrame {
 	private JPanel panel;
 	private Timer soundTimer;
 	private File lastSaveFile;
-	
+	private WindowManager wm;
+
 	public GameWindow(final World world, TexturePaint[] patterns) {
 		this.world = world;
 		JMenuBar menubar = new JMenuBar();
@@ -58,7 +60,7 @@ public class GameWindow extends JFrame {
 		if (!world.isWeaponsMenuDisabled())
 			menubar.add(createWeaponsMenu());
 		Utils.setupCloseWindowKeyStrokes(this, getRootPane());
-		WindowManager wm = new WindowManager();
+		wm = new WindowManager();
 		viewer = new SceneViewer(patterns);
 		textArea = createTextArea();
 		final JScrollPane scrollPane = wrapInScrollPane(textArea);
@@ -92,6 +94,8 @@ public class GameWindow extends JFrame {
 		viewer.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(final MouseEvent e) {
+				if (!viewer.isEnabled())
+					return;
 				Thread thread = new Thread(new Runnable() {
 					public void run() {
 						synchronized (engine) {
@@ -265,8 +269,22 @@ public class GameWindow extends JFrame {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			// TODO
-			JOptionPane.showMessageDialog(null, "Not implemented yet.");
+			if (wm.getModalDialog() != null) {
+				wm.remove(wm.getModalDialog());
+				textArea.setVisible(true);
+			} else {
+				SaveDialog dialog = new SaveDialog();
+				int w = GameWindow.this.getContentPane().getWidth();
+				int h = GameWindow.this.getContentPane().getHeight();
+				dialog.setLocation(w/2-dialog.getWidth()/2, h/2-dialog.getHeight()/2);
+				wm.addModalDialog(dialog);
+				// FIXME: below is to work around a bug with overlaps...
+				textArea.setVisible(false);
+			}
+			wm.repaint();
+			wm.invalidate();
+			wm.revalidate();
+			// TODO: Make the buttons of the dialog actually do something!
 		}
 	}
 	

@@ -17,6 +17,7 @@ import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
 
 public class WindowManager extends JPanel {
+	private JComponent modalDialog;
 
 	public WindowManager() {
 		setLayout(null);
@@ -33,7 +34,30 @@ public class WindowManager extends JPanel {
 		c.addMouseMotionListener(listener);
 		super.add(c);
 	}
+	
+	public void remove(JComponent comp) {
+		super.remove(comp);
+		if (comp == modalDialog) {
+			for (int i = 0; i < getComponentCount(); i++)
+				getComponent(i).setEnabled(true);
+			modalDialog = null;
+		}
+	}
 
+	public void addModalDialog(JComponent dialog) {
+		if (modalDialog != null)
+			throw new IllegalArgumentException();
+		for (int i = 0; i < getComponentCount(); i++)
+			getComponent(i).setEnabled(false);
+		add(dialog);
+		setComponentZOrder(dialog, 0);
+		modalDialog = dialog;
+	}
+	
+	public JComponent getModalDialog() {
+		return modalDialog;
+	}
+	
 	private static void repaintShape(JComponent c, Shape s) {
 		Rectangle b = s.getBounds();
 		c.repaint(b.x, b.y, b.width, b.height);
@@ -47,6 +71,8 @@ public class WindowManager extends JPanel {
 		public void mousePressed(MouseEvent event) {
 			Point p = event.getPoint();
 			JComponent c = (JComponent) event.getComponent();
+			if (!c.isEnabled() || (c.getBorder() instanceof WindowBorder))
+				return;
 			WindowBorder border = (WindowBorder) c.getBorder();
 			Shape[] borderShapes = border.getBorderShapes(c);
 			Shape shape = borderShapes[WindowBorder.BORDER_SHAPE];
@@ -90,7 +116,7 @@ public class WindowManager extends JPanel {
 				Container p = c.getParent();
 				p.repaint();
 				p.invalidate();
-				((JComponent)p).revalidate(); 
+				((JComponent)p).revalidate();
 			}
 		}
 
@@ -127,6 +153,8 @@ public class WindowManager extends JPanel {
 		@Override
 		public void mousePressed(MouseEvent event) {
 			JComponent c = (JComponent) event.getComponent();
+			if (!c.isEnabled())
+				return;
 			WindowBorder border = (WindowBorder) c.getBorder();
 			Shape closeBox = border.getBorderShapes(c)[WindowBorder.CLOSE_BOX];
 			System.out.println("CB="+closeBox.toString());
@@ -160,5 +188,5 @@ public class WindowManager extends JPanel {
 				}	
 			}
 		} 
-	};
+	}
 }
