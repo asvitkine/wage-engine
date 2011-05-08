@@ -1180,6 +1180,12 @@ public class Script {
 				break;
 			}
 		}
+		for (Obj o : player.getState().getCurrentScene().getState().getObjs()) {
+			if (target.contains(o.getName().toLowerCase())) {
+				appendText("First you must get the " + o.getName() + ".");
+				break;
+			}
+		}
 	}
 
 	private void handleMoveCommand(int dir, String dirName) {
