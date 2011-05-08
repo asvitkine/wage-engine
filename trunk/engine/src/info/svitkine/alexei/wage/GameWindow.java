@@ -24,6 +24,13 @@ public class GameWindow extends JFrame {
 	public GameWindow(final World world, TexturePaint[] patterns) {
 		this.world = world;
 		Utils.setupCloseWindowKeyStrokes(this, getRootPane());
+		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+		this.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent arg0) {
+				showSaveDialog();
+			}	
+		});
 		wm = new WindowManager();
 		viewer = new SceneViewer(patterns);
 		textArea = createTextArea();
@@ -78,7 +85,7 @@ public class GameWindow extends JFrame {
 			public void mouseClicked(final MouseEvent e) {
 				if (!viewer.isEnabled())
 					return;
-				Thread thread = new Thread(new Runnable() {
+				startThread(new Runnable() {
 					public void run() {
 						synchronized (engine) {
 							final Object target = viewer.getClickTarget(e);
@@ -88,10 +95,9 @@ public class GameWindow extends JFrame {
 						}
 					}
 				});
-				thread.start();
 			}
 		});
-		new Thread(new Runnable() {
+		startThread(new Runnable() {
 			public void run() {
 				BufferedReader in = new BufferedReader(new InputStreamReader(textArea.getIn()));
 				try {
@@ -105,7 +111,11 @@ public class GameWindow extends JFrame {
 					e.printStackTrace();
 				}
 			}
-		}).start();
+		});
+	}
+	
+	private void startThread(Runnable runnable) {
+		new Thread(runnable).start();
 	}
 	
 	private void redrawScene() {
@@ -240,28 +250,49 @@ public class GameWindow extends JFrame {
 		}
 	}
 
+	private void showSaveDialog() {
+		if (wm.getModalDialog() != null)
+			return;
+		SaveDialog dialog = new SaveDialog(new ActionListener() {
+			public void actionPerformed(ActionEvent event) {
+				if (SaveDialog.NO_TEXT.equals(event.getActionCommand())) {
+					GameWindow.this.setVisible(false);
+				} else if (SaveDialog.YES_TEXT.equals(event.getActionCommand())) {
+					new SaveAction().actionPerformed(event);
+					// TODO: If they clicked cancel in the save dialog, don't close the window!
+					GameWindow.this.setVisible(false);					
+				} else if (SaveDialog.CANCEL_TEXT.equals(event.getActionCommand())) {
+					closeSaveDialog();
+				}
+			}
+		});
+		int w = GameWindow.this.getContentPane().getWidth();
+		int h = GameWindow.this.getContentPane().getHeight();
+		dialog.setLocation(w/2-dialog.getWidth()/2, h/2-dialog.getHeight()/2);
+		wm.addModalDialog(dialog);
+		// FIXME: below is to work around a bug with overlaps...
+		textArea.setVisible(false);
+		// FIXME: need to disable menus too!
+		wm.repaint();
+		wm.invalidate();
+		wm.revalidate();
+	}
+	
+	private void closeSaveDialog() {
+		wm.remove(wm.getModalDialog());
+		textArea.setVisible(true);
+		wm.repaint();
+		wm.invalidate();
+		wm.revalidate();
+	}
+	
 	public class CloseAction extends AbstractAction {
 		public CloseAction() {
 			putValue(NAME, "Close");
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			if (wm.getModalDialog() != null) {
-				wm.remove(wm.getModalDialog());
-				textArea.setVisible(true);
-			} else {
-				SaveDialog dialog = new SaveDialog();
-				int w = GameWindow.this.getContentPane().getWidth();
-				int h = GameWindow.this.getContentPane().getHeight();
-				dialog.setLocation(w/2-dialog.getWidth()/2, h/2-dialog.getHeight()/2);
-				wm.addModalDialog(dialog);
-				// FIXME: below is to work around a bug with overlaps...
-				textArea.setVisible(false);
-			}
-			wm.repaint();
-			wm.invalidate();
-			wm.revalidate();
-			// TODO: Make the buttons of the dialog actually do something!
+			showSaveDialog();
 		}
 	}
 	
