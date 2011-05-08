@@ -865,7 +865,7 @@ public class Script {
 				handleOfferCommand(input.substring(6));
 			} else if (input.contains("look")) {
 				handleLookCommand();
-			} else if (input.contains("inventory")) {
+			} else if (input.contains("inven")) {
 				handleInventoryCommand();
 			} else if (input.contains("status")) {
 				handleStatusCommand();
