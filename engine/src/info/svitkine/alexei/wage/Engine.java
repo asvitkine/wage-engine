@@ -629,13 +629,15 @@ public class Engine implements Script.Callbacks, MoveListener {
 		// TODO: what about obj accuracy
 		if (chance < attacker.getPhysicalAccuracy()) {
 			if (targetIndex != -1) {
-				if (victim.getState().getArmor(targetIndex) != null) {
+				Obj armor = victim.getState().getArmor(targetIndex);
+				if (armor != null) {
 					// TODO: Absorb some damage.
 					appendText("%s's %s weakens the impact of %s's %s.",
 						getNameWithDefiniteArticle(victim, true),
 						victim.getState().getArmor(targetIndex).getName(),
 						getNameWithDefiniteArticle(attacker, false),
 						weapon.getName());
+					decrementUses(armor);
 				} else {
 					appendText("A hit to the %s.", targets[targetIndex]);
 				}
