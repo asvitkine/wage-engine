@@ -1051,8 +1051,9 @@ public class Script {
 			}
 		}
 		for (Obj o : player.getState().getInventory()) {
-			if (o.getNumberOfUses() > 0) {
-				appendText(String.format("Your %s has %d uses left.", o.getName(), o.getNumberOfUses()));
+			int uses = o.getState().getNumberOfUses();
+			if (uses > 0) {
+				appendText("Your %s has %d uses left.", o.getName(), uses);
 			}
 		}
 		printPlayerCondition(player);
