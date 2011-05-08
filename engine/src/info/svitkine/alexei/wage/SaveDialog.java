@@ -1,23 +1,29 @@
 package info.svitkine.alexei.wage;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JComponent;
 import javax.swing.event.MouseInputAdapter;
 
 public class SaveDialog extends JComponent {
+	public static final String NO_TEXT = "No";
+	public static final String YES_TEXT = "Yes";
+	public static final String CANCEL_TEXT = "Cancel";
+
 	private DialogButton[] buttons;
 	private DialogButton defaultButton;
 	private DialogButton pressedButton;
 	private boolean mouseOverPressedButton;
 	
-	public SaveDialog() {
+	public SaveDialog(final ActionListener actionListener) {
 		setSize(292, 114);
 		buttons = new DialogButton[] {
-			new DialogButton("No", new Rectangle(19, 67, 68, 28)),
-			new DialogButton("Yes", new Rectangle(112, 67, 68, 28)),
-			new DialogButton("Cancel", new Rectangle(205, 67, 68, 28))
+			new DialogButton(NO_TEXT, new Rectangle(19, 67, 68, 28)),
+			new DialogButton(YES_TEXT, new Rectangle(112, 67, 68, 28)),
+			new DialogButton(CANCEL_TEXT, new Rectangle(205, 67, 68, 28))
 		};
 		defaultButton = buttons[1];
 		MouseInputAdapter listener = new MouseInputAdapter() {
@@ -52,9 +58,17 @@ public class SaveDialog extends JComponent {
 
 			@Override
 			public void mouseReleased(MouseEvent event) {
+				boolean pressed = checkBounds(pressedButton, event);
+				ActionEvent clickEvent = null;
+				if (pressed && actionListener != null) {
+					clickEvent = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, pressedButton.text);
+				}
 				pressedButton = null;
 				mouseOverPressedButton = false;
 				repaint();
+				if (clickEvent != null) {
+					actionListener.actionPerformed(clickEvent);
+				}
 			}
 
 			@Override
