@@ -732,8 +732,10 @@ public class Script {
 			public void evaluatePair(Operand o1, Operand o2) {
 				Obj obj = (Obj) o1.value;
 				Chr chr = (Chr) o2.value;
-				world.move(obj, chr);
-				handled = true;
+				if (obj.getState().getCurrentOwner() != chr) {
+					world.move(obj, chr);
+					setHandled();
+				}
 			}
 		});
 		handlers.add(new PairEvaluator(Operand.OBJ, Operand.SCENE) {
@@ -741,8 +743,10 @@ public class Script {
 			public void evaluatePair(Operand o1, Operand o2) {
 				Obj obj = (Obj) o1.value;
 				Scene scene = (Scene) o2.value;
-				world.move(obj, scene);
-				handled = true;
+				if (obj.getState().getCurrentScene() != scene) {
+					world.move(obj, scene);
+					setHandled();
+				}
 			}
 		});
 		handlers.add(new PairEvaluator(Operand.CHR, Operand.SCENE) {
@@ -751,15 +755,19 @@ public class Script {
 				Chr chr = (Chr) o1.value;
 				Scene scene = (Scene) o2.value;
 				world.move(chr, scene);
-				handled = true;
+				setHandled();
 			}
 		});
 		evaluatePair(handlers, what, to);
 	}
 
 	private void appendText(String str, Object... args) {
-		handled = true;
+		setHandled();
 		callbacks.appendText(str, args);
+	}
+	
+	private void setHandled() {
+		handled = true;
 	}
 	
 	public boolean execute(World world, int loopCount,
@@ -798,7 +806,7 @@ public class Script {
 					index++;
 					Operand op = readOperand();
 					// TODO check op type is string.
-					handled = true;
+					setHandled();
 					callbacks.playSound(op.value.toString());
 					// TODO check data[index] == 0xFD
 					index++;
@@ -828,7 +836,7 @@ public class Script {
 			System.out.println("Executing global script...");
 			boolean globalHandled = world.getGlobalScript().execute(world, loopCount, inputText, inputClick, callbacks);
 			if (globalHandled)
-				handled = true;
+				setHandled();
 		} else if (inputText != null) {
 			String input = inputText.toLowerCase();
 			if (input.equals("n") || input.contains("north")) {
@@ -905,7 +913,7 @@ public class Script {
 			appendText("Please aim for the head, chest, or side.");
 		}
 		if (wasHandled)
-			handled = true;
+			setHandled();
 		callbacks.setCommandWasQuick();
 	}
 
@@ -948,7 +956,7 @@ public class Script {
 				case Obj.HEALS_PHYSICAL_DAMAGE:
 				case Obj.HEALS_SPIRITUAL_DAMAGE:
 					callbacks.performMagic(player, enemy, magicalObject);
-					handled = true;
+					setHandled();
 					return;
 			}
 		}
@@ -958,7 +966,7 @@ public class Script {
 			appendText("There is nobody to cast a spell at.");
 		else
 			appendText("There is no one to fight.");
-		handled = true;
+		setHandled();
 	}
 
 	private boolean isWearing(Chr chr, Obj obj) {
