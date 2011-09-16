@@ -58,7 +58,8 @@ public class GameWindow extends JFrame {
 		menubar.add(commandsMenu);
 		if (!world.isWeaponsMenuDisabled())
 			menubar.add(createWeaponsMenu());
-		setJMenuBar(menubar);
+		wm.setMenuBar(menubar);
+		//setJMenuBar(menubar);
 		engine = new Engine(world, textArea.getOut(), new Engine.Callbacks() {
 			public void setCommandsMenu(String format) {
 				updateMenuFromString(commandsMenu, format);
