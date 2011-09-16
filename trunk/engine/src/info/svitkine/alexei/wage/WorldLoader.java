@@ -3,6 +3,7 @@ package info.svitkine.alexei.wage;
 import java.awt.FileDialog;
 import java.awt.Frame;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -10,24 +11,25 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
+import java.util.Properties;
+import java.util.prefs.Preferences;
 
 import javax.swing.JFrame;
-//import javax.swing.JMenu;
-//import javax.swing.JMenuBar;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 
 import org.freeshell.gbsmith.rescafe.resourcemanager.*;
 import org.freeshell.gbsmith.rescafe.MacBinaryHeader;
 
-//import com.fizzysoft.sdu.RecentDocumentsManager;
+import com.fizzysoft.sdu.RecentDocumentsManager;
 
 
 public class WorldLoader {
 	private static WorldLoader instance;
 
-	//private RecentDocumentsManager rdm;
+	private RecentDocumentsManager rdm;
 	
 	protected WorldLoader() {
-		/*
 		rdm = new RecentDocumentsManager() {
 			private Preferences getPreferences() {
 				return Preferences.userNodeForPackage(WorldLoader.class);
@@ -45,10 +47,17 @@ public class WorldLoader {
 
 			@Override
 			protected void openFile(File file, ActionEvent event) {
-				// TODO Auto-generated method stub
+				try {
+					openWorldFile(file);
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		};
-		*/
 	}
 
 	public static WorldLoader getInstance() {
@@ -57,34 +66,38 @@ public class WorldLoader {
 		return instance;
 	}
 	
-	/*
 	public RecentDocumentsManager getRecentDocumentsManager() {
 		return rdm;
-	}*/
+	}
 
+	private static void openWorldFile(File file) throws FileNotFoundException, IOException  {
+		WorldLoader.getInstance().getRecentDocumentsManager().addDocument(file, new Properties());
+		ResourceModel model = loadResources(file);
+		JFrame f = new JFrame();
+		JMenuBar menubar = new JMenuBar();
+		JMenu menu = new JMenu("File");
+		menu.add(WorldLoader.getInstance().getRecentDocumentsManager().createOpenRecentMenu());
+		menubar.add(menu);
+		f.setJMenuBar(menubar);
+		Utils.setupCloseWindowKeyStrokes(f, f.getRootPane());
+		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		f.getRootPane().putClientProperty("Window.documentFile", file);
+		f.setTitle(file.getName());
+		f.setContentPane(new WorldBrowser(WorldLoader.getInstance().loadWorld(model, file)));
+		f.setSize(640, 480);
+		f.setLocationRelativeTo(null);
+		f.setVisible(true);
+	}
+	
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 		System.setProperty("apple.awt.graphics.UseQuartz", "true");
-		//System.setProperty("apple.laf.useScreenMenuBar", "true");
+		System.setProperty("apple.laf.useScreenMenuBar", "true");
 		FileDialog dialog = new FileDialog(new Frame(), "Open File", FileDialog.LOAD);
 		dialog.setVisible(true);
 		if (dialog.getFile() == null)
 			return;
 		File file = new File(dialog.getDirectory() + "/" + dialog.getFile());
-		ResourceModel model = loadResources(file);
-		JFrame f = new JFrame();
-		//JMenuBar menubar = new JMenuBar();
-		//JMenu menu = new JMenu("File");
-		//menu.add(WorldLoader.getInstance().getRecentDocumentsManager().createOpenRecentMenu());
-		//menubar.add(menu);
-		//f.setJMenuBar(menubar);
-		Utils.setupCloseWindowKeyStrokes(f, f.getRootPane());
-		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		f.getRootPane().putClientProperty("Window.documentFile", file);
-		f.setTitle(dialog.getFile());
-		f.setContentPane(new WorldBrowser(WorldLoader.getInstance().loadWorld(model, file)));
-		f.setSize(640, 480);
-		f.setLocationRelativeTo(null);
-		f.setVisible(true);
+		openWorldFile(file);
 	}
 
 	private static ResourceModel loadResources(File file) throws IOException {

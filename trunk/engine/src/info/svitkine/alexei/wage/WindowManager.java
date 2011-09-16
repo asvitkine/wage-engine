@@ -6,9 +6,12 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JComponent;
+import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -16,11 +19,13 @@ import javax.swing.Timer;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
 
-public class WindowManager extends JPanel {
+public class WindowManager extends JPanel implements ComponentListener {
 	private JComponent modalDialog;
+	private JMenuBar menubar;
 
 	public WindowManager() {
 		setLayout(null);
+		addComponentListener(this);
 	}
 
 	public void add(JComponent c) {
@@ -61,6 +66,17 @@ public class WindowManager extends JPanel {
 	private static void repaintShape(JComponent c, Shape s) {
 		Rectangle b = s.getBounds();
 		c.repaint(b.x, b.y, b.width, b.height);
+	}
+	
+	public void setMenuBar(JMenuBar menubar) {
+		if (this.menubar != menubar) {
+			if (this.menubar != null)
+				remove(menubar);
+			this.menubar = menubar;
+			if (menubar != null)
+				super.add(menubar);
+			menubar.setBounds(new Rectangle(0, 0, 500, 20));
+		}
 	}
 	
 	private static class WindowDragListener extends MouseInputAdapter {
@@ -188,5 +204,25 @@ public class WindowManager extends JPanel {
 				}	
 			}
 		} 
+	}
+
+	public void componentHidden(ComponentEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void componentMoved(ComponentEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void componentResized(ComponentEvent arg0) {
+		if (menubar != null) {
+			menubar.setBounds(new Rectangle(0, 0, getWidth(), 20));
+			menubar.repaint();
+		}
+	}
+
+	public void componentShown(ComponentEvent arg0) {
 	}
 }
