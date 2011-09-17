@@ -164,9 +164,12 @@ public class MenuBarRenderer extends JComponent implements MouseListener, MouseM
 	public void mousePressed(MouseEvent event) {
 		int menuIndex = getMenuAt(event.getX(), event.getY());
 		if (menuIndex != -1) {
-			// TODO: Toggle menu selected status so that weapons menu can be rebuild.
 			if (pressedMenu != menuIndex) {
+				if (pressedMenu != -1)
+					menubar.getMenu(pressedMenu).setSelected(false);
 				pressedMenu = menuIndex;
+				if (pressedMenu != -1)
+					menubar.getMenu(pressedMenu).setSelected(true);
 				repaint();
 			}
 			return;
@@ -191,8 +194,10 @@ public class MenuBarRenderer extends JComponent implements MouseListener, MouseM
 			JMenuItem item = menu.getItem(pressedItem);
 			item.doClick();
 		}
-		pressedItem = -1;
+		if (pressedMenu != -1)
+			menubar.getMenu(pressedMenu).setSelected(false);
 		pressedMenu = -1;
+		pressedItem = -1;
 		repaint();
 	}
 
