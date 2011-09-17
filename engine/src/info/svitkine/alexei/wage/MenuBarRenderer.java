@@ -5,8 +5,10 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 
 import javax.swing.JComponent;
 import javax.swing.JMenuBar;
@@ -14,7 +16,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
-public class MenuBarRenderer extends JComponent implements MouseListener {
+public class MenuBarRenderer extends JComponent implements MouseListener, MouseMotionListener {
 	private static final int HEIGHT = 19;
 	private static final int PADDING = 6;
 	private static final int ITEM_HEIGHT = 19;
@@ -31,6 +33,7 @@ public class MenuBarRenderer extends JComponent implements MouseListener {
 		setFont(f);
 		FontMetrics m = getFontMetrics(f);
 		addMouseListener(this);
+		addMouseMotionListener(this);
 		int menus = menubar.getMenuCount();
 		offsets = new int[menus];
 		spans = new int[offsets.length];
@@ -136,39 +139,62 @@ public class MenuBarRenderer extends JComponent implements MouseListener {
 		}
 	}
 
-	public void mouseClicked(MouseEvent event) {
-		if (event.getY() < HEIGHT) {
+	private int getMenuAt(int x, int y) {
+		if (y < HEIGHT) {
 			for (int i = 0; i < menubar.getMenuCount(); i++) {
-				if (event.getX() > offsets[i] - 6 && event.getX() - offsets[i] < spans[i] + 6) {
-					if (pressedMenu != i) {
-						pressedMenu = i;	
-					} else {
-						pressedItem = -1;
-						pressedMenu = -1;
-					}
-					repaint();
-					break;
+				if (x > offsets[i] - 6 && x - offsets[i] < spans[i] + 6) {
+					return i;
 				}
+			}
+		}
+		return -1;
+	}
+	
+	private int getMenuItemAt(int x, int y) {
+		if (pressedMenu != -1) {
+			Rectangle bounds = getMenuBounds(pressedMenu);
+			if (bounds.contains(x, y)) {
+				int dy = y - bounds.y;
+				return dy / ITEM_HEIGHT;
+			}
+		}
+		return -1;
+	}
+	
+	public void mousePressed(MouseEvent event) {
+		int menuIndex = getMenuAt(event.getX(), event.getY());
+		if (menuIndex != -1) {
+			if (pressedMenu != menuIndex) {
+				pressedMenu = menuIndex;
+				repaint();
 			}
 			return;
 		}
 
-		if (pressedMenu != -1) {
-			Rectangle bounds = getMenuBounds(pressedMenu);
-			int oldPressedItem = pressedItem;
-			if (bounds.contains(event.getX(), event.getY())) {
-				int dy = event.getY() - bounds.y;
-				pressedItem = dy / ITEM_HEIGHT;
-			} else {
-				pressedItem = -1;
-			}
-			if (pressedItem != oldPressedItem)
-				repaint();
+		int menuItemIndex = getMenuItemAt(event.getX(), event.getY());
+		if (pressedItem != menuItemIndex) {
+			pressedItem = menuItemIndex;
+			repaint();
 		}
 	}
 
-	public void mouseEntered(MouseEvent arg0) {}
-	public void mouseExited(MouseEvent arg0) {}
-	public void mousePressed(MouseEvent arg0) {}
-	public void mouseReleased(MouseEvent arg0) {}
+	public void mouseDragged(MouseEvent event) {
+		mousePressed(event);
+	}
+	
+	public void mouseReleased(MouseEvent event) {
+		if (pressedMenu != -1 && pressedItem != -1) {
+			JMenu menu = menubar.getMenu(pressedMenu);
+			JMenuItem item = menu.getItem(pressedItem);
+			item.doClick();
+		}
+		pressedItem = -1;
+		pressedMenu = -1;
+		repaint();
+	}
+
+	public void mouseMoved(MouseEvent event) {}
+	public void mouseEntered(MouseEvent event) {}
+	public void mouseExited(MouseEvent event) {}
+	public void mouseClicked(MouseEvent event) {}
 }
