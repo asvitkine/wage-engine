@@ -11,6 +11,7 @@ import javax.swing.JComponent;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
 
 public class MenuBarRenderer extends JComponent implements MouseListener {
 	private static final int HEIGHT = 19;
@@ -39,6 +40,17 @@ public class MenuBarRenderer extends JComponent implements MouseListener {
 		}
 		pressedMenu = -1;
 	}
+	
+	private String getAcceleratorString(JMenuItem item) {
+		KeyStroke accelerator = item.getAccelerator();
+		String text = null;
+		if (accelerator != null) {
+			text = "      \u2318";
+			String t = accelerator.toString();
+			text += t.charAt(t.length() - 1);
+		}
+		return text;
+	}
 
 	@Override
 	public void paint(Graphics g) {
@@ -59,11 +71,17 @@ public class MenuBarRenderer extends JComponent implements MouseListener {
 			g.drawString(menu.getText(), offsets[i], 14);
 			if (pressedMenu == i) {
 				int maxWidth = 0;
+				// TODO: cache maxWidth
 				FontMetrics m = getFontMetrics(f);
 				for (int j = 0; j < menu.getItemCount(); j++) {
 					JMenuItem item = menu.getItem(j);
 					if (item != null) {
-						int width = m.stringWidth(item.getText());
+						String text = item.getText();
+						String acceleratorText = getAcceleratorString(item);
+						if (acceleratorText != null) {
+							text += acceleratorText;
+						}
+						int width = m.stringWidth(text);
 						if (width > maxWidth) {
 							maxWidth = width;
 						}
@@ -71,16 +89,24 @@ public class MenuBarRenderer extends JComponent implements MouseListener {
 				}
 				int x = offsets[i] - PADDING;
 				int y = HEIGHT;
-				int w = maxWidth + PADDING * 2;
-				int h = menu.getItemCount() * 20 + PADDING;
+				int w = maxWidth + PADDING * 3;
+				int h = menu.getItemCount() * 20;
 				g.fillRect(x, y, w, h);
 				g.setColor(Color.BLACK);
 				g.drawRect(x, y, w, h);
-				y = 36;
+				y = 33;
 				for (int j = 0; j < menu.getItemCount(); j++) {
 					JMenuItem item = menu.getItem(j);
 					if (item != null) {
-						g.drawString(item.getText(), offsets[i], y);
+						String text = item.getText();
+						g.drawString(text, offsets[i] + PADDING, y);
+						String acceleratorText = getAcceleratorString(item);
+						if (acceleratorText != null) {
+							int width = m.stringWidth(acceleratorText);
+							g.drawString(acceleratorText, x + w - width - PADDING, y);							
+						}
+					} else {
+						g.drawLine(x, y - 7, x + w, y - 7);
 					}
 					y += 20;
 				}

@@ -206,15 +206,22 @@ public class GameWindow extends JFrame {
 		menu.add(new JMenuItem(new QuitAction()));
 		return menu;
 	}
+	
+	private JMenuItem createMenuItem(String text, char acceleratorChar) {
+		JMenuItem item = new JMenuItem(text);
+		item.setAccelerator(KeyStroke.getKeyStroke(acceleratorChar,
+			Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+		return item;
+	}
 
 	private JMenu createEditMenu() {
 		JMenu menu = new JMenu("Edit");
-		menu.add(new JMenuItem("Undo"));
+		menu.add(createMenuItem("Undo", 'Z'));
 		menu.addSeparator();
-		menu.add(new JMenuItem("Cut"));
-		menu.add(new JMenuItem("Copy"));
-		menu.add(new JMenuItem("Paste"));
-		menu.add(new JMenuItem("Clear"));
+		menu.add(createMenuItem("Cut", 'K'));
+		menu.add(createMenuItem("Copy", 'C'));
+		menu.add(createMenuItem("Paste", 'V'));
+		menu.add(createMenuItem("Clear", 'B'));
 		return menu;
 	}
 	
@@ -319,7 +326,7 @@ public class GameWindow extends JFrame {
 	
 	public class SaveAsAction extends AbstractAction {
 		public SaveAsAction() {
-			putValue(NAME, "Save As...");
+			putValue(NAME, "Save as...");
 		}
 
 		public void actionPerformed(ActionEvent e) {
