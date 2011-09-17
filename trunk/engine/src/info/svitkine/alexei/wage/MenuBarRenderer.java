@@ -5,7 +5,6 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -121,6 +120,7 @@ public class MenuBarRenderer extends JComponent implements MouseListener, MouseM
 						g.setColor(Color.WHITE);
 					}
 					if (item != null) {
+						// TODO: Get menu font style from the menu...
 						String text = item.getText();
 						g.drawString(text, offsets[i] + PADDING, y);
 						String acceleratorText = getAcceleratorString(item);
@@ -164,6 +164,7 @@ public class MenuBarRenderer extends JComponent implements MouseListener, MouseM
 	public void mousePressed(MouseEvent event) {
 		int menuIndex = getMenuAt(event.getX(), event.getY());
 		if (menuIndex != -1) {
+			// TODO: Toggle menu selected status so that weapons menu can be rebuild.
 			if (pressedMenu != menuIndex) {
 				pressedMenu = menuIndex;
 				repaint();
@@ -176,6 +177,8 @@ public class MenuBarRenderer extends JComponent implements MouseListener, MouseM
 			pressedItem = menuItemIndex;
 			repaint();
 		}
+		
+		// TODO: Forward mouse event to the game...
 	}
 
 	public void mouseDragged(MouseEvent event) {
