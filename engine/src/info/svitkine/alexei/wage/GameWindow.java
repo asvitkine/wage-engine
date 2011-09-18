@@ -173,11 +173,30 @@ public class GameWindow extends JFrame {
 		}
 	}
 	
+	private void showDialog(Dialog dialog) {
+		if (wm.getModalDialog() != null)
+			return;
+		int w = GameWindow.this.getContentPane().getWidth();
+		int h = GameWindow.this.getContentPane().getHeight();
+		dialog.setLocation(w/2-dialog.getWidth()/2, h/2-dialog.getHeight()/2);
+		wm.addModalDialog(dialog);
+		// FIXME: below is to work around a bug with overlaps...
+		textArea.setVisible(false);
+		// FIXME: need to disable menus too!
+		wm.repaint();
+		wm.invalidate();
+		wm.revalidate();
+	}
+	
 	private void gameOver() {
 		if (isVisible()) {
-			JOptionPane.showMessageDialog(GameWindow.this, world.getGameOverMessage());
-			setVisible(false);
-			dispose();
+			GameOverDialog dialog = new GameOverDialog(new ActionListener() {
+				public void actionPerformed(ActionEvent event) {
+					setVisible(false);
+					dispose();
+				}
+			}, world.getGameOverMessage());
+			showDialog(dialog);
 		}
 	}
 
@@ -259,8 +278,6 @@ public class GameWindow extends JFrame {
 	}
 
 	private void showSaveDialog() {
-		if (wm.getModalDialog() != null)
-			return;
 		SaveDialog dialog = new SaveDialog(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
 				if (SaveDialog.NO_TEXT.equals(event.getActionCommand())) {
@@ -274,16 +291,7 @@ public class GameWindow extends JFrame {
 				}
 			}
 		});
-		int w = GameWindow.this.getContentPane().getWidth();
-		int h = GameWindow.this.getContentPane().getHeight();
-		dialog.setLocation(w/2-dialog.getWidth()/2, h/2-dialog.getHeight()/2);
-		wm.addModalDialog(dialog);
-		// FIXME: below is to work around a bug with overlaps...
-		textArea.setVisible(false);
-		// FIXME: need to disable menus too!
-		wm.repaint();
-		wm.invalidate();
-		wm.revalidate();
+		showDialog(dialog);
 	}
 	
 	private void closeSaveDialog() {
