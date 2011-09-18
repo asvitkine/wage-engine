@@ -7,8 +7,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 
@@ -18,7 +16,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
-public class MenuBarRenderer extends JComponent implements MouseListener, MouseMotionListener {
+public class MenuBarRenderer extends JComponent {
 	private static final int HEIGHT = 19;
 	private static final int PADDING = 6;
 	private static final int ITEM_HEIGHT = 19;
@@ -34,8 +32,6 @@ public class MenuBarRenderer extends JComponent implements MouseListener, MouseM
 		Font f = new Font("Chicago", Font.PLAIN, 13); 
 		setFont(f);
 		FontMetrics m = getFontMetrics(f);
-		addMouseListener(this);
-		addMouseMotionListener(this);
 		int menus = menubar.getMenuCount();
 		offsets = new int[menus];
 		spans = new int[offsets.length];
@@ -172,8 +168,16 @@ public class MenuBarRenderer extends JComponent implements MouseListener, MouseM
 		}
 		return -1;
 	}
+
+	public boolean handleMouseEvent(MouseEvent event, int type) {
+		if (type == MouseEvent.MOUSE_PRESSED || type == MouseEvent.MOUSE_DRAGGED)
+			return mousePressed(event);
+		else if (type == MouseEvent.MOUSE_RELEASED)
+			return mouseReleased(event);
+		return false;
+	}
 	
-	public void mousePressed(MouseEvent event) {
+	private boolean mousePressed(MouseEvent event) {
 		int menuIndex = getMenuAt(event.getX(), event.getY());
 		if (menuIndex != -1) {
 			if (pressedMenu != menuIndex) {
@@ -184,7 +188,7 @@ public class MenuBarRenderer extends JComponent implements MouseListener, MouseM
 					menubar.getMenu(pressedMenu).setSelected(true);
 				repaint();
 			}
-			return;
+			return true;
 		}
 
 		int menuItemIndex = getMenuItemAt(event.getX(), event.getY());
@@ -193,28 +197,22 @@ public class MenuBarRenderer extends JComponent implements MouseListener, MouseM
 			repaint();
 		}
 		
-		// TODO: Forward mouse event to the game...
+		return pressedItem != -1;
 	}
 
-	public void mouseDragged(MouseEvent event) {
-		mousePressed(event);
-	}
-	
-	public void mouseReleased(MouseEvent event) {
+	private boolean mouseReleased(MouseEvent event) {
+		boolean result = false;
 		if (pressedMenu != -1 && pressedItem != -1) {
 			JMenu menu = menubar.getMenu(pressedMenu);
 			JMenuItem item = menu.getItem(pressedItem);
 			item.doClick();
+			result = true;
 		}
 		if (pressedMenu != -1)
 			menubar.getMenu(pressedMenu).setSelected(false);
 		pressedMenu = -1;
 		pressedItem = -1;
 		repaint();
+		return result;
 	}
-
-	public void mouseMoved(MouseEvent event) {}
-	public void mouseEntered(MouseEvent event) {}
-	public void mouseExited(MouseEvent event) {}
-	public void mouseClicked(MouseEvent event) {}
 }
