@@ -22,19 +22,19 @@ public abstract class Dialog extends JComponent {
 		defaultButton = buttons[defaultButtonIndex];
 		MouseInputAdapter listener = new MouseInputAdapter() {
 			private boolean checkBounds(DialogButton button, MouseEvent event) {
+				if (button == null)
+					return false;
 				Rectangle bounds = new Rectangle(
-					button.bounds.x + 5,button.bounds.y + 5,
+					button.bounds.x + 5, button.bounds.y + 5,
 					button.bounds.width - 10, button.bounds.height - 10);
 				return bounds.contains(event.getPoint());
 			}
 
 			private void updateMouseOverPressButton(MouseEvent event) {
-				if (pressedButton != null) {
-					boolean over = checkBounds(pressedButton, event);
-					if (over != mouseOverPressedButton) {
-						mouseOverPressedButton = over;
-						repaint();
-					}
+				boolean over = checkBounds(pressedButton, event);
+				if (over != mouseOverPressedButton) {
+					mouseOverPressedButton = over;
+					repaint();
 				}
 			}
 			

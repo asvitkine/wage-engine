@@ -1,5 +1,6 @@
 package info.svitkine.alexei.wage;
 
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -9,23 +10,32 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import javax.swing.JComponent;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
 
 public class WindowManager extends JPanel implements ComponentListener {
 	private JComponent modalDialog;
-	private JMenuBar menubar;
+	private MenuBarRenderer menubar;
+	private MouseEventRouter router;
 
 	public WindowManager() {
 		setLayout(null);
 		addComponentListener(this);
+		router = new MouseEventRouter();
+		super.add(router);
+		setComponentZOrder(router, 0);
 	}
 
 	public void add(JComponent c) {
@@ -69,29 +79,41 @@ public class WindowManager extends JPanel implements ComponentListener {
 	}
 	
 	public void setMenuBar(JMenuBar menubar) {
-		if (this.menubar != menubar) {
-			if (this.menubar != null)
-				remove(menubar);
-			this.menubar = menubar;
-			if (menubar != null)
-				super.add(menubar);
-			menubar.setBounds(new Rectangle(0, 0, 500, 20));
+		if (this.menubar != null)
+			remove(menubar);
+		if (menubar == null) {
+			this.menubar = null;
+			return;
 		}
+		this.menubar = new MenuBarRenderer(menubar);
+		super.add(this.menubar);
+		this.menubar.setBounds(getBounds());
+		setComponentZOrder(this.menubar, modalDialog == null ? 1 : 2);
 	}
 	
-	private static class WindowDragListener extends MouseInputAdapter {
+	private int lowestZOrderForWindow() {
+		int z = 1; // account for router
+		if (menubar != null)
+			z++;
+		if (modalDialog != null)
+			z++;
+		return z;
+	}
+	
+	private class WindowDragListener extends MouseInputAdapter {
 		private Point startPos = null; 
 		private Timer scrollTimer;
 
 		@Override
 		public void mousePressed(MouseEvent event) {
-			Point p = event.getPoint();
 			JComponent c = (JComponent) event.getComponent();
-			if (!c.isEnabled() || (c.getBorder() instanceof WindowBorder))
+			if (!c.isEnabled() || !(c.getBorder() instanceof WindowBorder))
 				return;
+			setComponentZOrder(c, lowestZOrderForWindow());
 			WindowBorder border = (WindowBorder) c.getBorder();
 			Shape[] borderShapes = border.getBorderShapes(c);
 			Shape shape = borderShapes[WindowBorder.BORDER_SHAPE];
+			Point p = event.getPoint();
 			if (shape != null && shape.contains(p)) {
 				Shape closeBoxShape = borderShapes[WindowBorder.CLOSE_BOX];
 				if (closeBoxShape == null || !closeBoxShape.contains(p)) {
@@ -173,9 +195,6 @@ public class WindowManager extends JPanel implements ComponentListener {
 				return;
 			WindowBorder border = (WindowBorder) c.getBorder();
 			Shape closeBox = border.getBorderShapes(c)[WindowBorder.CLOSE_BOX];
-			System.out.println("CB="+closeBox.toString());
-			System.out.println("Clicked="+event.getPoint().toString());
-			System.out.println("Bounds="+event.getComponent().getBounds().toString());
 			if (closeBox != null && closeBox.contains(event.getPoint())) {
 				clickedInCloseBox = true;
 				updateCloseBox(event);
@@ -196,7 +215,6 @@ public class WindowManager extends JPanel implements ComponentListener {
 			if (border.isCloseBoxPressed()) {
 				Shape closeBox = border.getBorderShapes(c)[WindowBorder.CLOSE_BOX];
 				if (closeBox.contains(event.getPoint())) {
-					System.out.println("Remove!");
 					border.setCloseBoxPressed(false);
 					Container p = c.getParent();
 					p.remove(c);
@@ -217,12 +235,79 @@ public class WindowManager extends JPanel implements ComponentListener {
 	}
 
 	public void componentResized(ComponentEvent arg0) {
+		router.setBounds(getBounds());
 		if (menubar != null) {
-			menubar.setBounds(new Rectangle(0, 0, getWidth(), 20));
-			menubar.repaint();
+			menubar.setBounds(getBounds());
 		}
 	}
 
 	public void componentShown(ComponentEvent arg0) {
+	}
+
+	private Component mousePressComponent;
+	private void handleMouseEvent(MouseEvent event, int type) {
+		if (menubar != null && menubar.handleMouseEvent(event, type))
+			return;
+		if (type == MouseEvent.MOUSE_RELEASED ||
+			type == MouseEvent.MOUSE_DRAGGED ||
+			type == MouseEvent.MOUSE_CLICKED)
+		{
+			Component c = mousePressComponent;
+			c.dispatchEvent(SwingUtilities.convertMouseEvent(router, event, c));
+			return;
+		}
+		Component[] components = getComponents();
+		Arrays.sort(components, new Comparator<Component>() {
+			public int compare(Component a, Component b) {
+				return getComponentZOrder(a) - getComponentZOrder(b);
+			}
+		});
+		for (int i = 0; i < components.length; i++) {
+			Component c = components[i];
+			if (c == menubar || c == router)
+				continue;
+			if (c.getBounds().contains(event.getX(), event.getY())) {
+				c.dispatchEvent(SwingUtilities.convertMouseEvent(router, event, c));
+				if (type == MouseEvent.MOUSE_PRESSED)
+					mousePressComponent = c;
+				break;
+			}
+		}
+	}
+	
+	private class MouseEventRouter extends JComponent implements MouseListener, MouseMotionListener {
+		public MouseEventRouter() {
+			addMouseListener(this);
+			addMouseMotionListener(this);
+			// TODO: Can we just override contains(x,y) in the MenuBarRenderer and avoid all of this?
+		}
+
+		public void mouseClicked(MouseEvent event) {
+			handleMouseEvent(event, MouseEvent.MOUSE_CLICKED);
+		}
+
+		public void mouseEntered(MouseEvent event) {
+		//	handleMouseEvent(event, MouseEvent.MOUSE_ENTERED);
+		}
+
+		public void mouseExited(MouseEvent event) {
+		//	handleMouseEvent(event, MouseEvent.MOUSE_EXITED);			
+		}
+
+		public void mousePressed(MouseEvent event) {
+			handleMouseEvent(event, MouseEvent.MOUSE_PRESSED);
+		}
+
+		public void mouseReleased(MouseEvent event) {
+			handleMouseEvent(event, MouseEvent.MOUSE_RELEASED);			
+		}
+
+		public void mouseDragged(MouseEvent event) {
+			handleMouseEvent(event, MouseEvent.MOUSE_DRAGGED);			
+		}
+
+		public void mouseMoved(MouseEvent event) {
+			handleMouseEvent(event, MouseEvent.MOUSE_MOVED);			
+		}	
 	}
 }
