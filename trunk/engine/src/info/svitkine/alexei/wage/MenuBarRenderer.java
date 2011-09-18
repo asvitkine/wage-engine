@@ -118,6 +118,8 @@ public class MenuBarRenderer extends JComponent implements MouseListener, MouseM
 				g.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
 				g.setColor(Color.BLACK);
 				g.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
+				g.drawLine(bounds.x + 3, bounds.y + bounds.height + 1, bounds.x + bounds.width + 1, bounds.y + bounds.height + 1);
+				g.drawLine(bounds.x + bounds.width + 1, bounds.y + 3, bounds.x + bounds.width + 1, bounds.y + bounds.height + 1);
 				int y = 33;
 				for (int j = 0; j < menu.getItemCount(); j++) {
 					JMenuItem item = menu.getItem(j);
