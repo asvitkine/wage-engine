@@ -55,7 +55,7 @@ public class WindowManager extends JPanel implements ComponentListener {
 			throw new IllegalArgumentException();
 		for (int i = 0; i < getComponentCount(); i++)
 			getComponent(i).setEnabled(false);
-		add(dialog);
+		super.add(dialog);
 		setComponentZOrder(dialog, 0);
 		modalDialog = dialog;
 	}
