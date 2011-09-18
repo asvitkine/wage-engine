@@ -4,10 +4,13 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
 
 import javax.swing.JComponent;
 import javax.swing.JMenuBar;
@@ -58,11 +61,14 @@ public class MenuBarRenderer extends JComponent implements MouseListener, MouseM
 		return text;
 	}
 	
-	private int calculateMenuWidth(JMenu menu, FontMetrics m) {
+	private int calculateMenuWidth(JMenu menu) {
 		int maxWidth = 0;
+		Font f = getFont();
 		for (int j = 0; j < menu.getItemCount(); j++) {
 			JMenuItem item = menu.getItem(j);
 			if (item != null) {
+				f = new Font(f.getFamily(), item.getFont().getStyle(), f.getSize());
+				FontMetrics m = getFontMetrics(f);
 				String text = item.getText();
 				String acceleratorText = getAcceleratorString(item);
 				if (acceleratorText != null) {
@@ -79,9 +85,8 @@ public class MenuBarRenderer extends JComponent implements MouseListener, MouseM
 
 	private Rectangle getMenuBounds(int menuIndex) {
 		JMenu menu = menubar.getMenu(menuIndex);
-		FontMetrics m = getFontMetrics(getFont());
 		// TODO: cache maxWidth
-		int maxWidth = calculateMenuWidth(menu, m);
+		int maxWidth = calculateMenuWidth(menu);
 		int x = offsets[menuIndex] - PADDING;
 		int y = HEIGHT;
 		int w = maxWidth + PADDING * 3;
@@ -115,24 +120,28 @@ public class MenuBarRenderer extends JComponent implements MouseListener, MouseM
 				int y = 33;
 				for (int j = 0; j < menu.getItemCount(); j++) {
 					JMenuItem item = menu.getItem(j);
+					g.setColor(Color.BLACK);
 					if (pressedItem == j) {
 						g.fillRect(bounds.x, y - 14, bounds.width, ITEM_HEIGHT);
 						g.setColor(Color.WHITE);
+					} else if (item != null && !item.isEnabled()) {
+						g.setColor(Color.GRAY);
 					}
 					if (item != null) {
-						// TODO: Get menu font style from the menu...
-						String text = item.getText();
-						g.drawString(text, offsets[i] + PADDING, y);
+						Graphics2D g2 = ((Graphics2D)g);
+						f = new Font(f.getFamily(), item.getFont().getStyle(), f.getSize());
+						FontRenderContext frc = g2.getFontRenderContext();
+						TextLayout tl = new TextLayout(item.getText(), f, frc);
+						tl.draw(g2, offsets[i] + PADDING, y);
 						String acceleratorText = getAcceleratorString(item);
 						if (acceleratorText != null) {
 							int width = m.stringWidth(acceleratorText);
-							g.drawString(acceleratorText, bounds.x + bounds.width - width - PADDING, y);							
+							tl = new TextLayout(acceleratorText, f, frc);
+							tl.draw(g2, bounds.x + bounds.width - width - PADDING, y);							
 						}
 					} else {
 						g.drawLine(bounds.x, y - 7, bounds.x + bounds.width, y - 7);
 					}
-					if (pressedItem == j)
-						g.setColor(Color.BLACK);
 					y += ITEM_HEIGHT;
 				}
 			}
@@ -155,7 +164,10 @@ public class MenuBarRenderer extends JComponent implements MouseListener, MouseM
 			Rectangle bounds = getMenuBounds(pressedMenu);
 			if (bounds.contains(x, y)) {
 				int dy = y - bounds.y;
-				return dy / ITEM_HEIGHT;
+				int itemIndex = dy / ITEM_HEIGHT;
+				if (menubar.getMenu(pressedMenu).getItem(itemIndex).isEnabled()) {
+					return itemIndex;
+				}
 			}
 		}
 		return -1;
