@@ -4,12 +4,11 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.swing.*;
-import javax.swing.event.MenuEvent;
-import javax.swing.event.MenuListener;
 
 public class GameWindow extends JFrame {
 	private World world;
@@ -48,21 +47,22 @@ public class GameWindow extends JFrame {
 	}
 	
 	private void initializeGame() {
-		JMenuBar menubar = new JMenuBar();
-		JMenu fileMenu = createFileMenu();
-		JMenu editMenu = createEditMenu();
-		final JMenu commandsMenu = createCommandsMenu();
-		menubar.add(createAppleMenu());
-		menubar.add(fileMenu);
-		menubar.add(editMenu);
-		menubar.add(commandsMenu);
+		Menu[] menus;
 		if (!world.isWeaponsMenuDisabled())
-			menubar.add(createWeaponsMenu());
+			menus = new Menu[5];
+		else
+			menus = new Menu[4];
+		menus[0] = createAppleMenu();
+		menus[1] = createFileMenu();
+		menus[2] = createEditMenu();
+		menus[3] = createCommandsMenu();
+		if (!world.isWeaponsMenuDisabled())
+			menus[4] = createWeaponsMenu();
+		final MenuBar menubar = new MenuBar(menus);
 		wm.setMenuBar(menubar);
-		//setJMenuBar(menubar);
 		engine = new Engine(world, textArea.getOut(), new Engine.Callbacks() {
 			public void setCommandsMenu(String format) {
-				updateMenuFromString(commandsMenu, format);
+				menubar.setMenu(3, createMenuFromString(world.getCommandsMenuName(), format));
 			}
 			public void redrawScene() {
 				GameWindow.this.redrawScene();
@@ -200,81 +200,83 @@ public class GameWindow extends JFrame {
 		}
 	}
 
-	private JMenu createAppleMenu() {
-		JMenu menu = new JMenu("\uF8FF");
-		JMenuItem menuItem = new JMenuItem(world.getAboutMenuItemName());
-		menuItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String aboutMessage = world.getAboutMessage();
-				aboutMessage = "<html><center>" + aboutMessage.replace("\n", "<br>");
-				JOptionPane.showMessageDialog(GameWindow.this, new JLabel(aboutMessage));
+	private Menu createAppleMenu() {
+		MenuItem[] items = new MenuItem[] {
+			new MenuItem(world.getAboutMenuItemName()) {
+				public void performAction() {
+					String aboutMessage = world.getAboutMessage();
+					aboutMessage = "<html><center>" + aboutMessage.replace("\n", "<br>");
+					JOptionPane.showMessageDialog(GameWindow.this, new JLabel(aboutMessage));
+				}
 			}
-		});
-		menu.add(menuItem);
-		return menu;
+		};
+		return new Menu("\uF8FF", items);
 	}
 	
-	private JMenu createFileMenu() {
-		JMenu menu = new JMenu("File");
-		menu.add(new JMenuItem(new NewAction()));
-		menu.add(new JMenuItem(new OpenAction()));
-		menu.add(new JMenuItem(new CloseAction()));
-		menu.add(new JMenuItem(new SaveAction()));
-		menu.add(new JMenuItem(new SaveAsAction()));
-		menu.add(new JMenuItem(new RevertAction()));
-		menu.add(new JMenuItem(new QuitAction()));
-		return menu;
-	}
-	
-	private JMenuItem createMenuItem(String text, char acceleratorChar) {
-		JMenuItem item = new JMenuItem(text);
-		item.setAccelerator(KeyStroke.getKeyStroke(acceleratorChar,
-			Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-		return item;
+	private Menu createFileMenu() {
+		MenuItem[] items = new MenuItem[] {
+			new MenuItem("New") {
+				public void performAction() {
+					JOptionPane.showMessageDialog(null, "Not implemented yet.");
+				}
+			},
+			new MenuItem("Open...") {
+				public void performAction() {
+					showOpenDialog();
+				}
+			},
+			new MenuItem("Close") {
+				public void performAction() {
+					showSaveDialog();
+				}
+			},
+			new MenuItem("Save") {
+				public void performAction() {
+					doSave();
+				}
+			},
+			new MenuItem("Save as...") {
+				public void performAction() {
+					doSaveAs();
+				}
+			},
+			new MenuItem("Revert") {
+				public void performAction() {
+					doRevert();
+				}
+			},
+			new MenuItem("Quit")
+		};
+		return new Menu("File", items);
 	}
 
-	private JMenu createEditMenu() {
-		JMenu menu = new JMenu("Edit");
-		menu.add(createMenuItem("Undo", 'Z'));
-		menu.addSeparator();
-		menu.add(createMenuItem("Cut", 'K'));
-		menu.add(createMenuItem("Copy", 'C'));
-		menu.add(createMenuItem("Paste", 'V'));
-		menu.add(createMenuItem("Clear", 'B'));
-		return menu;
+	private Menu createEditMenu() {
+		MenuItem[] items = new MenuItem[] {
+			new MenuItem("Undo", 0, 'Z'),
+			null, // separator
+			new MenuItem("Cut", 0, 'K'),
+			new MenuItem("Copy", 0, 'C'),
+			new MenuItem("Paste", 0, 'V'),
+			new MenuItem("Clear", 0, 'B'),
+			
+		};
+		return new Menu("Edit", items);
 	}
-	
-	public class NewAction extends AbstractAction {
-		public NewAction() {
-			putValue(NAME, "New");
-		}
 
-		public void actionPerformed(ActionEvent e) {
-			// TODO
-			JOptionPane.showMessageDialog(null, "Not implemented yet.");
-		}
-	}
-	
-	public class OpenAction extends AbstractAction {
-		public OpenAction() {
-			putValue(NAME, "Open...");
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			FileDialog dialog = new FileDialog(new Frame(), "Load Game", FileDialog.LOAD);
-			dialog.setVisible(true);
-			if (dialog.getFile() == null)
-				return;
-			File file = new File(dialog.getDirectory() + "/" + dialog.getFile());
-			try {
-				engine.loadState(file);
-				lastSaveFile = file;
-				GameWindow.this.redrawScene();
-			} catch (IOException ioe) {
-				// TODO Auto-generated catch block
-				ioe.printStackTrace();
-			}
-		}
+	private void showOpenDialog() {
+		FileDialog dialog = new FileDialog(new Frame(), "Load Game", FileDialog.LOAD);
+		dialog.setVisible(true);
+		if (dialog.getFile() == null)
+			return;
+		File file = new File(dialog.getDirectory() + "/" + dialog.getFile());
+		try {
+			engine.loadState(file);
+			lastSaveFile = file;
+			GameWindow.this.redrawScene();
+		} catch (IOException ioe) {
+			// TODO Auto-generated catch block
+			ioe.printStackTrace();
+		 }
 	}
 
 	private void showSaveDialog() {
@@ -283,7 +285,7 @@ public class GameWindow extends JFrame {
 				if (SaveDialog.NO_TEXT.equals(event.getActionCommand())) {
 					GameWindow.this.setVisible(false);
 				} else if (SaveDialog.YES_TEXT.equals(event.getActionCommand())) {
-					new SaveAction().actionPerformed(event);
+					doSave();
 					// TODO: If they clicked cancel in the save dialog, don't close the window!
 					GameWindow.this.setVisible(false);					
 				} else if (SaveDialog.CANCEL_TEXT.equals(event.getActionCommand())) {
@@ -302,155 +304,109 @@ public class GameWindow extends JFrame {
 		wm.revalidate();
 	}
 	
-	public class CloseAction extends AbstractAction {
-		public CloseAction() {
-			putValue(NAME, "Close");
+	private void doSave() {
+		if (lastSaveFile == null) {
+			doSaveAs();
+			return;
 		}
 
-		public void actionPerformed(ActionEvent e) {
-			showSaveDialog();
+		try {
+			engine.saveState(lastSaveFile);
+		} catch (IOException ioe) {
+			// TODO Auto-generated catch block
+			ioe.printStackTrace();
 		}
 	}
 	
-	public class SaveAction extends SaveAsAction {
-		public SaveAction() {
-			putValue(NAME, "Save");
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			if (lastSaveFile == null) {
-				super.actionPerformed(e);
-				return;
-			}
-
-			try {
-				engine.saveState(lastSaveFile);
-			} catch (IOException ioe) {
-				// TODO Auto-generated catch block
-				ioe.printStackTrace();
-			}
+	private void doSaveAs() {
+		FileDialog dialog = new FileDialog(new Frame(), "Save Game", FileDialog.SAVE);
+		dialog.setVisible(true);
+		if (dialog.getFile() == null)
+			return;
+		File file = new File(dialog.getDirectory() + "/" + dialog.getFile());
+		try {
+			engine.saveState(file);
+			lastSaveFile = file;
+		} catch (IOException ioe) {
+			// TODO Auto-generated catch block
+			ioe.printStackTrace();
 		}
 	}
 	
-	public class SaveAsAction extends AbstractAction {
-		public SaveAsAction() {
-			putValue(NAME, "Save as...");
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			FileDialog dialog = new FileDialog(new Frame(), "Save Game", FileDialog.SAVE);
-			dialog.setVisible(true);
-			if (dialog.getFile() == null)
-				return;
-			File file = new File(dialog.getDirectory() + "/" + dialog.getFile());
-			try {
-				engine.saveState(file);
-				lastSaveFile = file;
-			} catch (IOException ioe) {
-				// TODO Auto-generated catch block
-				ioe.printStackTrace();
-			}
-		}
-	}
-
-	public class RevertAction extends AbstractAction {
-		public RevertAction() {
-			putValue(NAME, "Revert");
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			try {
-				engine.revert();
-				GameWindow.this.redrawScene();
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-		}
-	}
-
-	public class QuitAction extends AbstractAction {
-		public QuitAction() {
-			putValue(NAME, "Quit");
-		}
-
-		public void actionPerformed(ActionEvent e) {
-
+	private void doRevert() {
+		try {
+			engine.revert();
+			GameWindow.this.redrawScene();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 	}
 	
-	private JMenu createWeaponsMenu() {
-		final JMenu menu = new JMenu(world.getWeaponsMenuName());
-		menu.addMenuListener(new MenuListener() {
-			public void menuSelected(MenuEvent e) {
-				menu.removeAll();
-				Chr player = world.getPlayer();
-				for (Weapon obj : player.getWeapons(true)) {
-					if (obj.getType() == Obj.REGULAR_WEAPON ||
-						obj.getType() == Obj.THROW_WEAPON ||
-						obj.getType() == Obj.MAGICAL_OBJECT) {
-						JMenuItem item = new JMenuItem(obj.getOperativeVerb() + " " + obj.getName());
-						item.addActionListener(new ActionListener() {
-							public void actionPerformed(ActionEvent e) {
-								textArea.getOut().append(e.getActionCommand() + "\n");
-								doCommand(e.getActionCommand());
-							}
-						});
-						menu.add(item);
+	private Menu createWeaponsMenu() {
+		return new Menu(world.getWeaponsMenuName(), new MenuItem[0]) {
+			public void willShow() {
+				this.items = generateWeaponsMenuItems();
+			}
+		};
+	}
+	
+	private MenuItem[] generateWeaponsMenuItems() {
+		ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
+		Chr player = world.getPlayer();
+		for (Weapon obj : player.getWeapons(true)) {
+			if (obj.getType() == Obj.REGULAR_WEAPON ||
+				obj.getType() == Obj.THROW_WEAPON ||
+				obj.getType() == Obj.MAGICAL_OBJECT) {
+				menuItems.add(new MenuItem(obj.getOperativeVerb() + " " + obj.getName()) {
+					public void performAction() {
+						textArea.getOut().append(getText() + "\n");
+						doCommand(getText());
 					}
-				}
-				if (menu.getMenuComponentCount() == 0) {
-					JMenuItem noWeaponsItem = new JMenuItem("You have no weapons");
-					noWeaponsItem.setEnabled(false);
-					menu.add(noWeaponsItem);
-				}
+				});
 			}
-
-			public void menuCanceled(MenuEvent e) {}
-			public void menuDeselected(MenuEvent e) {}
-		});
-
-		return menu;
+		}
+		if (menuItems.size() == 0) {
+			menuItems.add(new MenuItem("You have no weapons", 0, (char) 0, false));
+		}
+		return menuItems.toArray(new MenuItem[menuItems.size()]);
 	}
 
-	private JMenu createCommandsMenu() {
-		JMenu menu = new JMenu(world.getCommandsMenuName());
-		updateMenuFromString(menu, world.getDefaultCommandsMenu());
-		return menu;
+	private Menu createCommandsMenu() {
+		return createMenuFromString(world.getCommandsMenuName(), world.getDefaultCommandsMenu());
 	}
 	
-	private void updateMenuFromString(JMenu menu, String string) {
+	private Menu createMenuFromString(String name, String string) {
 		String[] items = string.split(";");
-		menu.removeAll();
+		ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
 		for (String item : items) {
 			if (item.equals("(-")) {
-				menu.addSeparator();
+				menuItems.add(null); // separator
 			} else {
 				boolean enabled = true;
 				int style = 0;
-				KeyStroke shortcut = null;
+				char shortcut = 0;
 				int index = item.lastIndexOf("/");
 				if (index != -1) {
-					shortcut = KeyStroke.getKeyStroke(item.substring(index).charAt(1),
-						Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+					shortcut = item.substring(index).charAt(1);
 					item = item.substring(0, index);
 				}
 				while (item.length() >= 2 && item.charAt(item.length() - 2) == '<') {
 					char c = item.charAt(item.length() - 1);
 					if (c == 'B') {
-						style |= Font.BOLD;
+						style |= MenuItem.BOLD;
 					} else if (c == 'I') {
-						style |= Font.ITALIC;
+						style |= MenuItem.ITALIC;
 					} else if (c == 'U') {
-						// underline?
+						style |= MenuItem.UNDERLINE;
 					} else if (c == 'O') {
-						// outline?
+						style |= MenuItem.OUTLINE;
 					} else if (c == 'S') {
-						// shadow?
+						style |= MenuItem.SHADOW;
 					} else if (c == 'C') {
-						// condensed?
+						style |= MenuItem.CONDENSED;
 					} else if (c == 'E') {
-						// extended?
+						style |= MenuItem.EXTENDED;
 					}
 					item = item.substring(0, item.length() - 2);
 				}
@@ -459,26 +415,15 @@ public class GameWindow extends JFrame {
 					int loc = item.indexOf("(");
 					item = item.substring(0, loc) + item.substring(loc + 1);
 				}
-				JMenuItem menuItem = new JMenuItem(item);
-				if (style != 0) {
-					Font font = menuItem.getFont();
-					menuItem.setFont(new Font(font.getFamily(), style, font.getSize()));
-				}
-				if (shortcut != null) {
-					menuItem.setAccelerator(shortcut);
-				}
-				if (!enabled) {
-					menuItem.setEnabled(false);
-				}
-				menuItem.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						textArea.getOut().append(e.getActionCommand() + "\n");
-						doCommand(e.getActionCommand());
+				menuItems.add(new MenuItem(item, style, shortcut, enabled) {
+					public void performAction() {
+						textArea.getOut().append(getText() + "\n");
+						doCommand(getText());
 					}
 				});
-				menu.add(menuItem);
 			}
 		}
+		return new Menu(name, menuItems.toArray(new MenuItem[menuItems.size()]));
 	}
 
 	private void updateTextAreaForScene(ConsoleTextArea textArea, JPanel panel, Scene scene) {
