@@ -11,7 +11,6 @@ import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JComponent;
-import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -69,9 +68,9 @@ public class WindowManager extends JPanel implements ComponentListener {
 		c.repaint(b.x, b.y, b.width, b.height);
 	}
 	
-	public void setMenuBar(JMenuBar menubar) {
+	public void setMenuBar(MenuBar menubar) {
 		if (this.menubar != null)
-			remove(menubar);
+			remove(this.menubar);
 		if (menubar == null) {
 			this.menubar = null;
 			return;
@@ -79,7 +78,7 @@ public class WindowManager extends JPanel implements ComponentListener {
 		this.menubar = new MenuBarRenderer(menubar);
 		super.add(this.menubar);
 		this.menubar.setBounds(getBounds());
-		setComponentZOrder(this.menubar, modalDialog == null ? 1 : 2);
+		setComponentZOrder(this.menubar, lowestZOrderForWindow() - 1);
 	}
 
 	private int lowestZOrderForWindow() {
