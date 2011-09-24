@@ -104,7 +104,6 @@ public class ConsoleTextArea extends JTextArea implements KeyListener, CaretList
 	private int outputMark = 0;
 
 	public ConsoleTextArea() {
-		super();
 		writer = new ConsoleWriter(this);
 		out = new PrintStream(writer);
 		PipedOutputStream outPipe = new PipedOutputStream();
@@ -118,7 +117,9 @@ public class ConsoleTextArea extends JTextArea implements KeyListener, CaretList
 		getDocument().addDocumentListener(this);
 		addKeyListener(this);
 		addCaretListener(this);
+		setColumns(0);
 		setLineWrap(true);
+		setWrapStyleWord(true);
 	}
 
 	@Override
