@@ -50,6 +50,40 @@ public class ConsoleView extends JComponent implements KeyListener, Console {
 		return out;
 	}
 
+	private static class Word {
+		private String text;
+		private int offset;
+		public Word(String text, int offset) {
+			this.text = text;
+			this.offset = offset;
+		}
+		public String getText() {
+			return text;
+		}
+		public int getStartIndex() {
+			return offset;
+		}
+		public int getEndIndex() {
+			return offset + text.length();
+		}
+	}
+
+	private List<Word> splitWords(String line) {
+		ArrayList<Word> words = new ArrayList<Word>();
+		int i = 0;
+		do {
+			while (i < line.length() && Character.isWhitespace(line.charAt(i)))
+				i++;
+			int j = i;
+			while (j < line.length() && !Character.isWhitespace(line.charAt(j)))
+				j++;
+			if (i != j)
+				words.add(new Word(line.substring(i, j), i));
+			i = j;
+		} while (i < line.length());
+		return words;
+	}
+
 	private List<String> computeWrappedLinesForDrawing(int width) {
 		FontMetrics m = getFontMetrics(getFont());
 		ArrayList<String> wrappedLines = new ArrayList<String>();
@@ -60,29 +94,25 @@ public class ConsoleView extends JComponent implements KeyListener, Console {
 			if (m.stringWidth(line) <= width) {
 				wrappedLines.add(line);
 			} else {
-				int whiteSpaceStart = 0;
-				int wordStart = 0;
-				boolean wasWhitespace = false;
-				for (int j = 0; j < line.length(); j++) {
-					boolean whitespace = Character.isWhitespace(line.charAt(j));						
-					if (!whitespace) {
-						if (whitespace != wasWhitespace)
-							wordStart = j;
-						String linePart = line.substring(0, j + 1);
-						if (m.stringWidth(linePart) > width) {
-							// TODO: handle case where whole word won't fit
-							linePart = line.substring(0, whiteSpaceStart);
-							wrappedLines.add(linePart);
-							partialLine = line.substring(wordStart).trim();
-							i--;
-							break;
+				List<Word> words = splitWords(line);
+				String prevLinePart = null;
+				for (Word word : words) {
+					String linePart = line.substring(0, word.getEndIndex());
+					if (m.stringWidth(linePart) > width) {
+						if (prevLinePart != null) {
+							wrappedLines.add(prevLinePart);
+							prevLinePart = null;
+							partialLine = line.substring(word.getStartIndex());
+						} else {
+							// The word is too long. Just add it as a line - it will be truncated when drawn.
+							wrappedLines.add(word.getText());
+							partialLine = line.substring(word.getEndIndex()).trim();
 						}
-						wasWhitespace = false;
-					} else if (whitespace != wasWhitespace) {
-						whiteSpaceStart = j;
+						i--;
+						break;
 					}
-					wasWhitespace = whitespace;
-				} 
+					prevLinePart = linePart;
+				}
 			}
 		}
 		wrappedLines.add(currentLine.toString());
