@@ -1,5 +1,7 @@
 package info.svitkine.alexei.wage;
 
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
@@ -27,6 +29,7 @@ public class ConsoleView extends JComponent implements KeyListener, Console {
 	private PrintWriter inPipe;
 	private Timer cursorToggle;
 	private boolean drawCursor;
+	private int yOffset;
 
 	public ConsoleView() {
 		clear();
@@ -131,23 +134,47 @@ public class ConsoleView extends JComponent implements KeyListener, Console {
 		return wrappedLines;
 	}
 	
+	public void scroll(int amount) {
+		FontMetrics m = getFontMetrics(getFont());
+		int lineHeight = m.getHeight();
+		yOffset += -amount * lineHeight;
+		if (yOffset > 0)
+			yOffset = 0;
+		repaint();
+	}
+	
 	@Override
 	public void paint(Graphics g) {
-		int horizontalInset = 2;
-		int verticalInset = 10;
-		int width = getWidth() - horizontalInset * 2;
-		int y = verticalInset;
+		int inset = WindowBorder.WIDTH;
+		int width = getWidth() - inset * 2;
+		int height = getHeight() - inset * 2;
+		g.setColor(Color.WHITE);
+		g.fillRect(inset - 2, inset - 2, width + 4, height + 4);
+		g.setClip(inset, inset, width, height);
+		g.translate(inset, inset);
+		paintContents(g, width, height);
+		g.translate(-inset, -inset);
+		g.setClip(null);
+		paintBorder(g);
+	}
+
+	private void paintContents(Graphics g, int width, int height) {
+		int extraYInset = 10;
+		int extraXInset = 2;
+		int y = yOffset + extraYInset;
+		int x = extraXInset;
 		FontMetrics m = getFontMetrics(getFont());
 		int lineHeight = m.getHeight();
 		// TODO: Cache wrapped lines and only re-calc them on size change?
-		List<String> wrappedLines = computeWrappedLinesForDrawing(width);
+		List<String> wrappedLines = computeWrappedLinesForDrawing(width - 2 * extraXInset);
+		g.setColor(Color.BLACK);
 		for (String line : wrappedLines) {
-			g.drawString(line, horizontalInset, y);
+			g.drawString(line, x, y);
 			y += lineHeight;
 		}
 		if (drawCursor) {
 			String lastLine = wrappedLines.get(wrappedLines.size() - 1);
-			int x = horizontalInset + m.stringWidth(lastLine);
+			x += m.stringWidth(lastLine);
 			y -= lineHeight * 2 - m.getDescent();
 			g.drawLine(x, y, x, y + lineHeight);
 		}
@@ -156,6 +183,7 @@ public class ConsoleView extends JComponent implements KeyListener, Console {
 	public void clear() {
 		lines = new ArrayList<String>();
 		currentLine = new StringBuilder();
+		yOffset = 0;
 	}
 
 	public void keyPressed(KeyEvent arg0) {
@@ -171,14 +199,13 @@ public class ConsoleView extends JComponent implements KeyListener, Console {
 				currentLine = new StringBuilder(currentLine.substring(0, currentLine.length() - 1));
 				repaint();
 			}
-		} else if (Character.isLetterOrDigit(c) || Character.isWhitespace(c)) {
+		} else if (getFont().canDisplay(c)) {
 			currentLine.append(c);
 			if (c == '\n') {
 				String line = currentLine.toString();
 				currentLine = new StringBuilder();
 				lines.add(line);
 				inPipe.write(line);
-				inPipe.write("\n");
 				inPipe.flush();
 			}
 			repaint();
