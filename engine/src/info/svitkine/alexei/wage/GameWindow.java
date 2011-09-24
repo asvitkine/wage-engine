@@ -32,7 +32,7 @@ public class GameWindow extends JFrame {
 		});
 		wm = new WindowManager();
 		viewer = new SceneViewer(patterns);
-		textArea = createTextArea();
+		textArea = new ConsoleTextArea();
 		panel = wrapInPanel(wrapInScrollPane(textArea));
 		wm.add(viewer);
 		wm.setComponentZOrder(viewer, 0);
@@ -493,15 +493,7 @@ public class GameWindow extends JFrame {
 		}
 	}
 
-	private ConsoleTextArea createTextArea() {
-		ConsoleTextArea textArea = new ConsoleTextArea();
-		textArea.setColumns(0);
-		textArea.setLineWrap(true);
-		textArea.setWrapStyleWord(true);
-		return textArea;
-	}
-
-	private JScrollPane wrapInScrollPane(JTextArea textArea) {
+	private JScrollPane wrapInScrollPane(JComponent textArea) {
 		JScrollPane scrollPane = new JScrollPane(textArea);
 		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
