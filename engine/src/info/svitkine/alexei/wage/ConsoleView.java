@@ -2,6 +2,8 @@ package info.svitkine.alexei.wage;
 
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.ByteArrayOutputStream;
@@ -15,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JComponent;
+import javax.swing.Timer;
 
 public class ConsoleView extends JComponent implements KeyListener, Console {
 	private List<String> lines;
@@ -22,6 +25,8 @@ public class ConsoleView extends JComponent implements KeyListener, Console {
 	private PrintStream out;
 	private PipedInputStream in;
 	private PrintWriter inPipe;
+	private Timer cursorToggle;
+	private boolean drawCursor;
 
 	public ConsoleView() {
 		clear();
@@ -35,11 +40,18 @@ public class ConsoleView extends JComponent implements KeyListener, Console {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		// user types stuff... buffer it and readable from |in|		
-		// game writes stuff to |out|, is appended
-		// full text => text written so far + line of input
+
 		addKeyListener(this);
+		setFocusable(true);
+		
+		cursorToggle = new Timer(500, new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				drawCursor = !drawCursor;
+				repaint(); // TODO: just the caret rect!
+			}
+		});
+		cursorToggle.setRepeats(true);
+		cursorToggle.start();
 	}
 	
 	public InputStream getIn() {
@@ -118,7 +130,6 @@ public class ConsoleView extends JComponent implements KeyListener, Console {
 		wrappedLines.add(currentLine.toString());
 		return wrappedLines;
 	}
-
 	
 	@Override
 	public void paint(Graphics g) {
@@ -126,11 +137,19 @@ public class ConsoleView extends JComponent implements KeyListener, Console {
 		int verticalInset = 10;
 		int width = getWidth() - horizontalInset * 2;
 		int y = verticalInset;
-		int lineHeight = getFontMetrics(getFont()).getHeight();
+		FontMetrics m = getFontMetrics(getFont());
+		int lineHeight = m.getHeight();
 		// TODO: Cache wrapped lines and only re-calc them on size change?
-		for (String line : computeWrappedLinesForDrawing(width)) {
+		List<String> wrappedLines = computeWrappedLinesForDrawing(width);
+		for (String line : wrappedLines) {
 			g.drawString(line, horizontalInset, y);
 			y += lineHeight;
+		}
+		if (drawCursor) {
+			String lastLine = wrappedLines.get(wrappedLines.size() - 1);
+			int x = horizontalInset + m.stringWidth(lastLine);
+			y -= lineHeight * 2 - m.getDescent();
+			g.drawLine(x, y, x, y + lineHeight);
 		}
 	}
 
@@ -140,24 +159,27 @@ public class ConsoleView extends JComponent implements KeyListener, Console {
 	}
 
 	public void keyPressed(KeyEvent arg0) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	public void keyReleased(KeyEvent arg0) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	public void keyTyped(KeyEvent event) {
 		char c = event.getKeyChar();
-		if (c != KeyEvent.CHAR_UNDEFINED) {
+		if (c == KeyEvent.VK_BACK_SPACE) {
+			if (currentLine.length() > 0) {
+				currentLine = new StringBuilder(currentLine.substring(0, currentLine.length() - 1));
+				repaint();
+			}
+		} else if (Character.isLetterOrDigit(c) || Character.isWhitespace(c)) {
 			currentLine.append(c);
 			if (c == '\n') {
 				String line = currentLine.toString();
 				currentLine = new StringBuilder();
 				lines.add(line);
-				inPipe.append(line);
+				inPipe.write(line);
+				inPipe.write("\n");
+				inPipe.flush();
 			}
 			repaint();
 		}
