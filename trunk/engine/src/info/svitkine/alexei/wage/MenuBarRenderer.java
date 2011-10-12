@@ -90,6 +90,27 @@ public class MenuBarRenderer extends JComponent implements MouseListener, MouseM
 		return new Rectangle(x, y, w, h);
 	}
 	
+	private void drawText(Graphics2D g2, String text, Font f, int style, int x, int y) {
+		FontRenderContext frc = g2.getFontRenderContext();
+		TextLayout tl = new TextLayout(text, f, frc);
+		Color c0 = g2.getColor();
+		Color c1 = (c0 == Color.BLACK ? Color.WHITE : Color.BLACK);
+		if ((style & MenuItem.OUTLINE) != 0) {
+			tl.draw(g2, x + 1, y + 1);
+			tl.draw(g2, x + 1, y - 1);
+			tl.draw(g2, x - 1, y - 1);
+			tl.draw(g2, x - 1, y + 1);
+			g2.setColor(c1);
+		}
+		if ((style & MenuItem.SHADOW) != 0) {
+			g2.setColor(c0);
+			tl.draw(g2, x + 2, y);
+			tl.draw(g2, x, y + 2);
+			g2.setColor(c1);
+		}
+		tl.draw(g2, x, y);
+	}
+
 	@Override
 	public void paint(Graphics g) {
 		g.setColor(Color.WHITE);
@@ -128,14 +149,12 @@ public class MenuBarRenderer extends JComponent implements MouseListener, MouseM
 					if (item != null) {
 						Graphics2D g2 = ((Graphics2D)g);
 						f = new Font(f.getFamily(), item.getFontStyle(), f.getSize());
-						FontRenderContext frc = g2.getFontRenderContext();
-						TextLayout tl = new TextLayout(item.getText(), f, frc);
-						tl.draw(g2, offsets[i] + PADDING, y);
+						drawText(g2, item.getText(), f, item.getStyle(), offsets[i] + PADDING, y);
 						String acceleratorText = getAcceleratorString(item);
 						if (acceleratorText != null) {
 							int width = m.stringWidth(acceleratorText);
-							tl = new TextLayout(acceleratorText, f, frc);
-							tl.draw(g2, bounds.x + bounds.width - width - PADDING, y);							
+							int x = bounds.x + bounds.width - width - PADDING;
+							drawText(g2, acceleratorText, f, item.getStyle(), x, y);						
 						}
 					} else {
 						g.drawLine(bounds.x, y - 7, bounds.x + bounds.width, y - 7);
