@@ -11,6 +11,8 @@ import javax.swing.border.AbstractBorder;
 public class WindowBorder extends AbstractBorder {
 	private static final long serialVersionUID = -3235368186322519050L;
 
+	public static final int WIDTH = 18;
+	
 	public static final int CLOSE_BOX = 0;
 	public static final int RESIZE_NW = 1;
 	public static final int RESIZE_NE = 2;
@@ -118,7 +120,7 @@ public class WindowBorder extends AbstractBorder {
 
 	@Override
 	public Insets getBorderInsets(Component c) {
-		return new Insets(18,18,18,18);
+		return new Insets(WIDTH, WIDTH, WIDTH, WIDTH);
 	}
 
 	@Override
