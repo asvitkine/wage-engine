@@ -5,7 +5,6 @@ import java.awt.Frame;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 
 import org.freeshell.gbsmith.rescafe.resourcemanager.ResourceModel;
 
@@ -14,11 +13,8 @@ public class WBGameFinder {
 		public boolean accept(File file) {
 			if (file.isDirectory())
 				return true;
-			ResourceModel model = new ResourceModel(file.getName());
-			RandomAccessFile raf;
 			try {
-				raf = new RandomAccessFile(file.getPath() + "/rsrc", "r");
-				model.read(raf);
+				ResourceModel model = WorldLoader.loadResourceModel(file);
 				if (model.getResourceType("ASCN") != null) {
 					return true;
 				}

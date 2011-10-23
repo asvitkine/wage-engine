@@ -72,7 +72,7 @@ public class WorldLoader {
 
 	private static void openWorldFile(File file) throws FileNotFoundException, IOException  {
 		WorldLoader.getInstance().getRecentDocumentsManager().addDocument(file, new Properties());
-		ResourceModel model = loadResources(file);
+		ResourceModel model = loadResourceModel(file);
 		JFrame f = new JFrame();
 		JMenuBar menubar = new JMenuBar();
 		JMenu menu = new JMenu("File");
@@ -100,7 +100,7 @@ public class WorldLoader {
 		openWorldFile(file);
 	}
 
-	private static ResourceModel loadResources(File file) throws IOException {
+	public static ResourceModel loadResourceModel(File file) throws IOException {
 		ResourceModel model = new ResourceModel(file.getName());
 		RandomAccessFile raf = new RandomAccessFile(file.getPath(), "r");
 		MacBinaryHeader mbh = new MacBinaryHeader();
@@ -109,7 +109,7 @@ public class WorldLoader {
 			raf.seek(mbh.getResForkOffset());
 			model.read(raf, mbh.getResForkOffset());
 		} else {
-			raf = new RandomAccessFile(file.getPath() + "/rsrc", "r");
+			raf = new RandomAccessFile(file.getPath() + "/..namedfork/rsrc", "r");
 			model.read(raf);
 		}
 		return model;
@@ -397,7 +397,7 @@ public class WorldLoader {
 		File file = new File(worldFile.getParent() + "/" + soundsFileName);
 		if (file.exists()) {
 			try {
-				soundLibraryModel = loadResources(file);
+				soundLibraryModel = loadResourceModel(file);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
