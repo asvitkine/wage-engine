@@ -1,6 +1,7 @@
 package info.svitkine.alexei.wage;
 
 import java.awt.Container;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
@@ -9,16 +10,16 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
+import java.util.*;
 
 import javax.swing.JComponent;
-import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.Timer;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
 
-public class WindowManager extends JPanel implements ComponentListener {
+public class WindowManager extends JComponent implements ComponentListener {
 	private JComponent modalDialog;
 	private MenuBarRenderer menubar;
 
@@ -61,6 +62,23 @@ public class WindowManager extends JPanel implements ComponentListener {
 	
 	public JComponent getModalDialog() {
 		return modalDialog;
+	}
+
+	@Override
+	public void paint(Graphics g) {
+		JComponent[] components = new JComponent[getComponentCount()];
+		for (int i = 0; i < getComponentCount(); i++)
+			components[i] = (JComponent) getComponent(i);
+		Arrays.sort(components, new Comparator<JComponent>() {
+			public int compare(JComponent c1, JComponent c2) {
+				return getComponentZOrder(c2) - getComponentZOrder(c1);
+			}
+		});
+		for (JComponent c : components) {
+			g.translate(c.getX(), c.getY());
+			c.paint(g);
+			g.translate(-c.getX(), -c.getY());
+		}
 	}
 	
 	private static void repaintShape(JComponent c, Shape s) {
@@ -105,21 +123,26 @@ public class WindowManager extends JPanel implements ComponentListener {
 			Shape shape = borderShapes[WindowBorder.BORDER_SHAPE];
 			Point p = event.getPoint();
 			if (shape != null && shape.contains(p)) {
-				Shape closeBoxShape = borderShapes[WindowBorder.CLOSE_BOX];
-				if (closeBoxShape == null || !closeBoxShape.contains(p)) {
-					startPos = event.getPoint();
-				}
 				if (border.isScrollable()) {
 					if (borderShapes[WindowBorder.SCROLL_UP].contains(p)) {
 						scroll(c, -1);
 					} else if (borderShapes[WindowBorder.SCROLL_DOWN].contains(p)) { 
 						scroll(c, 1);
 					}
+					return;
+				}
+				Shape closeBoxShape = borderShapes[WindowBorder.CLOSE_BOX];
+				if (closeBoxShape == null || !closeBoxShape.contains(p)) {
+					startPos = event.getPoint();
 				}
 			}
 		}
 
 		private void scroll(JComponent c, final int amount) {
+			if (c instanceof ConsoleView) {
+				((ConsoleView) c).scroll(amount);
+				return;
+			}
 			while (!(c instanceof JScrollPane)) {
 				c = (JComponent) c.getComponent(0);
 			}
