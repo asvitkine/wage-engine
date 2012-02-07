@@ -1,7 +1,6 @@
 package info.svitkine.alexei.wage;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
@@ -16,6 +15,7 @@ import java.io.PipedOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.JComponent;
@@ -99,7 +99,7 @@ public class ConsoleView extends JComponent implements KeyListener, Console {
 		return words;
 	}
 
-	private List<String> computeWrappedLinesForDrawing(int width) {
+	private List<String> computeWrappedLinesForDrawing(int width, List<String> lines) {
 		FontMetrics m = getFontMetrics(getFont());
 		ArrayList<String> wrappedLines = new ArrayList<String>();
 		String partialLine = null;
@@ -130,7 +130,6 @@ public class ConsoleView extends JComponent implements KeyListener, Console {
 				}
 			}
 		}
-		wrappedLines.add(currentLine.toString());
 		return wrappedLines;
 	}
 	
@@ -166,16 +165,19 @@ public class ConsoleView extends JComponent implements KeyListener, Console {
 		FontMetrics m = getFontMetrics(getFont());
 		int lineHeight = m.getHeight();
 		// TODO: Cache wrapped lines and only re-calc them on size change?
-		List<String> wrappedLines = computeWrappedLinesForDrawing(width - 2 * extraXInset);
 		g.setColor(Color.BLACK);
-		for (String line : wrappedLines) {
-			g.drawString(line, x, y);
-			y += lineHeight;
-		}
+		g.setFont(getFont());
+		List<String> wrappedLines = computeWrappedLinesForDrawing(width - 2 * extraXInset, lines);
+		String lastLine = "";
+		for (String line : wrappedLines)
+			g.drawString(lastLine = line, x, y += lineHeight);
+		wrappedLines = computeWrappedLinesForDrawing(width - 2 * extraXInset,
+			Collections.singletonList(currentLine.toString()));
+		for (String line : wrappedLines)
+			g.drawString(lastLine = line, x, y += lineHeight);
 		if (drawCursor) {
-			String lastLine = wrappedLines.get(wrappedLines.size() - 1);
 			x += m.stringWidth(lastLine);
-			y -= lineHeight * 2 - m.getDescent();
+			y -= lineHeight - m.getDescent();
 			g.drawLine(x, y, x, y + lineHeight);
 		}
 	}
