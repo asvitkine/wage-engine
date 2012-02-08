@@ -1,12 +1,11 @@
 package info.svitkine.alexei.wage;
 
 import java.awt.*;
-import java.awt.event.MouseEvent;
 
-import javax.swing.*;
+import javax.swing.JComponent;
 import javax.swing.border.Border;
 
-public class SceneViewer extends JPanel {
+public class SceneViewer extends WComponent {
 	private TexturePaint[] patterns;
 	private Scene scene;
 
@@ -51,20 +50,19 @@ public class SceneViewer extends JPanel {
 		super.paint(g);
 	}
 
-	public Object getClickTarget(MouseEvent e) {
+	public Object getClickTarget(int x, int y) {
 		for (int i = scene.getState().getObjs().size() - 1; i >= 0; i--) {
 			Obj o = scene.getState().getObjs().get(i);
-			if (o.getDesign().isPointOpaque(e.getX(), e.getY())) {
+			if (o.getDesign().isPointOpaque(x, y)) {
 				return o;
 			}
 		}
 		for (int i = scene.getState().getChrs().size() - 1; i >= 0; i--) {
 			Chr c = scene.getState().getChrs().get(i);
-			if (c.getDesign().isPointOpaque(e.getX(), e.getY())) {
+			if (c.getDesign().isPointOpaque(x, y)) {
 				return c;
 			}
 		}
-		System.err.println("Clicked nothing!");
 		return null;
 	}
 }
