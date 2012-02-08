@@ -3,82 +3,64 @@ package info.svitkine.alexei.wage;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
 
-import javax.swing.JComponent;
-import javax.swing.event.MouseInputAdapter;
-
-public abstract class Dialog extends JComponent {
+public abstract class Dialog extends WComponent {
 	private String text;
 	private DialogButton[] buttons;
 	private DialogButton defaultButton;
 	private DialogButton pressedButton;
 	private boolean mouseOverPressedButton;
+	private ActionListener actionListener;
 	
-	protected Dialog(final ActionListener actionListener, String text, DialogButton[] buttons, int defaultButtonIndex) {
+	protected Dialog(ActionListener actionListener, String text, DialogButton[] buttons, int defaultButtonIndex) {
 		setSize(292, 114);
+		this.actionListener = actionListener;
 		this.text = text;
 		this.buttons = buttons;
 		defaultButton = buttons[defaultButtonIndex];
-		MouseInputAdapter listener = new MouseInputAdapter() {
-			private boolean checkBounds(DialogButton button, MouseEvent event) {
-				if (button == null)
-					return false;
-				Rectangle bounds = new Rectangle(
-					button.bounds.x + 5, button.bounds.y + 5,
-					button.bounds.width - 10, button.bounds.height - 10);
-				return bounds.contains(event.getPoint());
-			}
+	}
 
-			private void updateMouseOverPressButton(MouseEvent event) {
-				boolean over = checkBounds(pressedButton, event);
-				if (over != mouseOverPressedButton) {
-					mouseOverPressedButton = over;
-					repaint();
-				}
-			}
-			
-			@Override
-			public void mousePressed(MouseEvent event) {
-				for (DialogButton button : Dialog.this.buttons) {
-					if (checkBounds(button, event)) {
-						pressedButton = button;
-						mouseOverPressedButton = true;
-						repaint();
-						break;
-					}
-				}
-			}
-
-			@Override
-			public void mouseReleased(MouseEvent event) {
-				boolean pressed = checkBounds(pressedButton, event);
-				ActionEvent clickEvent = null;
-				if (pressed && actionListener != null) {
-					clickEvent = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, pressedButton.text);
-				}
-				pressedButton = null;
-				mouseOverPressedButton = false;
-				repaint();
-				if (clickEvent != null) {
-					actionListener.actionPerformed(clickEvent);
-				}
-			}
-
-			@Override
-			public void mouseDragged(MouseEvent event) {
-				updateMouseOverPressButton(event);
-			} 
-			
-			@Override
-			public void mouseMoved(MouseEvent event) {
-				updateMouseOverPressButton(event);
-			}
-		};
-		addMouseListener(listener);
-		addMouseMotionListener(listener);
+	private boolean checkBounds(DialogButton button, int x, int y) {
+		if (button == null)
+			return false;
+		Rectangle bounds = new Rectangle(
+			button.bounds.x + 5, button.bounds.y + 5,
+			button.bounds.width - 10, button.bounds.height - 10);
+		return bounds.contains(new Point(x, y));
 	}
 	
+	@Override
+	public void handleMouseEvent(int type, int x, int y) {
+		if (type == MOUSE_PRESSED) {
+			for (DialogButton button : Dialog.this.buttons) {
+				if (checkBounds(button, x, y)) {
+					pressedButton = button;
+					mouseOverPressedButton = true;
+					repaint();
+					break;
+				}
+			}
+		} else if (type == MOUSE_RELEASED) {
+			boolean pressed = checkBounds(pressedButton, x, y);
+			ActionEvent clickEvent = null;
+			if (pressed && actionListener != null) {
+				clickEvent = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, pressedButton.text);
+			}
+			pressedButton = null;
+			mouseOverPressedButton = false;
+			repaint();
+			if (clickEvent != null) {
+				actionListener.actionPerformed(clickEvent);
+			}
+		} else if (type == MOUSE_MOVED || type == MOUSE_DRAGGED) {
+			boolean over = checkBounds(pressedButton, x, y);
+			if (over != mouseOverPressedButton) {
+				mouseOverPressedButton = over;
+				repaint();
+			}
+		}
+	}
+
 	@Override
 	public void paint(Graphics g) {
 		Graphics2D g2d = (Graphics2D) g;
