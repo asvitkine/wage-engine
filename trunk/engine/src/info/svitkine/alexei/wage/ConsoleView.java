@@ -177,8 +177,8 @@ public class ConsoleView extends JComponent implements KeyListener, Console {
 			g.drawString(lastLine = line, x, y += lineHeight);
 		if (drawCursor) {
 			x += m.stringWidth(lastLine);
-			y -= lineHeight - m.getDescent();
-			g.drawLine(x, y, x, y + lineHeight);
+			y += m.getDescent();
+			g.drawLine(x, y - lineHeight, x, y);
 		}
 	}
 
