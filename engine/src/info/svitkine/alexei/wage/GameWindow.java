@@ -4,11 +4,10 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 
 import javax.swing.*;
 
-public class GameWindow extends JFrame {
+public class GameWindow extends JFrame implements MenuBarBuilder.Callbacks {
 	private World world;
 	private Engine engine;
 	private SceneViewer viewer;
@@ -46,22 +45,12 @@ public class GameWindow extends JFrame {
 	}
 	
 	private void initializeGame() {
-		Menu[] menus;
-		if (!world.isWeaponsMenuDisabled())
-			menus = new Menu[5];
-		else
-			menus = new Menu[4];
-		menus[0] = createAppleMenu();
-		menus[1] = createFileMenu();
-		menus[2] = createEditMenu();
-		menus[3] = createCommandsMenu();
-		if (!world.isWeaponsMenuDisabled())
-			menus[4] = createWeaponsMenu();
-		final MenuBar menubar = new MenuBar(menus);
+		final MenuBarBuilder menuBuilder = new MenuBarBuilder(world, this);
+		final MenuBar menubar = menuBuilder.createMenuBar();
 		wm.setMenuBar(menubar);
 		engine = new Engine(world, textArea.getOut(), new Engine.Callbacks() {
 			public void setCommandsMenu(String format) {
-				menubar.setMenu(3, createMenuFromString(world.getCommandsMenuName(), format));
+				menubar.setMenu(3, menuBuilder.createMenuFromString(world.getCommandsMenuName(), format));
 			}
 			public void redrawScene() {
 				GameWindow.this.redrawScene();
@@ -198,71 +187,12 @@ public class GameWindow extends JFrame {
 			showDialog(dialog);
 		}
 	}
-
-	private Menu createAppleMenu() {
-		MenuItem[] items = new MenuItem[] {
-			new MenuItem(world.getAboutMenuItemName()) {
-				public void performAction() {
-					String aboutMessage = world.getAboutMessage();
-					aboutMessage = "<html><center>" + aboutMessage.replace("\n", "<br>");
-					JOptionPane.showMessageDialog(GameWindow.this, new JLabel(aboutMessage));
-				}
-			}
-		};
-		return new Menu("\uF8FF", items);
-	}
 	
-	private Menu createFileMenu() {
-		MenuItem[] items = new MenuItem[] {
-			new MenuItem("New") {
-				public void performAction() {
-					JOptionPane.showMessageDialog(null, "Not implemented yet.");
-				}
-			},
-			new MenuItem("Open...") {
-				public void performAction() {
-					showOpenDialog();
-				}
-			},
-			new MenuItem("Close") {
-				public void performAction() {
-					showSaveDialog();
-				}
-			},
-			new MenuItem("Save") {
-				public void performAction() {
-					doSave();
-				}
-			},
-			new MenuItem("Save as...") {
-				public void performAction() {
-					doSaveAs();
-				}
-			},
-			new MenuItem("Revert") {
-				public void performAction() {
-					doRevert();
-				}
-			},
-			new MenuItem("Quit")
-		};
-		return new Menu("File", items);
+	public void doNew() {
+		JOptionPane.showMessageDialog(null, "Not implemented yet.");
 	}
 
-	private Menu createEditMenu() {
-		MenuItem[] items = new MenuItem[] {
-			new MenuItem("Undo", 0, 'Z'),
-			null, // separator
-			new MenuItem("Cut", 0, 'K'),
-			new MenuItem("Copy", 0, 'C'),
-			new MenuItem("Paste", 0, 'V'),
-			new MenuItem("Clear", 0, 'B'),
-			
-		};
-		return new Menu("Edit", items);
-	}
-
-	private void showOpenDialog() {
+	public void showOpenDialog() {
 		FileDialog dialog = new FileDialog(new Frame(), "Load Game", FileDialog.LOAD);
 		dialog.setVisible(true);
 		if (dialog.getFile() == null)
@@ -278,7 +208,7 @@ public class GameWindow extends JFrame {
 		 }
 	}
 
-	private void showSaveDialog() {
+	public void showSaveDialog() {
 		SaveDialog dialog = new SaveDialog(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
 				if (SaveDialog.NO_TEXT.equals(event.getActionCommand())) {
@@ -303,7 +233,7 @@ public class GameWindow extends JFrame {
 		wm.revalidate();
 	}
 	
-	private void doSave() {
+	public void doSave() {
 		if (lastSaveFile == null) {
 			doSaveAs();
 			return;
@@ -317,7 +247,7 @@ public class GameWindow extends JFrame {
 		}
 	}
 	
-	private void doSaveAs() {
+	public void doSaveAs() {
 		FileDialog dialog = new FileDialog(new Frame(), "Save Game", FileDialog.SAVE);
 		dialog.setVisible(true);
 		if (dialog.getFile() == null)
@@ -332,7 +262,7 @@ public class GameWindow extends JFrame {
 		}
 	}
 	
-	private void doRevert() {
+	public void doRevert() {
 		try {
 			engine.revert();
 			GameWindow.this.redrawScene();
@@ -341,88 +271,16 @@ public class GameWindow extends JFrame {
 			e1.printStackTrace();
 		}
 	}
-	
-	private Menu createWeaponsMenu() {
-		return new Menu(world.getWeaponsMenuName(), new MenuItem[0]) {
-			public void willShow() {
-				this.items = generateWeaponsMenuItems();
-			}
-		};
-	}
-	
-	private MenuItem[] generateWeaponsMenuItems() {
-		ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
-		Chr player = world.getPlayer();
-		for (Weapon obj : player.getWeapons(true)) {
-			if (obj.getType() == Obj.REGULAR_WEAPON ||
-				obj.getType() == Obj.THROW_WEAPON ||
-				obj.getType() == Obj.MAGICAL_OBJECT) {
-				menuItems.add(new MenuItem(obj.getOperativeVerb() + " " + obj.getName()) {
-					public void performAction() {
-						textArea.getOut().append(getText() + "\n");
-						doCommand(getText());
-					}
-				});
-			}
-		}
-		if (menuItems.size() == 0) {
-			menuItems.add(new MenuItem("You have no weapons", 0, (char) 0, false));
-		}
-		return menuItems.toArray(new MenuItem[menuItems.size()]);
+
+	public void showAboutDialog() {
+		String aboutMessage = world.getAboutMessage();
+		aboutMessage = "<html><center>" + aboutMessage.replace("\n", "<br>");
+		JOptionPane.showMessageDialog(GameWindow.this, new JLabel(aboutMessage));		
 	}
 
-	private Menu createCommandsMenu() {
-		return createMenuFromString(world.getCommandsMenuName(), world.getDefaultCommandsMenu());
-	}
-	
-	private Menu createMenuFromString(String name, String string) {
-		String[] items = string.split(";");
-		ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
-		for (String item : items) {
-			if (item.equals("(-")) {
-				menuItems.add(null); // separator
-			} else {
-				boolean enabled = true;
-				int style = 0;
-				char shortcut = 0;
-				int index = item.lastIndexOf("/");
-				if (index != -1) {
-					shortcut = item.substring(index).charAt(1);
-					item = item.substring(0, index);
-				}
-				while (item.length() >= 2 && item.charAt(item.length() - 2) == '<') {
-					char c = item.charAt(item.length() - 1);
-					if (c == 'B') {
-						style |= MenuItem.BOLD;
-					} else if (c == 'I') {
-						style |= MenuItem.ITALIC;
-					} else if (c == 'U') {
-						style |= MenuItem.UNDERLINE;
-					} else if (c == 'O') {
-						style |= MenuItem.OUTLINE;
-					} else if (c == 'S') {
-						style |= MenuItem.SHADOW;
-					} else if (c == 'C') {
-						style |= MenuItem.CONDENSED;
-					} else if (c == 'E') {
-						style |= MenuItem.EXTENDED;
-					}
-					item = item.substring(0, item.length() - 2);
-				}
-				if (item.trim().startsWith("(")) {
-					enabled = false;
-					int loc = item.indexOf("(");
-					item = item.substring(0, loc) + item.substring(loc + 1);
-				}
-				menuItems.add(new MenuItem(item, style, shortcut, enabled) {
-					public void performAction() {
-						textArea.getOut().append(getText() + "\n");
-						doCommand(getText());
-					}
-				});
-			}
-		}
-		return new Menu(name, menuItems.toArray(new MenuItem[menuItems.size()]));
+	public void performCommand(String command) {
+		textArea.getOut().append(command + "\n");
+		doCommand(command);
 	}
 
 	private void updateTextAreaForScene(Console textArea, JComponent panel, Scene scene) {
