@@ -199,7 +199,8 @@ public class MenuBarRenderer extends WComponent {
 		int menuItemIndex = getMenuItemAt(x, y, false);
 		return menuItemIndex != -1;
 	}
-	
+
+	@Override
 	public void handleMouseEvent(int type, int x, int y) {
 		if (type == MOUSE_PRESSED || type == MOUSE_DRAGGED) {
 			int menuIndex = getMenuAt(x, y);
