@@ -7,15 +7,10 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 
-import javax.swing.JComponent;
-
-public class MenuBarRenderer extends JComponent implements MouseListener, MouseMotionListener {
+public class MenuBarRenderer extends WComponent {
 	private static final int HEIGHT = 19;
 	private static final int PADDING = 6;
 	private static final int ITEM_HEIGHT = 19;
@@ -43,8 +38,6 @@ public class MenuBarRenderer extends JComponent implements MouseListener, MouseM
 		}
 		pressedMenu = -1;
 		pressedItem = -1;
-		addMouseListener(this);
-		addMouseMotionListener(this);
 	}
 	
 	private String getAcceleratorString(MenuItem item) {
@@ -207,48 +200,32 @@ public class MenuBarRenderer extends JComponent implements MouseListener, MouseM
 		return menuItemIndex != -1;
 	}
 	
-	public void mousePressed(MouseEvent event) {
-		int menuIndex = getMenuAt(event.getX(), event.getY());
-		if (menuIndex != -1) {
-			if (pressedMenu != menuIndex) {
-				pressedMenu = menuIndex;
-				if (pressedMenu != -1)
-					menubar.getMenu(pressedMenu).willShow();
+	public void handleMouseEvent(int type, int x, int y) {
+		if (type == MOUSE_PRESSED || type == MOUSE_DRAGGED) {
+			int menuIndex = getMenuAt(x, y);
+			if (menuIndex != -1) {
+				if (pressedMenu != menuIndex) {
+					pressedMenu = menuIndex;
+					if (pressedMenu != -1)
+						menubar.getMenu(pressedMenu).willShow();
+					repaint();
+				}
+			}
+
+			int menuItemIndex = getMenuItemAt(x, y, true);
+			if (pressedItem != menuItemIndex) {
+				pressedItem = menuItemIndex;
 				repaint();
 			}
-		}
-
-		int menuItemIndex = getMenuItemAt(event.getX(), event.getY(), true);
-		if (pressedItem != menuItemIndex) {
-			pressedItem = menuItemIndex;
+		} else if (type == MOUSE_RELEASED) {
+			if (pressedMenu != -1 && pressedItem != -1) {
+				Menu menu = menubar.getMenu(pressedMenu);
+				MenuItem item = menu.getItem(pressedItem);
+				item.performAction();
+			}
+			pressedMenu = -1;
+			pressedItem = -1;
 			repaint();
 		}
-	}
-	
-	public void mouseDragged(MouseEvent event) {
-		mousePressed(event);
-	}
-
-	public void mouseReleased(MouseEvent event) {
-		if (pressedMenu != -1 && pressedItem != -1) {
-			Menu menu = menubar.getMenu(pressedMenu);
-			MenuItem item = menu.getItem(pressedItem);
-			item.performAction();
-		}
-		pressedMenu = -1;
-		pressedItem = -1;
-		repaint();
-	}
-
-	public void mouseClicked(MouseEvent arg0) {
-	}
-
-	public void mouseEntered(MouseEvent arg0) {
-	}
-
-	public void mouseExited(MouseEvent arg0) {
-	}
-
-	public void mouseMoved(MouseEvent arg0) {
 	}
 }
