@@ -14,8 +14,8 @@ public class GameWindow extends JFrame {
 	private World world;
 	private Engine engine;
 	private SceneViewer viewer;
-	private ConsoleTextArea textArea;
-	private JPanel panel;
+	private Console textArea;
+	private JComponent panel;
 	private Timer soundTimer;
 	private File lastSaveFile;
 	private WindowManager wm;
@@ -37,8 +37,8 @@ public class GameWindow extends JFrame {
 		wm.add(viewer);
 		wm.setComponentZOrder(viewer, 0);
 		wm.add(panel);
-		((WindowBorder) panel.getBorder()).setScrollable(true);
 		wm.setComponentZOrder(viewer, 1);
+		((WindowBorder) panel.getBorder()).setScrollable(true);
 		initializeGame();
 		setContentPane(wm);
 		setSize(640, 480);
@@ -89,7 +89,7 @@ public class GameWindow extends JFrame {
 				startThread(new Runnable() {
 					public void run() {
 						synchronized (engine) {
-							final Object target = viewer.getClickTarget(e);
+							final Object target = viewer.getClickTarget(e.getX(), e.getY());
 							if (target != null) {
 								engine.processTurn(null, target);
 							}
@@ -426,7 +426,7 @@ public class GameWindow extends JFrame {
 		return new Menu(name, menuItems.toArray(new MenuItem[menuItems.size()]));
 	}
 
-	private void updateTextAreaForScene(ConsoleTextArea textArea, JPanel panel, Scene scene) {
+	private void updateTextAreaForScene(Console textArea, JComponent panel, Scene scene) {
 		textArea.setFont(new Font(scene.getFontName(), 0, scene.getFontSize()));
 		panel.setBounds(scene.getTextBounds());
 	}

@@ -96,7 +96,7 @@ class ConsoleWriter extends java.io.OutputStream {
 	}
 }
 
-public class ConsoleTextArea extends JTextArea implements KeyListener, CaretListener, DocumentListener {
+public class ConsoleTextArea extends JTextArea implements KeyListener, CaretListener, DocumentListener, Console {
 	private ConsoleWriter writer;
 	private PrintStream out;
 	private PrintWriter inPipe;
