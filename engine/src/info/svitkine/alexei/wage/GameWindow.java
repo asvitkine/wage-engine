@@ -3,11 +3,10 @@ package info.svitkine.alexei.wage;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.*;
 
-public class GameWindow extends JFrame implements MenuBarBuilder.Callbacks {
+public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuilder.Callbacks {
 	private World world;
 	private Engine engine;
 	private SceneViewer viewer;
@@ -16,6 +15,8 @@ public class GameWindow extends JFrame implements MenuBarBuilder.Callbacks {
 	private SoundManager soundManager;
 	private File lastSaveFile;
 	private WindowManager wm;
+	private MenuBarBuilder menuBuilder;
+	private MenuBar menubar;
 
 	public GameWindow(World world, TexturePaint[] patterns) {
 		this.world = world;
@@ -32,6 +33,8 @@ public class GameWindow extends JFrame implements MenuBarBuilder.Callbacks {
 		viewer = new SceneViewer(patterns);
 		textArea = new ConsoleTextArea();
 		panel = wrapInPanel(wrapInScrollPane((JComponent)textArea));
+	//	textArea = new ConsoleView();
+	//	panel = (JComponent) textArea;
 		wm.add(viewer);
 		wm.setComponentZOrder(viewer, 0);
 		wm.add(panel);
@@ -45,69 +48,67 @@ public class GameWindow extends JFrame implements MenuBarBuilder.Callbacks {
 	}
 	
 	private void initializeGame() {
-		final MenuBarBuilder menuBuilder = new MenuBarBuilder(world, this);
-		final MenuBar menubar = menuBuilder.createMenuBar();
+		menuBuilder = new MenuBarBuilder(world, this);
+		menubar = menuBuilder.createMenuBar();
 		wm.setMenuBar(menubar);
-		engine = new Engine(world, textArea.getOut(), new Engine.Callbacks() {
-			public void setCommandsMenu(String format) {
-				menubar.setMenu(3, menuBuilder.createMenuFromString(world.getCommandsMenuName(), format));
-			}
-			public void redrawScene() {
-				GameWindow.this.redrawScene();
-			}
-			public void clearOutput() {
-				textArea.clear();
-			}
-			public void gameOver() {
-				runOnEventDispatchThread(new Runnable() {
-					public void run() {
-						GameWindow.this.gameOver();
-					}
-				});
-			}
-		});
+		engine = new Engine(world, textArea.getOut(), this);
 		synchronized (engine) {
 			engine.processTurn("look", null);
 		}
-		viewer.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(final MouseEvent e) {
-				if (!viewer.isEnabled())
-					return;
-				startThread(new Runnable() {
-					public void run() {
-						synchronized (engine) {
-							final Object target = viewer.getClickTarget(e.getX(), e.getY());
-							if (target != null) {
-								engine.processTurn(null, target);
-							}
-						}
-					}
-				});
-			}
-		});
-		startThread(new Runnable() {
-			public void run() {
-				BufferedReader in = new BufferedReader(new InputStreamReader(textArea.getIn()));
-				try {
-					String line = in.readLine();
-					while (line != null) {
-						doCommand(line);
-						line = in.readLine();
-					}
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+		viewer.addMouseListener(new ClickListener());
+		startThread(new UserInputReader());
+	}
+
+	private class ClickListener extends MouseAdapter {
+		public void mouseClicked(final MouseEvent e) {
+			if (!viewer.isEnabled())
+				return;
+			startThread(new ClickHandler(e.getX(), e.getY()));
+		}
+	}
+
+	private class ClickHandler implements Runnable {
+		private int x;
+		private int y;
+		public ClickHandler(int x, int y) {
+			this.x = x;
+			this.y = y;
+		}
+		public void run() {
+			synchronized (engine) {
+				final Object target = viewer.getClickTarget(x, y);
+				if (target != null) {
+					engine.processTurn(null, target);
 				}
 			}
-		});
+		}
 	}
 	
+	private class UserInputReader implements Runnable {
+		public void run() {
+			BufferedReader in = new BufferedReader(new InputStreamReader(textArea.getIn()));
+			try {
+				String line = in.readLine();
+				while (line != null) {
+					doCommand(line);
+					line = in.readLine();
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
 	private void startThread(Runnable runnable) {
 		new Thread(runnable).start();
 	}
 	
-	private void redrawScene() {
+	public void setCommandsMenu(String format) {
+		menubar.setMenu(3, menuBuilder.createMenuFromString(world.getCommandsMenuName(), format));
+	}
+
+	public void redrawScene() {
 		final Scene currentScene = world.getPlayerScene();
 		if (currentScene != null) {
 			Runnable repainter = new Runnable() {
@@ -121,24 +122,30 @@ public class GameWindow extends JFrame implements MenuBarBuilder.Callbacks {
 					soundManager.updateSoundTimerForScene(currentScene, true);
 				}
 			};
-			runOnEventDispatchThread(repainter);
+			Utils.runOnEventDispatchThread(repainter);
 		}
 	}
 
-	private static void runOnEventDispatchThread(Runnable runnable) {
-		if (SwingUtilities.isEventDispatchThread()) {
-			runnable.run();
-		} else try {
-			SwingUtilities.invokeAndWait(runnable);
-		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (InvocationTargetException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+	public void clearOutput() {
+		textArea.clear();
 	}
 
+	public void gameOver() {
+		Utils.runOnEventDispatchThread(new Runnable() {
+			public void run() {
+				if (isVisible()) {
+					GameOverDialog dialog = new GameOverDialog(new ActionListener() {
+						public void actionPerformed(ActionEvent event) {
+							setVisible(false);
+							dispose();
+						}
+					}, world.getGameOverMessage());
+					showDialog(dialog);
+				}
+			}
+		});
+	}
+	
 	private void doCommand(String line) {
 		if (line.equals("debug")) {
 			for (Obj o : world.getPlayerScene().getState().getObjs())
@@ -164,8 +171,8 @@ public class GameWindow extends JFrame implements MenuBarBuilder.Callbacks {
 	private void showDialog(Dialog dialog) {
 		if (wm.getModalDialog() != null)
 			return;
-		int w = GameWindow.this.getContentPane().getWidth();
-		int h = GameWindow.this.getContentPane().getHeight();
+		int w = getContentPane().getWidth();
+		int h = getContentPane().getHeight();
 		dialog.setLocation(w/2-dialog.getWidth()/2, h/2-dialog.getHeight()/2);
 		wm.addModalDialog(dialog);
 		// FIXME: below is to work around a bug with overlaps...
@@ -175,19 +182,7 @@ public class GameWindow extends JFrame implements MenuBarBuilder.Callbacks {
 		wm.invalidate();
 		wm.revalidate();
 	}
-	
-	private void gameOver() {
-		if (isVisible()) {
-			GameOverDialog dialog = new GameOverDialog(new ActionListener() {
-				public void actionPerformed(ActionEvent event) {
-					setVisible(false);
-					dispose();
-				}
-			}, world.getGameOverMessage());
-			showDialog(dialog);
-		}
-	}
-	
+
 	public void doNew() {
 		JOptionPane.showMessageDialog(null, "Not implemented yet.");
 	}
@@ -201,7 +196,7 @@ public class GameWindow extends JFrame implements MenuBarBuilder.Callbacks {
 		try {
 			engine.loadState(file);
 			lastSaveFile = file;
-			GameWindow.this.redrawScene();
+			redrawScene();
 		} catch (IOException ioe) {
 			// TODO Auto-generated catch block
 			ioe.printStackTrace();
@@ -212,11 +207,11 @@ public class GameWindow extends JFrame implements MenuBarBuilder.Callbacks {
 		SaveDialog dialog = new SaveDialog(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
 				if (SaveDialog.NO_TEXT.equals(event.getActionCommand())) {
-					GameWindow.this.setVisible(false);
+					setVisible(false);
 				} else if (SaveDialog.YES_TEXT.equals(event.getActionCommand())) {
 					doSave();
 					// TODO: If they clicked cancel in the save dialog, don't close the window!
-					GameWindow.this.setVisible(false);					
+					setVisible(false);					
 				} else if (SaveDialog.CANCEL_TEXT.equals(event.getActionCommand())) {
 					closeSaveDialog();
 				}
@@ -265,7 +260,7 @@ public class GameWindow extends JFrame implements MenuBarBuilder.Callbacks {
 	public void doRevert() {
 		try {
 			engine.revert();
-			GameWindow.this.redrawScene();
+			redrawScene();
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

@@ -5,6 +5,7 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import javax.swing.AbstractAction;
@@ -12,6 +13,7 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 
 public abstract class Utils {
 
@@ -56,6 +58,20 @@ public abstract class Utils {
 		} catch (Throwable e) {
 		}
 		return null;
+	}
+
+	public static void runOnEventDispatchThread(Runnable runnable) {
+		if (SwingUtilities.isEventDispatchThread()) {
+			runnable.run();
+		} else try {
+			SwingUtilities.invokeAndWait(runnable);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (InvocationTargetException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 	}
 
 	public static Action setupCloseWindowKeyStrokes(Window window, JRootPane rootPane) {
