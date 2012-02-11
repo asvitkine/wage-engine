@@ -4,7 +4,6 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.SourceDataLine;
 
-
 public class Sound {
 	private static final byte[] DELTAS = new byte[] {0,-49,-36,-25,-16,-9,-4,-1,0,1,4,9,16,25,36,49};
 

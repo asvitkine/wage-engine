@@ -2,7 +2,6 @@ package com.googlecode.wage_engine;
 
 import java.awt.Rectangle;
 
-
 public class ObjImpl implements Obj {
 	private int index;
 	private String name;

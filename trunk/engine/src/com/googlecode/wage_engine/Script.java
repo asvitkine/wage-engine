@@ -3,7 +3,6 @@ package com.googlecode.wage_engine;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class Script {
 	private byte[] data;
 

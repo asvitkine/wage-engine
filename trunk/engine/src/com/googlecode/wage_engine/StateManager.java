@@ -10,7 +10,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class StateManager {
-
 	private World world;
 	private State state;
 				

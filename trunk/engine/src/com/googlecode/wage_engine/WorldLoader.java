@@ -23,7 +23,6 @@ import org.freeshell.gbsmith.rescafe.MacBinaryHeader;
 
 import com.fizzysoft.sdu.RecentDocumentsManager;
 
-
 public class WorldLoader {
 	private static WorldLoader instance;
 

@@ -2,7 +2,6 @@ package com.googlecode.wage_engine;
 
 import java.awt.*;
 
-import javax.swing.JComponent;
 import javax.swing.border.Border;
 
 public class SceneViewer extends WComponent {
