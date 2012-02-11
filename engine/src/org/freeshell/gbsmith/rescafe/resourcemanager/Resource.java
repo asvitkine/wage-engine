@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
 
-import com.googlecode.wage_engine.MacRoman;
+import com.googlecode.wage_engine.engine.MacRoman;
 
 /*=======================================================================*/
 /* The MIT License

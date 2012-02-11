@@ -6,6 +6,11 @@ import java.io.*;
 
 import javax.swing.*;
 
+import com.googlecode.wage_engine.engine.Engine;
+import com.googlecode.wage_engine.engine.Obj;
+import com.googlecode.wage_engine.engine.Scene;
+import com.googlecode.wage_engine.engine.World;
+
 public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuilder.Callbacks {
 	private World world;
 	private Engine engine;
@@ -20,7 +25,7 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 
 	public GameWindow(World world, TexturePaint[] patterns) {
 		this.world = world;
-		Utils.setupCloseWindowKeyStrokes(this, getRootPane());
+		SwingUtils.setupCloseWindowKeyStrokes(this, getRootPane());
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		this.addWindowListener(new WindowAdapter() {
 			@Override
@@ -121,7 +126,7 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 					soundManager.updateSoundTimerForScene(currentScene, true);
 				}
 			};
-			Utils.runOnEventDispatchThread(repainter);
+			SwingUtils.runOnEventDispatchThread(repainter);
 		}
 	}
 
@@ -130,7 +135,7 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 	}
 
 	public void gameOver() {
-		Utils.runOnEventDispatchThread(new Runnable() {
+		SwingUtils.runOnEventDispatchThread(new Runnable() {
 			public void run() {
 				if (isVisible()) {
 					GameOverDialog dialog = new GameOverDialog(new ActionListener() {

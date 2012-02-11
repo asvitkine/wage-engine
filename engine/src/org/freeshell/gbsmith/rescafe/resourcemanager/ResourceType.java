@@ -7,7 +7,7 @@ import java.io.RandomAccessFile;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import com.googlecode.wage_engine.MacRoman;
+import com.googlecode.wage_engine.engine.MacRoman;
 
 /*=======================================================================*/
 /* The MIT License

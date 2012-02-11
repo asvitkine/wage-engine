@@ -4,6 +4,10 @@ import java.awt.*;
 
 import javax.swing.border.Border;
 
+import com.googlecode.wage_engine.engine.Chr;
+import com.googlecode.wage_engine.engine.Obj;
+import com.googlecode.wage_engine.engine.Scene;
+
 public class SceneViewer extends WComponent {
 	private TexturePaint[] patterns;
 	private Scene scene;

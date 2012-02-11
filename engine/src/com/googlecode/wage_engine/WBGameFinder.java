@@ -8,6 +8,8 @@ import java.io.IOException;
 
 import org.freeshell.gbsmith.rescafe.resourcemanager.ResourceModel;
 
+import com.googlecode.wage_engine.engine.WorldLoader;
+
 public class WBGameFinder {
 	private static final FileFilter filter = new FileFilter() {
 		public boolean accept(File file) {

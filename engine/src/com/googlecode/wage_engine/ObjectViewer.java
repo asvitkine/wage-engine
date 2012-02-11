@@ -3,6 +3,8 @@ package com.googlecode.wage_engine;
 import java.awt.*;
 import javax.swing.*;
 
+import com.googlecode.wage_engine.engine.Design;
+
 public class ObjectViewer extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private Design design;

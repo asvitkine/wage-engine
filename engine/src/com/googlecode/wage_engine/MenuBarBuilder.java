@@ -2,6 +2,11 @@ package com.googlecode.wage_engine;
 
 import java.util.ArrayList;
 
+import com.googlecode.wage_engine.engine.Chr;
+import com.googlecode.wage_engine.engine.Obj;
+import com.googlecode.wage_engine.engine.Weapon;
+import com.googlecode.wage_engine.engine.World;
+
 public class MenuBarBuilder {
 	public interface Callbacks {
 		public void showAboutDialog();

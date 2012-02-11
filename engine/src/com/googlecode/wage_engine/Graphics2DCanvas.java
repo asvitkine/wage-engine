@@ -7,6 +7,8 @@ import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.Area;
 
+import com.googlecode.wage_engine.engine.Canvas;
+
 public class Graphics2DCanvas implements Canvas {
 	private Graphics2D g2d;
 
