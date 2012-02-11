@@ -1,12 +1,13 @@
 package org.freeshell.gbsmith.rescafe.resourcemanager;
 
-import info.svitkine.alexei.wage.MacRoman;
 
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.util.Enumeration;
 import java.util.Hashtable;
+
+import com.googlecode.wage_engine.MacRoman;
 
 /*=======================================================================*/
 /* The MIT License

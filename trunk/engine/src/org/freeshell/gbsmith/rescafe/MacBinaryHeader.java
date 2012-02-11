@@ -1,10 +1,11 @@
 package org.freeshell.gbsmith.rescafe;
 
-import info.svitkine.alexei.wage.MacRoman;
 
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
+
+import com.googlecode.wage_engine.MacRoman;
 
 /*=======================================================================*/
 /* The MIT License
