@@ -1,4 +1,4 @@
-package com.googlecode.wage_engine;
+package com.googlecode.wage_engine.engine;
 
 import java.awt.Font;
 

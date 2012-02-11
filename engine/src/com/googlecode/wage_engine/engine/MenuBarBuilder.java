@@ -1,11 +1,7 @@
-package com.googlecode.wage_engine;
+package com.googlecode.wage_engine.engine;
 
 import java.util.ArrayList;
 
-import com.googlecode.wage_engine.engine.Chr;
-import com.googlecode.wage_engine.engine.Obj;
-import com.googlecode.wage_engine.engine.Weapon;
-import com.googlecode.wage_engine.engine.World;
 
 public class MenuBarBuilder {
 	public interface Callbacks {

@@ -19,6 +19,8 @@ import javax.swing.Timer;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
 
+import com.googlecode.wage_engine.engine.MenuBar;
+
 public class WindowManager extends JComponent implements ComponentListener {
 	private JComponent modalDialog;
 	private MenuBarRenderer menubar;
