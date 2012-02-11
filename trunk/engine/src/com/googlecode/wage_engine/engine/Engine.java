@@ -1,4 +1,4 @@
-package com.googlecode.wage_engine;
+package com.googlecode.wage_engine.engine;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,8 +6,8 @@ import java.io.PrintStream;
 import java.util.List;
 import java.util.Set;
 
-import com.googlecode.wage_engine.World.MoveEvent;
-import com.googlecode.wage_engine.World.MoveListener;
+import com.googlecode.wage_engine.engine.World.MoveEvent;
+import com.googlecode.wage_engine.engine.World.MoveListener;
 
 public class Engine implements Script.Callbacks, MoveListener {
 	private World world;

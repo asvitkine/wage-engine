@@ -14,6 +14,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 
 import com.fizzysoft.sdu.RecentDocumentsManager;
+import com.googlecode.wage_engine.engine.World;
+import com.googlecode.wage_engine.engine.WorldLoader;
 
 public class WorldLoaderGUI {
 	private RecentDocumentsManager rdm;
@@ -69,7 +71,7 @@ public class WorldLoaderGUI {
 		menu.add(rdm.createOpenRecentMenu());
 		menubar.add(menu);
 		f.setJMenuBar(menubar);
-		Utils.setupCloseWindowKeyStrokes(f, f.getRootPane());
+		SwingUtils.setupCloseWindowKeyStrokes(f, f.getRootPane());
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.getRootPane().putClientProperty("Window.documentFile", file);
 		f.setTitle(file.getName());

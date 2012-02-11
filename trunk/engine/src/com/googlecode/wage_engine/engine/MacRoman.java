@@ -1,4 +1,4 @@
-package com.googlecode.wage_engine;
+package com.googlecode.wage_engine.engine;
 
 public abstract class MacRoman {
 	private static final char[] LOOKUP_TABLE = new char[] {

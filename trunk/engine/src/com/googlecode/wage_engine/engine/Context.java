@@ -1,4 +1,4 @@
-package com.googlecode.wage_engine;
+package com.googlecode.wage_engine.engine;
 
 public class Context {
 	/** The base physical accuracy of the player. */

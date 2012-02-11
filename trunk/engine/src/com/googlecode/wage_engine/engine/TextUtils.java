@@ -1,4 +1,4 @@
-package com.googlecode.wage_engine;
+package com.googlecode.wage_engine.engine;
 
 public class TextUtils {
 	public static final int GENDER_HE = 0;

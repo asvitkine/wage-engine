@@ -1,4 +1,4 @@
-package com.googlecode.wage_engine;
+package com.googlecode.wage_engine.engine;
 
 /*
  * Based on code from Apache Sanselan project. Original code can be found at:

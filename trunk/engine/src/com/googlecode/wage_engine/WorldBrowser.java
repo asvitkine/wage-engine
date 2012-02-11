@@ -29,6 +29,12 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 
+import com.googlecode.wage_engine.engine.Chr;
+import com.googlecode.wage_engine.engine.Obj;
+import com.googlecode.wage_engine.engine.Scene;
+import com.googlecode.wage_engine.engine.Sound;
+import com.googlecode.wage_engine.engine.World;
+
 public class WorldBrowser extends JPanel {
 	private static final long serialVersionUID = 4725978893229240988L;
 	private World world;
@@ -341,7 +347,7 @@ public class WorldBrowser extends JPanel {
 
 	public static void createAndShowWindowWithContent(JComponent content, Rectangle bounds) {
 		JFrame f = new JFrame();
-		Utils.setupCloseWindowKeyStrokes(f, f.getRootPane());
+		SwingUtils.setupCloseWindowKeyStrokes(f, f.getRootPane());
 		content.setBorder(new WindowBorder());
 		f.setContentPane(content);
 		f.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);

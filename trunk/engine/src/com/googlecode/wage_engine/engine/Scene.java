@@ -1,8 +1,9 @@
-package com.googlecode.wage_engine;
+package com.googlecode.wage_engine.engine;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
+
 
 public interface Scene {
 	public static final int NORTH = 0;

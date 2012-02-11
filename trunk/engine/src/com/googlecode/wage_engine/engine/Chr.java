@@ -1,9 +1,8 @@
-package com.googlecode.wage_engine;
+package com.googlecode.wage_engine.engine;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
-
 
 public interface Chr {
 	public static final int RETURN_TO_STORAGE = 0;

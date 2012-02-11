@@ -1,4 +1,4 @@
-package com.googlecode.wage_engine;
+package com.googlecode.wage_engine.engine;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -16,6 +16,8 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+
+import com.googlecode.wage_engine.Graphics2DCanvas;
 
 public class Design {
 	private byte[] data;
