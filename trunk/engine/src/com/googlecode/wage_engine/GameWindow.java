@@ -11,6 +11,7 @@ import com.googlecode.wage_engine.engine.MenuBar;
 import com.googlecode.wage_engine.engine.MenuBarBuilder;
 import com.googlecode.wage_engine.engine.Obj;
 import com.googlecode.wage_engine.engine.Scene;
+import com.googlecode.wage_engine.engine.SoundManager;
 import com.googlecode.wage_engine.engine.World;
 
 public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuilder.Callbacks {

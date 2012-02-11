@@ -1,11 +1,7 @@
-package com.googlecode.wage_engine;
+package com.googlecode.wage_engine.engine;
 
 import java.util.Timer;
 import java.util.TimerTask;
-
-import com.googlecode.wage_engine.engine.Scene;
-import com.googlecode.wage_engine.engine.Sound;
-import com.googlecode.wage_engine.engine.World;
 
 public class SoundManager {
 	private Timer soundTimer;
