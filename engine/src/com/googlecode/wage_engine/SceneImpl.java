@@ -3,7 +3,6 @@ package com.googlecode.wage_engine;
 import java.awt.Rectangle;
 
 public class SceneImpl implements Scene {
-
 	private int index;
 	private String name;
 	private short resourceID;

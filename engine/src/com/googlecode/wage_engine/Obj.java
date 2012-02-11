@@ -2,7 +2,6 @@ package com.googlecode.wage_engine;
 
 import java.awt.Rectangle;
 
-
 public interface Obj extends Weapon {
 	// object types:
 	public static final int REGULAR_WEAPON = 1;

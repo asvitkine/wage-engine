@@ -93,7 +93,6 @@ public class MenuBarBuilder {
 			new MenuItem("Copy", 0, 'C'),
 			new MenuItem("Paste", 0, 'V'),
 			new MenuItem("Clear", 0, 'B'),
-			
 		};
 		return new Menu("Edit", items);
 	}
