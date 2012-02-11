@@ -7,6 +7,8 @@ import java.io.*;
 import javax.swing.*;
 
 import com.googlecode.wage_engine.engine.Engine;
+import com.googlecode.wage_engine.engine.MenuBar;
+import com.googlecode.wage_engine.engine.MenuBarBuilder;
 import com.googlecode.wage_engine.engine.Obj;
 import com.googlecode.wage_engine.engine.Scene;
 import com.googlecode.wage_engine.engine.World;

@@ -1,7 +1,8 @@
-package com.googlecode.wage_engine;
+package com.googlecode.wage_engine.engine;
 
 import java.util.Arrays;
 import java.util.Iterator;
+
 
 public class Menu implements Iterable<MenuItem> {
 	private String name;

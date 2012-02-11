@@ -10,6 +10,10 @@ import java.awt.Rectangle;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 
+import com.googlecode.wage_engine.engine.Menu;
+import com.googlecode.wage_engine.engine.MenuBar;
+import com.googlecode.wage_engine.engine.MenuItem;
+
 public class MenuBarRenderer extends WComponent {
 	private static final int HEIGHT = 19;
 	private static final int PADDING = 6;
