@@ -2,7 +2,6 @@ package com.googlecode.wage_engine.engine;
 
 import java.awt.Rectangle;
 
-import com.googlecode.wage_engine.FontNames;
 
 public class SceneImpl implements Scene {
 	private int index;
