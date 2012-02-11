@@ -29,7 +29,13 @@ public class WindowManager extends JComponent implements ComponentListener {
 	}
 
 	public void add(JComponent c) {
-		c.setBorder(new WindowBorder());
+		add(c, false);
+	}
+	
+	public void add(JComponent c, boolean scrollable) {
+		WindowBorder border = new WindowBorder();
+		border.setScrollable(scrollable);
+		c.setBorder(border);
 		// TODO: use chain of events pattern...
 		MouseInputListener listener = new CloseBoxListener();
 		c.addMouseListener(listener);

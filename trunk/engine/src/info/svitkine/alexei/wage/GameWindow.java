@@ -37,9 +37,8 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 	//	panel = (JComponent) textArea;
 		wm.add(viewer);
 		wm.setComponentZOrder(viewer, 0);
-		wm.add(panel);
+		wm.add(panel, true);
 		wm.setComponentZOrder(viewer, 1);
-		((WindowBorder) panel.getBorder()).setScrollable(true);
 		initializeGame();
 		setContentPane(wm);
 		setSize(640, 480);
