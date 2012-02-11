@@ -88,7 +88,7 @@ public class Design {
 	}
 
 	private void drawRect(Canvas g2d, DataInputStream in, boolean mask,
-			TexturePaint[] patterns, byte fillType, byte borderThickness, byte borderFillType) throws IOException
+		TexturePaint[] patterns, byte fillType, byte borderThickness, byte borderFillType) throws IOException
 	{
 		short y = in.readShort();
 		short x = in.readShort();
@@ -104,7 +104,7 @@ public class Design {
 	}
 
 	private void drawOval(Canvas g2d, DataInputStream in, boolean mask,
-			TexturePaint[] patterns, byte fillType, byte borderThickness, byte borderFillType) throws IOException
+		TexturePaint[] patterns, byte fillType, byte borderThickness, byte borderFillType) throws IOException
 	{
 		short y = in.readShort();
 		short x = in.readShort();
@@ -120,7 +120,7 @@ public class Design {
 	}
 	
 	private void drawRoundRect(Canvas g2d, DataInputStream in, boolean mask,
-			TexturePaint[] patterns, byte fillType, byte borderThickness, byte borderFillType) throws IOException
+		TexturePaint[] patterns, byte fillType, byte borderThickness, byte borderFillType) throws IOException
 	{
 		short y = in.readShort();
 		short x = in.readShort();

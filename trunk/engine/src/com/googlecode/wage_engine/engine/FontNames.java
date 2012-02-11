@@ -1,4 +1,4 @@
-package com.googlecode.wage_engine;
+package com.googlecode.wage_engine.engine;
 
 public class FontNames {
 	// Source: Apple IIGS Technical Note #41, "Font Family Numbers"
