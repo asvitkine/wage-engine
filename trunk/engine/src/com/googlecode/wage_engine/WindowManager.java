@@ -56,6 +56,15 @@ public class WindowManager extends JComponent implements ComponentListener {
 				getComponent(i).setEnabled(true);
 			modalDialog = null;
 		}
+		if (comp == menubar) {
+			menubar = null;
+		}
+	}
+	
+	public void removeAll() {
+		super.removeAll();
+		modalDialog = null;
+		menubar = null;
 	}
 
 	public void addModalDialog(JComponent dialog) {

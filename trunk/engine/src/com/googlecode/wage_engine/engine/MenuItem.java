@@ -55,6 +55,10 @@ public class MenuItem {
 		return enabled;
 	}
 	
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
 	public void performAction() {
 	}
 
