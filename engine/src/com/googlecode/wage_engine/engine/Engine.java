@@ -1,7 +1,11 @@
 package com.googlecode.wage_engine.engine;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.Set;
@@ -24,6 +28,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 	private int aim = Chr.CHEST;
 	private int opponentAim = Chr.CHEST; // TODO: use this ... let monsters aim...
 	private boolean temporarilyHidden;
+	private boolean gameOver;
 
 	public interface Callbacks {
 		public void setCommandsMenu(String format);
@@ -38,6 +43,9 @@ public class Engine implements Script.Callbacks, MoveListener {
 		this.out = out;
 		this.callbacks = callbacks;
 		world.addMoveListener(this);
+		temporarilyHidden = true;
+		performInitialSetup();
+		temporarilyHidden = false;
 	}
 
 	private Scene getSceneByName(String location) {
@@ -125,8 +133,12 @@ public class Engine implements Script.Callbacks, MoveListener {
 	}
 
 	public void loadState(File file) throws IOException {
+		loadState(new FileInputStream(file));
+	}
+	
+	public void loadState(InputStream in) throws IOException {
 		// parse the save file
-		stateManager.readSaveData(file);
+		stateManager.readSaveData(in);
 		
 		// uncomment the next line for a human readable dump of information contained in save file on load
 		//stateManager.printAll(file.getPath() + "_dump.txt");
@@ -150,12 +162,25 @@ public class Engine implements Script.Callbacks, MoveListener {
 		}
 	}
 
+	public byte[] getSaveStateAsByteArray() {
+		boolean success = stateManager.updateState(monster, running, loopCount, aim, opponentAim);
+		if (success) {
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			try {
+				stateManager.writeSaveData(out);
+				return out.toByteArray();
+			} catch (IOException ioe) {
+			}
+		}
+		return null;
+	}
+	
 	public void saveState(File toFile) throws IOException {
 		// updates state variables with current world info
 		boolean success = stateManager.updateState(monster, running, loopCount, aim, opponentAim);
 		// output state info to disk
 		if (success) {
-			stateManager.writeSaveData(toFile);
+			stateManager.writeSaveData(new FileOutputStream(toFile));
 			Utils.setFileTypeAndCreator(toFile.getAbsolutePath(), "WDOC", world.getCreatorCode());
 		}	
 	}
@@ -221,12 +246,6 @@ public class Engine implements Script.Callbacks, MoveListener {
 	}
 
 	public void processTurn(String textInput, Object clickInput) {
-		System.out.println("processTurn");
-		if (turn == 0) {
-			temporarilyHidden = true;
-			performInitialSetup();
-			temporarilyHidden = false;
-		}
 		commandWasQuick = false;
 		Scene prevScene = world.getPlayerScene();
 		Chr prevMonster = getMonster();
@@ -313,8 +332,11 @@ public class Engine implements Script.Callbacks, MoveListener {
 	public void onMove(MoveEvent event) {
 		Chr player = world.getPlayer();
 		Scene currentScene = player.getState().getCurrentScene();
-		if (currentScene == world.getStorageScene()) {
-			callbacks.gameOver();
+		if (currentScene == world.getStorageScene() && !temporarilyHidden) {
+			if (!gameOver) {
+				gameOver = true;
+				callbacks.gameOver();
+			}
 			return;
 		}
 		if (event.getWhat() != player && event.getWhat() instanceof Chr) {

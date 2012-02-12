@@ -29,6 +29,7 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 	private MenuBarBuilder menuBuilder;
 	private MenuBar menubar;
 	private boolean gameInProgress;
+	private byte[] initialGameState;
 
 	public GameWindow(World world, TexturePaint[] patterns) {
 		this.world = world;
@@ -47,7 +48,7 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 				}
 			}	
 		});
-		doNew();
+		initializeGame();
 		setSize(640, 480);
 		setLocationRelativeTo(null);
 		setVisible(true);
@@ -70,7 +71,18 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 	}
 
 	public void doNew() {
+		initializeGame();
+		// FIXME: Find a better way to repaint...
+		Dimension size = getSize();
+		size.height++;
+		setSize(size);
+		size.height--;
+		setSize(size);
+	}
+	
+	private void initializeGame() {
 		gameInProgress = true;
+		world.reset();
 		soundManager = new SoundManager(world);
 		viewer = new SceneViewer(patterns);
 		textArea = new ConsoleTextArea();
@@ -86,6 +98,13 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 		wm.setMenuBar(menubar);
 		setContentPane(wm);
 		engine = new Engine(world, textArea.getOut(), this);
+		if (initialGameState == null) {
+			initialGameState = engine.getSaveStateAsByteArray();
+		} else try {
+			engine.loadState(new ByteArrayInputStream(initialGameState));
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
 		synchronized (engine) {
 			engine.processTurn("look", null);
 		}

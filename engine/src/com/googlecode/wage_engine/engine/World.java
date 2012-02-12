@@ -61,9 +61,13 @@ public class World {
 		storageScene = storage;
 		orderedScenes.add(storageScene);
 		scenes.put(STORAGE, storageScene);
-		moveListeners = new LinkedList<MoveListener>();
+		reset();
 	}
 
+	public void reset() {
+		moveListeners = new LinkedList<MoveListener>();
+	}
+	
 	public Scene getStorageScene() {
 		return storageScene;
 	}
