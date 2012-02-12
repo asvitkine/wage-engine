@@ -4,10 +4,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class StateManager {
 	private World world;
@@ -26,8 +25,8 @@ public class StateManager {
 		this.state = state;
 	}
 
-	public void readSaveData(File file) throws IOException {
-		DataInputStream in = new DataInputStream(new FileInputStream(file));
+	public void readSaveData(InputStream stream) throws IOException {
+		DataInputStream in = new DataInputStream(stream);
 		
 		// Counters
 		state.setNumScenes(in.readShort());
@@ -131,8 +130,8 @@ public class StateManager {
 		in.close();
 	}
 
-	public void writeSaveData(File file) throws IOException {		
-		DataOutputStream out = new DataOutputStream(new FileOutputStream(file));
+	public void writeSaveData(OutputStream stream) throws IOException {		
+		DataOutputStream out = new DataOutputStream(stream);
 
 		// Counters
 		out.writeShort(state.getNumScenes());
