@@ -43,6 +43,7 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 					showCloseDialog(true);
 				} else {
 					setVisible(false);
+					dispose();
 				}
 			}	
 		});
@@ -169,8 +170,7 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 				if (isVisible()) {
 					GameOverDialog dialog = new GameOverDialog(new ActionListener() {
 						public void actionPerformed(ActionEvent event) {
-							setVisible(false);
-							dispose();
+							doClose();
 						}
 					}, world.getGameOverMessage());
 					showDialog(dialog);
