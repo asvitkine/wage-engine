@@ -7,12 +7,13 @@ public class MenuBarBuilder {
 	public interface Callbacks {
 		public void showAboutDialog();
 		public void showOpenDialog();
-		public void showSaveDialog();
+		public void showCloseDialog(final boolean quitOnClose);
 		public void doNew();
-		public void doSave();
-		public void doSaveAs();
+		public boolean doSave();
+		public boolean doSaveAs();
 		public void doRevert();
 		public void performCommand(String command);
+		public boolean isGameInProgress();
 	}
 
 	private World world;
@@ -63,7 +64,7 @@ public class MenuBarBuilder {
 			},
 			new MenuItem("Close") {
 				public void performAction() {
-					callbacks.showSaveDialog();
+					callbacks.showCloseDialog(false);
 				}
 			},
 			new MenuItem("Save") {
@@ -81,7 +82,11 @@ public class MenuBarBuilder {
 					callbacks.doRevert();
 				}
 			},
-			new MenuItem("Quit")
+			new MenuItem("Quit") {
+				public void performAction() {
+					callbacks.showCloseDialog(true);
+				}
+			}
 		};
 		return new Menu("File", items);
 	}
@@ -162,15 +167,18 @@ public class MenuBarBuilder {
 	private MenuItem[] generateWeaponsMenuItems() {
 		ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
 		Chr player = world.getPlayer();
+		boolean gameInProgress = callbacks.isGameInProgress();
 		for (Weapon obj : player.getWeapons(true)) {
 			if (obj.getType() == Obj.REGULAR_WEAPON ||
 				obj.getType() == Obj.THROW_WEAPON ||
 				obj.getType() == Obj.MAGICAL_OBJECT) {
-				menuItems.add(new MenuItem(obj.getOperativeVerb() + " " + obj.getName()) {
+				MenuItem item = new MenuItem(obj.getOperativeVerb() + " " + obj.getName()) {
 					public void performAction() {
 						callbacks.performCommand(getText());
 					}
-				});
+				};
+				item.setEnabled(gameInProgress);
+				menuItems.add(item);
 			}
 		}
 		if (menuItems.size() == 0) {

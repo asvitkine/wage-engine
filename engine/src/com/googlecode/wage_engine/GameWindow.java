@@ -7,8 +7,10 @@ import java.io.*;
 import javax.swing.*;
 
 import com.googlecode.wage_engine.engine.Engine;
+import com.googlecode.wage_engine.engine.Menu;
 import com.googlecode.wage_engine.engine.MenuBar;
 import com.googlecode.wage_engine.engine.MenuBarBuilder;
+import com.googlecode.wage_engine.engine.MenuItem;
 import com.googlecode.wage_engine.engine.Obj;
 import com.googlecode.wage_engine.engine.Scene;
 import com.googlecode.wage_engine.engine.SoundManager;
@@ -16,6 +18,7 @@ import com.googlecode.wage_engine.engine.World;
 
 public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuilder.Callbacks {
 	private World world;
+	private TexturePaint[] patterns;
 	private Engine engine;
 	private SceneViewer viewer;
 	private Console textArea;
@@ -25,39 +28,62 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 	private WindowManager wm;
 	private MenuBarBuilder menuBuilder;
 	private MenuBar menubar;
+	private boolean gameInProgress;
 
 	public GameWindow(World world, TexturePaint[] patterns) {
 		this.world = world;
+		this.patterns = patterns;
+		this.menuBuilder = new MenuBarBuilder(world, this);
 		SwingUtils.setupCloseWindowKeyStrokes(this, getRootPane());
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		this.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent arg0) {
-				showSaveDialog();
+				if (gameInProgress) {
+					showCloseDialog(true);
+				} else {
+					setVisible(false);
+				}
 			}	
 		});
+		doNew();
+		setSize(640, 480);
+		setLocationRelativeTo(null);
+		setVisible(true);
+	}
+
+	private void doClose() {
+		wm.removeAll();
+		wm.setMenuBar(menubar);
+		for (Menu menu : menubar) {
+			for (MenuItem item : menu) {
+				if (item != null &&
+					!"New".equals(item.getText()) &&
+					!"Quit".equals(item.getText()))
+				{
+					item.setEnabled(false);
+				}
+			}
+		}
+		gameInProgress = false;
+	}
+
+	public void doNew() {
+		gameInProgress = true;
 		soundManager = new SoundManager(world);
-		wm = new WindowManager();
 		viewer = new SceneViewer(patterns);
 		textArea = new ConsoleTextArea();
 		panel = wrapInPanel(wrapInScrollPane((JComponent)textArea));
 	//	textArea = new ConsoleView();
 	//	panel = (JComponent) textArea;
+		wm = new WindowManager();
 		wm.add(viewer);
 		wm.setComponentZOrder(viewer, 0);
 		wm.add(panel, true);
 		wm.setComponentZOrder(viewer, 1);
-		initializeGame();
-		setContentPane(wm);
-		setSize(640, 480);
-		setLocationRelativeTo(null);
-		setVisible(true);
-	}
-	
-	private void initializeGame() {
-		menuBuilder = new MenuBarBuilder(world, this);
 		menubar = menuBuilder.createMenuBar();
 		wm.setMenuBar(menubar);
+		setContentPane(wm);
 		engine = new Engine(world, textArea.getOut(), this);
 		synchronized (engine) {
 			engine.processTurn("look", null);
@@ -190,10 +216,6 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 		wm.revalidate();
 	}
 
-	public void doNew() {
-		JOptionPane.showMessageDialog(null, "Not implemented yet.");
-	}
-
 	public void showOpenDialog() {
 		FileDialog dialog = new FileDialog(new Frame(), "Load Game", FileDialog.LOAD);
 		dialog.setVisible(true);
@@ -210,15 +232,21 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 		 }
 	}
 
-	public void showSaveDialog() {
+	public void showCloseDialog(final boolean quitOnClose) {
 		SaveDialog dialog = new SaveDialog(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
 				if (SaveDialog.NO_TEXT.equals(event.getActionCommand())) {
-					setVisible(false);
+					doClose();
+					if (quitOnClose)
+						setVisible(false);
 				} else if (SaveDialog.YES_TEXT.equals(event.getActionCommand())) {
-					doSave();
-					// TODO: If they clicked cancel in the save dialog, don't close the window!
-					setVisible(false);					
+					if (doSave()) {
+						doClose();
+						if (quitOnClose)
+							setVisible(false);
+					} else {
+						closeSaveDialog();
+					}
 				} else if (SaveDialog.CANCEL_TEXT.equals(event.getActionCommand())) {
 					closeSaveDialog();
 				}
@@ -235,10 +263,9 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 		wm.revalidate();
 	}
 	
-	public void doSave() {
+	public boolean doSave() {
 		if (lastSaveFile == null) {
-			doSaveAs();
-			return;
+			return doSaveAs();
 		}
 
 		try {
@@ -247,13 +274,14 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 			// TODO Auto-generated catch block
 			ioe.printStackTrace();
 		}
+		return true;
 	}
 	
-	public void doSaveAs() {
+	public boolean doSaveAs() {
 		FileDialog dialog = new FileDialog(new Frame(), "Save Game", FileDialog.SAVE);
 		dialog.setVisible(true);
 		if (dialog.getFile() == null)
-			return;
+			return false;
 		File file = new File(dialog.getDirectory() + "/" + dialog.getFile());
 		try {
 			engine.saveState(file);
@@ -262,6 +290,7 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 			// TODO Auto-generated catch block
 			ioe.printStackTrace();
 		}
+		return true;
 	}
 	
 	public void doRevert() {
@@ -317,5 +346,9 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 		text.setLayout(new BorderLayout());
 		text.add(scrollPane, BorderLayout.CENTER);
 		return text;
+	}
+
+	public boolean isGameInProgress() {
+		return gameInProgress;
 	}
 }
