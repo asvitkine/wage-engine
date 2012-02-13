@@ -18,10 +18,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.swing.JComponent;
 import javax.swing.Timer;
 
-public class ConsoleView extends JComponent implements KeyListener, Console {
+public class ConsoleView extends WComponent implements KeyListener {
 	private List<String> lines;
 	private StringBuilder currentLine;
 	private PrintStream out;
@@ -132,7 +131,8 @@ public class ConsoleView extends JComponent implements KeyListener, Console {
 		}
 		return wrappedLines;
 	}
-	
+
+	@Override
 	public void scroll(int amount) {
 		FontMetrics m = getFontMetrics(getFont());
 		int lineHeight = m.getHeight();

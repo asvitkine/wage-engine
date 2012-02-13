@@ -21,8 +21,7 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 	private TexturePaint[] patterns;
 	private Engine engine;
 	private SceneViewer viewer;
-	private Console textArea;
-	private JComponent panel;
+	private ConsoleView console;
 	private SoundManager soundManager;
 	private File lastSaveFile;
 	private WindowManager wm;
@@ -84,20 +83,23 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 		gameInProgress = true;
 		world.reset();
 		soundManager = new SoundManager(world);
-		viewer = new SceneViewer(patterns);
-		textArea = new ConsoleTextArea();
-		panel = wrapInPanel(wrapInScrollPane((JComponent)textArea));
-	//	textArea = new ConsoleView();
-	//	panel = (JComponent) textArea;
+		viewer = new SceneViewer(patterns) {
+			public void handleMouseEvent(int type, int x, int y) {
+				if (type == MOUSE_CLICKED && isEnabled()) {
+					startThread(new ClickHandler(x, y));
+				}
+			}
+		};
+		console = new ConsoleView();
 		wm = new WindowManager();
 		wm.add(viewer);
 		wm.setComponentZOrder(viewer, 0);
-		wm.add(panel, true);
+		wm.add(console, true);
 		wm.setComponentZOrder(viewer, 1);
 		menubar = menuBuilder.createMenuBar();
 		wm.setMenuBar(menubar);
 		setContentPane(wm);
-		engine = new Engine(world, textArea.getOut(), this);
+		engine = new Engine(world, console.getOut(), this);
 		if (initialGameState == null) {
 			initialGameState = engine.getSaveStateAsByteArray();
 		} else try {
@@ -108,16 +110,7 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 		synchronized (engine) {
 			engine.processTurn("look", null);
 		}
-		viewer.addMouseListener(new ClickListener());
 		startThread(new UserInputReader());
-	}
-
-	private class ClickListener extends MouseAdapter {
-		public void mouseClicked(final MouseEvent e) {
-			if (!viewer.isEnabled())
-				return;
-			startThread(new ClickHandler(e.getX(), e.getY()));
-		}
 	}
 
 	private class ClickHandler implements Runnable {
@@ -139,7 +132,7 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 	
 	private class UserInputReader implements Runnable {
 		public void run() {
-			BufferedReader in = new BufferedReader(new InputStreamReader(textArea.getIn()));
+			BufferedReader in = new BufferedReader(new InputStreamReader(console.getIn()));
 			try {
 				String line = in.readLine();
 				while (line != null) {
@@ -166,12 +159,12 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 		if (currentScene != null) {
 			Runnable repainter = new Runnable() {
 				public void run() {
-					updateTextAreaForScene(textArea, panel, currentScene);
+					updateConsoleForScene(console, currentScene);
 					updateSceneViewerForScene(viewer, currentScene);
 					viewer.paintImmediately(viewer.getBounds());
 					getContentPane().validate();
 					getContentPane().repaint();
-					textArea.postUpdateUI();
+					console.postUpdateUI();
 					soundManager.updateSoundTimerForScene(currentScene, true);
 				}
 			};
@@ -180,7 +173,7 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 	}
 
 	public void clearOutput() {
-		textArea.clear();
+		console.clear();
 	}
 
 	public void gameOver() {
@@ -228,7 +221,7 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 		dialog.setLocation(w/2-dialog.getWidth()/2, h/2-dialog.getHeight()/2);
 		wm.addModalDialog(dialog);
 		// FIXME: below is to work around a bug with overlaps...
-		textArea.setVisible(false);
+		console.setVisible(false);
 		// FIXME: need to disable menus too!
 		wm.repaint();
 		wm.invalidate();
@@ -276,7 +269,7 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 	
 	private void closeSaveDialog() {
 		wm.remove(wm.getModalDialog());
-		textArea.setVisible(true);
+		console.setVisible(true);
 		wm.repaint();
 		wm.invalidate();
 		wm.revalidate();
@@ -329,42 +322,18 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 	}
 
 	public void performCommand(String command) {
-		textArea.getOut().append(command + "\n");
+		console.getOut().append(command + "\n");
 		doCommand(command);
 	}
 
-	private void updateTextAreaForScene(Console textArea, JComponent panel, Scene scene) {
-		textArea.setFont(new Font(scene.getFontName(), 0, scene.getFontSize()));
-		panel.setBounds(scene.getTextBounds());
+	private void updateConsoleForScene(ConsoleView console, Scene scene) {
+		console.setFont(new Font(scene.getFontName(), 0, scene.getFontSize()));
+		console.setBounds(scene.getTextBounds());
 	}
 
 	private void updateSceneViewerForScene(SceneViewer viewer, Scene scene) {
 		viewer.setScene(scene);
 		viewer.setBounds(scene.getDesignBounds());
-	}
-
-	private JScrollPane wrapInScrollPane(JComponent textArea) {
-		JScrollPane scrollPane = new JScrollPane(textArea);
-		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-		scrollPane.setBorder(null);
-		return scrollPane;
-	}
-
-	private JPanel wrapInPanel(JScrollPane scrollPane) {
-		JPanel text = new JPanel() {
-			public void paint(Graphics g) {
-				Graphics2D g2d = (Graphics2D) g;
-				g2d.setClip(2, 2, getWidth()-4, getHeight()-4);
-				super.paint(g);
-				g2d.setClip(null);
-				paintBorder(g);
-			}
-		};
-		text.setBackground(Color.WHITE);
-		text.setLayout(new BorderLayout());
-		text.add(scrollPane, BorderLayout.CENTER);
-		return text;
 	}
 
 	public boolean isGameInProgress() {
