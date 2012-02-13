@@ -181,6 +181,30 @@ public class ConsoleView extends WComponent implements KeyListener {
 			g.drawLine(x, y - lineHeight, x, y);
 		}
 	}
+	
+	private void updateScrollOffset() {
+		if (getFont() == null)
+			return;
+		// TODO: Don't duplicate this code so much...
+		// TODO: This is inefficient. We should wrap
+		//       text as it accumulates...
+		FontMetrics m = getFontMetrics(getFont());
+		int inset = WindowBorder.WIDTH;
+		int width = getWidth() - inset * 2;
+		int height = getHeight() - inset * 2;
+		int extraYInset = 10;
+		int extraXInset = 2;
+		int y = yOffset + extraYInset;
+		int lineHeight = m.getHeight();
+		List<String> wrappedLines = computeWrappedLinesForDrawing(width - 2 * extraXInset, lines);
+		y += lineHeight * wrappedLines.size();
+		wrappedLines = computeWrappedLinesForDrawing(width - 2 * extraXInset,
+			Collections.singletonList(currentLine.toString()));
+		y += lineHeight * wrappedLines.size();
+		y += extraXInset * 2;
+		if (y > height)
+			yOffset -= (y - height);
+	}
 
 	public void clear() {
 		lines = new ArrayList<String>();
@@ -210,6 +234,7 @@ public class ConsoleView extends WComponent implements KeyListener {
 				inPipe.write(line);
 				inPipe.flush();
 			}
+			updateScrollOffset();
 			repaint();
 		}
 	}
@@ -234,6 +259,7 @@ public class ConsoleView extends WComponent implements KeyListener {
 				String str = new String(buffer.toByteArray());
 				buffer = new ByteArrayOutputStream();
 				lines.add(str);
+				updateScrollOffset();
 				repaint();
 			}
 		}
