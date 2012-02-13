@@ -44,6 +44,10 @@ public class MenuBarRenderer extends WComponent {
 		pressedItem = -1;
 	}
 	
+	public boolean isOpen() {
+		return pressedMenu != -1;
+	}
+
 	private String getAcceleratorString(MenuItem item) {
 		char accelerator = item.getShortcut();
 		String text = null;

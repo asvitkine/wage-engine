@@ -1,33 +1,29 @@
 package com.googlecode.wage_engine;
 
-import java.awt.Container;
 import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.util.*;
 
 import javax.swing.JComponent;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.Timer;
-import javax.swing.event.MouseInputAdapter;
-import javax.swing.event.MouseInputListener;
 
 import com.googlecode.wage_engine.engine.MenuBar;
 
-public class WindowManager extends JComponent implements ComponentListener {
+public class WindowManager extends WComponent implements ComponentListener {
 	private JComponent modalDialog;
 	private MenuBarRenderer menubar;
+	private BorderActionsController borderActionsController;
 
 	public WindowManager() {
+		borderActionsController = new BorderActionsController();
 		setLayout(null);
 		addComponentListener(this);
+		MouseEventForwarder forwarder = new MouseEventForwarder();
+		addMouseListener(forwarder);
+		addMouseMotionListener(forwarder);
 	}
 
 	public void add(JComponent c) {
@@ -38,13 +34,6 @@ public class WindowManager extends JComponent implements ComponentListener {
 		WindowBorder border = new WindowBorder();
 		border.setScrollable(scrollable);
 		c.setBorder(border);
-		// TODO: use chain of events pattern...
-		MouseInputListener listener = new CloseBoxListener();
-		c.addMouseListener(listener);
-		c.addMouseMotionListener(listener);
-		listener = new WindowDragListener();
-		c.addMouseListener(listener);
-		c.addMouseMotionListener(listener);
 		super.add(c);
 		setComponentZOrder(c, lowestZOrderForWindow());
 	}
@@ -80,9 +69,8 @@ public class WindowManager extends JComponent implements ComponentListener {
 	public JComponent getModalDialog() {
 		return modalDialog;
 	}
-
-	@Override
-	public void paint(Graphics g) {
+	
+	private JComponent[] getSortedComponents() {
 		JComponent[] components = new JComponent[getComponentCount()];
 		for (int i = 0; i < getComponentCount(); i++)
 			components[i] = (JComponent) getComponent(i);
@@ -91,18 +79,49 @@ public class WindowManager extends JComponent implements ComponentListener {
 				return getComponentZOrder(c2) - getComponentZOrder(c1);
 			}
 		});
+		return components;
+	}
+
+	@Override
+	public void paint(Graphics g) {
+		JComponent[] components = getSortedComponents();
 		for (JComponent c : components) {
 			g.translate(c.getX(), c.getY());
 			c.paint(g);
 			g.translate(-c.getX(), -c.getY());
 		}
 	}
-	
-	private static void repaintShape(JComponent c, Shape s) {
-		Rectangle b = s.getBounds();
-		c.repaint(b.x, b.y, b.width, b.height);
+
+	private WComponent findWComponentAt(int x, int y) {
+		JComponent[] components = getSortedComponents();
+		for (int i = components.length - 1; i >= 0; i--) {
+			JComponent c = components[i];
+			if (c.contains(x, y)) {
+				return (WComponent) c;
+			}
+		}
+		return null;
 	}
 	
+	@Override
+	public void handleMouseEvent(int type, int x, int y) {
+		if (menubar != null && menubar.isOpen()) {
+			menubar.handleMouseEvent(type, x, y);
+			return;
+		}
+		WComponent c = findWComponentAt(x, y);
+		if (c != null) {
+			if (type == MOUSE_PRESSED) {
+				setComponentZOrder(c, lowestZOrderForWindow());
+			}
+			borderActionsController.setActiveComponent(c);
+		}
+		boolean handled = borderActionsController.handleMouseEvent(type, x, y);
+		if (!handled && c != null) {
+			c.handleMouseEvent(type, x - c.getX(), y - c.getY());
+		}
+	}
+
 	public void setMenuBar(MenuBar menubar) {
 		if (this.menubar != null)
 			remove(this.menubar);
@@ -124,144 +143,13 @@ public class WindowManager extends JComponent implements ComponentListener {
 			z++;
 		return z;
 	}
-	
-	private class WindowDragListener extends MouseInputAdapter {
-		private Point startPos = null; 
-		private Timer scrollTimer;
-
-		@Override
-		public void mousePressed(MouseEvent event) {
-			JComponent c = (JComponent) event.getComponent();
-			if (!c.isEnabled() || !(c.getBorder() instanceof WindowBorder))
-				return;
-			setComponentZOrder(c, lowestZOrderForWindow());
-			WindowBorder border = (WindowBorder) c.getBorder();
-			Shape[] borderShapes = border.getBorderShapes(c);
-			Shape shape = borderShapes[WindowBorder.BORDER_SHAPE];
-			Point p = event.getPoint();
-			if (shape != null && shape.contains(p)) {
-				if (border.isScrollable()) {
-					if (borderShapes[WindowBorder.SCROLL_UP].contains(p)) {
-						scroll(c, -1);
-					} else if (borderShapes[WindowBorder.SCROLL_DOWN].contains(p)) { 
-						scroll(c, 1);
-					}
-					return;
-				}
-				Shape closeBoxShape = borderShapes[WindowBorder.CLOSE_BOX];
-				if (closeBoxShape == null || !closeBoxShape.contains(p)) {
-					startPos = event.getPoint();
-				}
-			}
-		}
-
-		private void scroll(JComponent c, final int amount) {
-			if (c instanceof ConsoleView) {
-				((ConsoleView) c).scroll(amount);
-				return;
-			}
-			while (!(c instanceof JScrollPane)) {
-				c = (JComponent) c.getComponent(0);
-			}
-			final JScrollBar bar = ((JScrollPane) c).getVerticalScrollBar();
-			scrollTimer = new Timer(3, new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					bar.setValue(bar.getValue() + amount);
-				}
-			});
-			scrollTimer.start();
-		}
-
-		@Override
-		public void mouseDragged(MouseEvent event) {
-			if (startPos != null) { 
-				int dx = event.getX() - startPos.x;
-				int dy = event.getY() - startPos.y;
-				JComponent c = (JComponent) event.getComponent();
-				Rectangle bounds = c.getBounds();
-				bounds.translate(dx, dy); 
-				c.setBounds(bounds);
-				Container p = c.getParent();
-				p.repaint();
-				p.invalidate();
-				((JComponent)p).revalidate();
-			}
-		}
-
-		@Override
-		public void mouseReleased(MouseEvent event) { 
-			startPos = null;
-			if (scrollTimer != null) {
-				scrollTimer.stop();
-				scrollTimer = null;
-			}
-		}
-	}
-
-	private static class CloseBoxListener extends MouseInputAdapter {
-		private boolean clickedInCloseBox;
-
-		private void updateCloseBox(MouseEvent event) {
-			if (clickedInCloseBox) {
-				JComponent c = (JComponent) event.getComponent();
-				WindowBorder border = (WindowBorder) c.getBorder();
-				Shape closeBox = border.getBorderShapes(c)[WindowBorder.CLOSE_BOX];
-				boolean wasPressed = border.isCloseBoxPressed();
-				border.setCloseBoxPressed(closeBox.contains(event.getPoint()));
-				if (wasPressed != border.isCloseBoxPressed())
-					repaintShape(c, closeBox);
-			}			
-		}
-		
-		@Override
-		public void mouseMoved(MouseEvent event) {
-			updateCloseBox(event);
-		}
-		
-		@Override
-		public void mousePressed(MouseEvent event) {
-			JComponent c = (JComponent) event.getComponent();
-			if (!c.isEnabled())
-				return;
-			WindowBorder border = (WindowBorder) c.getBorder();
-			Shape closeBox = border.getBorderShapes(c)[WindowBorder.CLOSE_BOX];
-			if (closeBox != null && closeBox.contains(event.getPoint())) {
-				clickedInCloseBox = true;
-				updateCloseBox(event);
-			}
-		} 
-
-		@Override
-		public void mouseDragged(MouseEvent event) {
-			updateCloseBox(event);
-		} 
-
-		@Override
-		public void mouseReleased(MouseEvent event) {
-			updateCloseBox(event);
-			clickedInCloseBox = false;
-			JComponent c = (JComponent) event.getComponent();
-			WindowBorder border = (WindowBorder) c.getBorder();
-			if (border.isCloseBoxPressed()) {
-				Shape closeBox = border.getBorderShapes(c)[WindowBorder.CLOSE_BOX];
-				if (closeBox.contains(event.getPoint())) {
-					border.setCloseBoxPressed(false);
-					Container p = c.getParent();
-					p.remove(c);
-					repaintShape((JComponent) p, c.getBounds());
-				}	
-			}
-		} 
-	}
 
 	public void componentHidden(ComponentEvent arg0) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	public void componentMoved(ComponentEvent arg0) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	public void componentResized(ComponentEvent arg0) {
@@ -271,5 +159,29 @@ public class WindowManager extends JComponent implements ComponentListener {
 	}
 
 	public void componentShown(ComponentEvent arg0) {
+	}
+
+	private class MouseEventForwarder implements MouseListener, MouseMotionListener {		
+		public void mousePressed(MouseEvent event) {
+			handleMouseEvent(MOUSE_PRESSED, event.getX(), event.getY());
+		}
+		public void mouseReleased(MouseEvent event) {
+			handleMouseEvent(MOUSE_RELEASED, event.getX(), event.getY());
+		}
+		public void mouseClicked(MouseEvent event) {
+			handleMouseEvent(MOUSE_CLICKED, event.getX(), event.getY());
+		}
+		public void mouseMoved(MouseEvent event) {
+			handleMouseEvent(MOUSE_MOVED, event.getX(), event.getY());
+		}
+		public void mouseDragged(MouseEvent event) {
+			handleMouseEvent(MOUSE_DRAGGED, event.getX(), event.getY());
+		}
+		public void mouseEntered(MouseEvent event) {
+			handleMouseEvent(MOUSE_ENTERED, event.getX(), event.getY());
+		}
+		public void mouseExited(MouseEvent event) {
+			handleMouseEvent(MOUSE_EXITED, event.getX(), event.getY());
+		}
 	}
 }
