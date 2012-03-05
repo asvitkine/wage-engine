@@ -1,6 +1,5 @@
 package com.googlecode.wage_engine;
 
-import java.awt.Container;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
@@ -12,6 +11,16 @@ public class BorderActionsController {
 	private WindowBorder border;
 	private boolean clickedInCloseBox;
 	private Point dragStartPos;
+	private Callbacks callbacks;
+	
+	public static interface Callbacks {
+		public void repaint();
+		public void close(WComponent c);
+	}
+	
+	public BorderActionsController(Callbacks callbacks) {
+		this.callbacks = callbacks;
+	}
 
 	public void setActiveComponent(WComponent c) {
 		if (dragStartPos == null && !clickedInCloseBox) {
@@ -69,10 +78,7 @@ public class BorderActionsController {
 			Rectangle bounds = component.getBounds();
 			bounds.translate(dx, dy); 
 			component.setBounds(bounds);
-			Container p = component.getParent();
-			p.repaint();
-			p.invalidate();
-			((JComponent)p).revalidate();
+			callbacks.repaint();
 			return;
 		}
 
@@ -94,9 +100,7 @@ public class BorderActionsController {
 				clickedInCloseBox = false;
 				border.setCloseBoxPressed(false);
 				if (closeBox.contains(x, y)) {
-					Container p = component.getParent();
-					p.remove(component);
-					repaintShape((JComponent) p, component.getBounds());	
+					callbacks.close(component);
 				}
 			} else {
 				updateCloseBox(closeBox, x, y);

@@ -1,12 +1,12 @@
 package com.googlecode.wage_engine;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,7 +20,7 @@ import java.util.List;
 
 import javax.swing.Timer;
 
-public class ConsoleView extends WComponent implements KeyListener {
+public class ConsoleView extends WComponent {
 	private List<String> lines;
 	private StringBuilder currentLine;
 	private PrintStream out;
@@ -29,8 +29,10 @@ public class ConsoleView extends WComponent implements KeyListener {
 	private Timer cursorToggle;
 	private boolean drawCursor;
 	private int yOffset;
+	private boolean hadInput;
 
 	public ConsoleView() {
+		setFocusable(true);
 		clear();
 		out = new PrintStream(new ConsoleWriter());
 		
@@ -42,10 +44,6 @@ public class ConsoleView extends WComponent implements KeyListener {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
-		addKeyListener(this);
-		setFocusable(true);
-		
 		cursorToggle = new Timer(500, new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				drawCursor = !drawCursor;
@@ -183,12 +181,13 @@ public class ConsoleView extends WComponent implements KeyListener {
 	}
 	
 	private void updateScrollOffset() {
-		if (getFont() == null)
+		Font font = getFont();
+		if (font == null)
 			return;
 		// TODO: Don't duplicate this code so much...
 		// TODO: This is inefficient. We should wrap
 		//       text as it accumulates...
-		FontMetrics m = getFontMetrics(getFont());
+		FontMetrics m = getFontMetrics(font);
 		int inset = WindowBorder.WIDTH;
 		int width = getWidth() - inset * 2;
 		int height = getHeight() - inset * 2;
@@ -198,9 +197,14 @@ public class ConsoleView extends WComponent implements KeyListener {
 		int lineHeight = m.getHeight();
 		List<String> wrappedLines = computeWrappedLinesForDrawing(width - 2 * extraXInset, lines);
 		y += lineHeight * wrappedLines.size();
-		wrappedLines = computeWrappedLinesForDrawing(width - 2 * extraXInset,
-			Collections.singletonList(currentLine.toString()));
-		y += lineHeight * wrappedLines.size();
+		// FIXME: Below logic is probably wrong. This is to make the initial console of The Phoenix
+		//        have the right scroll positions. I think it might depend on whether the scene
+		//        description ends with a newline.
+		if (hadInput || currentLine.length() > 0) {
+			wrappedLines = computeWrappedLinesForDrawing(width - 2 * extraXInset,
+				Collections.singletonList(currentLine.toString()));
+			y += lineHeight * wrappedLines.size();
+		}
 		y += extraXInset * 2;
 		if (y > height)
 			yOffset -= (y - height);
@@ -211,21 +215,19 @@ public class ConsoleView extends WComponent implements KeyListener {
 		currentLine = new StringBuilder();
 		yOffset = 0;
 	}
+	
+	@Override
+	public void handleKeyEvent(int type, char c) {
+		if (type != KEY_TYPED)
+			return;
 
-	public void keyPressed(KeyEvent arg0) {
-	}
-
-	public void keyReleased(KeyEvent arg0) {
-	}
-
-	public void keyTyped(KeyEvent event) {
-		char c = event.getKeyChar();
 		if (c == KeyEvent.VK_BACK_SPACE) {
 			if (currentLine.length() > 0) {
 				currentLine = new StringBuilder(currentLine.substring(0, currentLine.length() - 1));
 				repaint();
 			}
 		} else if (getFont().canDisplay(c)) {
+			hadInput = true;
 			currentLine.append(c);
 			if (c == '\n') {
 				String line = currentLine.toString();

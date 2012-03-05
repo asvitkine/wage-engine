@@ -92,13 +92,11 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 		};
 		console = new ConsoleView();
 		wm = new WindowManager();
-		wm.add(viewer);
-		wm.setComponentZOrder(viewer, 0);
 		wm.add(console, true);
-		wm.setComponentZOrder(viewer, 1);
+		wm.add(viewer, false);
 		menubar = menuBuilder.createMenuBar();
 		wm.setMenuBar(menubar);
-		setContentPane(wm);
+		setContentPane(new WindowManagerHost(wm));
 		engine = new Engine(world, console.getOut(), this);
 		if (initialGameState == null) {
 			initialGameState = engine.getSaveStateAsByteArray();
@@ -107,6 +105,7 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
+		updateConsoleForScene(console, world.getPlayerScene());
 		synchronized (engine) {
 			engine.processTurn("look", null);
 		}
@@ -327,8 +326,8 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 	}
 
 	private void updateConsoleForScene(ConsoleView console, Scene scene) {
-		console.setFont(new Font(scene.getFontName(), 0, scene.getFontSize()));
 		console.setBounds(scene.getTextBounds());
+		console.setFont(new Font(scene.getFontName(), 0, scene.getFontSize()));
 	}
 
 	private void updateSceneViewerForScene(SceneViewer viewer, Scene scene) {

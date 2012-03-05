@@ -12,8 +12,25 @@ public class WComponent extends JComponent {
 	public static final int MOUSE_DRAGGED = 4;
 	public static final int MOUSE_ENTERED = 5;
 	public static final int MOUSE_EXITED = 6;
+	
+	public static final int KEY_PRESSED = 0;
+	public static final int KEY_RELEASED = 1;
+	public static final int KEY_TYPED = 2;
 
+	protected WComponent parent;	
+	
 	public WComponent() {
+	}
+
+	public void setParent(WComponent p) {
+		this.parent = p;
+	}
+	
+	public void repaint() {
+		if (parent != null)
+			parent.repaint();
+		else
+			super.repaint();
 	}
 
 	public boolean contains(Point p) {
@@ -25,6 +42,10 @@ public class WComponent extends JComponent {
 	}
 
 	public void handleMouseEvent(int type, int x, int y) {	
+	}
+	
+	public void handleKeyEvent(int type, char keyChar) {
+		
 	}
 
 	public void scroll(int amount) {		
