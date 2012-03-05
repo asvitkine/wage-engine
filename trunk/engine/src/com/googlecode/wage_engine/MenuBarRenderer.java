@@ -114,10 +114,11 @@ public class MenuBarRenderer extends WComponent {
 
 	@Override
 	public void paint(Graphics g) {
+		int width = (parent != null ? parent.getWidth() : getWidth());
 		g.setColor(Color.WHITE);
-		g.fillRect(0, 0, getWidth(), HEIGHT);
+		g.fillRect(0, 0, width, HEIGHT);
 		g.setColor(Color.BLACK);
-		g.fillRect(0, HEIGHT, getWidth(), 1);
+		g.fillRect(0, HEIGHT, width, 1);
 		Font f = getFont();
 		g.setFont(f);
 		// TODO: generalize this... have each 'menu' have bounds and a styled string...
@@ -153,8 +154,8 @@ public class MenuBarRenderer extends WComponent {
 						drawText(g2, item.getText(), f, item.getStyle(), offsets[i] + PADDING, y);
 						String acceleratorText = getAcceleratorString(item);
 						if (acceleratorText != null) {
-							int width = m.stringWidth(acceleratorText);
-							int x = bounds.x + bounds.width - width - PADDING;
+							int textWidth = m.stringWidth(acceleratorText);
+							int x = bounds.x + bounds.width - textWidth - PADDING;
 							drawText(g2, acceleratorText, f, item.getStyle(), x, y);						
 						}
 					} else {

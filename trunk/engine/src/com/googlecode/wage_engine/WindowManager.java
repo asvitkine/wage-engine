@@ -1,91 +1,88 @@
 package com.googlecode.wage_engine;
 
 import java.awt.Graphics;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.util.*;
-
-import javax.swing.JComponent;
 
 import com.googlecode.wage_engine.engine.MenuBar;
 
-public class WindowManager extends WComponent implements ComponentListener {
-	private JComponent modalDialog;
+public class WindowManager extends WComponent {
+	private WComponent modalDialog;
 	private MenuBarRenderer menubar;
 	private BorderActionsController borderActionsController;
+	private ArrayList<WComponent> components;
 
 	public WindowManager() {
-		borderActionsController = new BorderActionsController();
-		setLayout(null);
-		addComponentListener(this);
-		MouseEventForwarder forwarder = new MouseEventForwarder();
-		addMouseListener(forwarder);
-		addMouseMotionListener(forwarder);
+		borderActionsController = new BorderActionsController(new BorderActionsController.Callbacks() {
+			public void repaint() {
+				WindowManager.this.repaint();
+				invalidate();
+				revalidate();				
+			}
+
+			public void close(WComponent c) {
+				remove(c);
+				WindowManager.this.repaint(c.getBounds());
+			}
+		});
+		components = new ArrayList<WComponent>();
 	}
 
-	public void add(JComponent c) {
+	public void add(WComponent c) {
 		add(c, false);
 	}
 	
-	public void add(JComponent c, boolean scrollable) {
+	public void add(WComponent c, boolean scrollable) {
 		WindowBorder border = new WindowBorder();
 		border.setScrollable(scrollable);
 		c.setBorder(border);
-		super.add(c);
-		setComponentZOrder(c, lowestZOrderForWindow());
+		c.setParent(this);
+		components.add(c);
+		repaint();
 	}
 	
-	public void remove(JComponent comp) {
-		super.remove(comp);
+	public void remove(WComponent comp) {
+		components.remove(comp);
+		comp.setParent(null);
 		if (comp == modalDialog) {
-			for (int i = 0; i < getComponentCount(); i++)
-				getComponent(i).setEnabled(true);
+			for (int i = 0; i < components.size(); i++)
+				components.get(i).setEnabled(true);
 			modalDialog = null;
 		}
 		if (comp == menubar) {
 			menubar = null;
 		}
+		repaint();
 	}
 	
 	public void removeAll() {
-		super.removeAll();
+		for (WComponent c : components)
+			c.setParent(null);
+		components.clear();
 		modalDialog = null;
 		menubar = null;
+		repaint();
 	}
 
-	public void addModalDialog(JComponent dialog) {
+	public void addModalDialog(WComponent dialog) {
 		if (modalDialog != null)
 			throw new IllegalArgumentException();
-		for (int i = 0; i < getComponentCount(); i++)
-			getComponent(i).setEnabled(false);
-		super.add(dialog);
-		setComponentZOrder(dialog, 0);
+		for (int i = 0; i < components.size(); i++)
+			components.get(i).setEnabled(false);
+		dialog.setParent(this);
+		components.add(0, dialog);
 		modalDialog = dialog;
+		modalDialog.setFont(getFont());
+		repaint();
 	}
-	
-	public JComponent getModalDialog() {
+
+	public WComponent getModalDialog() {
 		return modalDialog;
-	}
-	
-	private JComponent[] getSortedComponents() {
-		JComponent[] components = new JComponent[getComponentCount()];
-		for (int i = 0; i < getComponentCount(); i++)
-			components[i] = (JComponent) getComponent(i);
-		Arrays.sort(components, new Comparator<JComponent>() {
-			public int compare(JComponent c1, JComponent c2) {
-				return getComponentZOrder(c2) - getComponentZOrder(c1);
-			}
-		});
-		return components;
 	}
 
 	@Override
 	public void paint(Graphics g) {
-		JComponent[] components = getSortedComponents();
-		for (JComponent c : components) {
+		for (int i = components.size() - 1; i >= 0; i--) {
+			WComponent c = components.get(i);
 			g.translate(c.getX(), c.getY());
 			c.paint(g);
 			g.translate(-c.getX(), -c.getY());
@@ -93,33 +90,13 @@ public class WindowManager extends WComponent implements ComponentListener {
 	}
 
 	private WComponent findWComponentAt(int x, int y) {
-		JComponent[] components = getSortedComponents();
-		for (int i = components.length - 1; i >= 0; i--) {
-			JComponent c = components[i];
+		for (int i = 0; i < components.size(); i++) {
+			WComponent c = components.get(i);
 			if (c.contains(x, y)) {
-				return (WComponent) c;
+				return c;
 			}
 		}
 		return null;
-	}
-	
-	@Override
-	public void handleMouseEvent(int type, int x, int y) {
-		if (menubar != null && menubar.isOpen()) {
-			menubar.handleMouseEvent(type, x, y);
-			return;
-		}
-		WComponent c = findWComponentAt(x, y);
-		if (c != null) {
-			if (type == MOUSE_PRESSED) {
-				setComponentZOrder(c, lowestZOrderForWindow());
-			}
-			borderActionsController.setActiveComponent(c);
-		}
-		boolean handled = borderActionsController.handleMouseEvent(type, x, y);
-		if (!handled && c != null) {
-			c.handleMouseEvent(type, x - c.getX(), y - c.getY());
-		}
 	}
 
 	public void setMenuBar(MenuBar menubar) {
@@ -130,9 +107,9 @@ public class WindowManager extends WComponent implements ComponentListener {
 			return;
 		}
 		this.menubar = new MenuBarRenderer(menubar);
-		super.add(this.menubar);
 		this.menubar.setBounds(getBounds());
-		setComponentZOrder(this.menubar, lowestZOrderForWindow() - 1);
+		this.menubar.setParent(this);
+		components.add(lowestZOrderForWindow() - 1, this.menubar);
 	}
 
 	private int lowestZOrderForWindow() {
@@ -144,44 +121,37 @@ public class WindowManager extends WComponent implements ComponentListener {
 		return z;
 	}
 
-	public void componentHidden(ComponentEvent arg0) {
-		// TODO Auto-generated method stub
-	}
-
-	public void componentMoved(ComponentEvent arg0) {
-		// TODO Auto-generated method stub
-	}
-
-	public void componentResized(ComponentEvent arg0) {
-		if (menubar != null) {
-			menubar.setBounds(getBounds());
+	@Override
+	public void handleMouseEvent(int type, int x, int y) {
+		if (menubar != null && menubar.isOpen()) {
+			menubar.handleMouseEvent(type, x, y);
+			return;
+		}
+		WComponent c = findWComponentAt(x, y);
+		if (c != null) {
+			if (type == MOUSE_PRESSED) {
+				if (c != modalDialog && c != menubar) {
+					components.remove(c);
+					components.add(lowestZOrderForWindow(), c);
+				}
+				repaint(c.getBounds());
+			}
+			borderActionsController.setActiveComponent(c);
+		}
+		boolean handled = borderActionsController.handleMouseEvent(type, x, y);
+		if (!handled && c != null) {
+			c.handleMouseEvent(type, x - c.getX(), y - c.getY());
 		}
 	}
 
-	public void componentShown(ComponentEvent arg0) {
-	}
-
-	private class MouseEventForwarder implements MouseListener, MouseMotionListener {		
-		public void mousePressed(MouseEvent event) {
-			handleMouseEvent(MOUSE_PRESSED, event.getX(), event.getY());
-		}
-		public void mouseReleased(MouseEvent event) {
-			handleMouseEvent(MOUSE_RELEASED, event.getX(), event.getY());
-		}
-		public void mouseClicked(MouseEvent event) {
-			handleMouseEvent(MOUSE_CLICKED, event.getX(), event.getY());
-		}
-		public void mouseMoved(MouseEvent event) {
-			handleMouseEvent(MOUSE_MOVED, event.getX(), event.getY());
-		}
-		public void mouseDragged(MouseEvent event) {
-			handleMouseEvent(MOUSE_DRAGGED, event.getX(), event.getY());
-		}
-		public void mouseEntered(MouseEvent event) {
-			handleMouseEvent(MOUSE_ENTERED, event.getX(), event.getY());
-		}
-		public void mouseExited(MouseEvent event) {
-			handleMouseEvent(MOUSE_EXITED, event.getX(), event.getY());
+	@Override
+	public void handleKeyEvent(int type, char keyChar) {
+		for (int i = lowestZOrderForWindow(); i < components.size(); i++) {
+			WComponent c = components.get(i);
+			if (c.isFocusable()) {
+				c.handleKeyEvent(type, keyChar);
+				break;
+			}
 		}
 	}
 }

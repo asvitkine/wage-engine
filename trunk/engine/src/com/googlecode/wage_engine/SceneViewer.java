@@ -1,6 +1,7 @@
 package com.googlecode.wage_engine;
 
 import java.awt.*;
+import java.util.List;
 
 import javax.swing.border.Border;
 
@@ -15,6 +16,7 @@ public class SceneViewer extends WComponent {
 	public SceneViewer(TexturePaint[] patterns) {
 		this.patterns = patterns;
 		setOpaque(false);
+		setFocusable(false);
 	}
 	
 	public Scene getScene() {
@@ -54,14 +56,16 @@ public class SceneViewer extends WComponent {
 	}
 
 	public Object getClickTarget(int x, int y) {
-		for (int i = scene.getState().getObjs().size() - 1; i >= 0; i--) {
-			Obj o = scene.getState().getObjs().get(i);
+		List<Obj> objs = scene.getState().getObjs();
+		for (int i = objs.size() - 1; i >= 0; i--) {
+			Obj o = objs.get(i);
 			if (o.getDesign().isPointOpaque(x, y)) {
 				return o;
 			}
 		}
-		for (int i = scene.getState().getChrs().size() - 1; i >= 0; i--) {
-			Chr c = scene.getState().getChrs().get(i);
+		List<Chr> chrs = scene.getState().getChrs();
+		for (int i = chrs.size() - 1; i >= 0; i--) {
+			Chr c = chrs.get(i);
 			if (c.getDesign().isPointOpaque(x, y)) {
 				return c;
 			}

@@ -63,6 +63,10 @@ public abstract class Dialog extends WComponent {
 
 	@Override
 	public void paint(Graphics g) {
+		Font font = getFont();
+		if (font == null)
+			return;
+		FontMetrics metrics = g.getFontMetrics(font);
 		Graphics2D g2d = (Graphics2D) g;
 		g2d.setColor(Color.WHITE);
 		Rectangle bounds = new Rectangle(0, 0, getWidth(), getHeight());
@@ -81,7 +85,7 @@ public abstract class Dialog extends WComponent {
 					button.bounds.width - 10, button.bounds.height - 10);
 				g2d.setColor(Color.WHITE);
 			}
-			int w = g.getFontMetrics(getFont()).stringWidth(button.text);
+			int w = metrics.stringWidth(button.text);
 			int x = button.bounds.x + (button.bounds.width - w) / 2;
 			int y = button.bounds.y + 19;
 			g2d.drawString(button.text, x, y);
