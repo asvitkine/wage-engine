@@ -19,7 +19,7 @@ It is suspected that over 100 games have been made using World Builder. Here is 
 || <a href="http://macintoshgarden.org/games/zikturia">!ZikTuria</a> || 1987 || Partial ||
 || <a href="http://www.macintoshgarden.org/games/the-village">The Village</a> || 1987 || Unknown ||
 || <a href="http://macintoshgarden.org/games/dungeonworld-ii">Dungeon World II</a> || 1987 || Unknown ||
-|| The Hotel Caper || 1987 || Unknown ||
+|| <a href="http://macintoshgarden.org/games/hotel-caper-or-the-rescue-of-daring-drake">The Hotel Caper</a> || 1987 || Unknown ||
 || Sands of Time || 1987 || Unknown ||
 || Edg's World || 1987 || Unknown ||
 || <a href="http://macintoshgarden.org/games/periapt">Periapt</a> || 1987 || Unknown ||
