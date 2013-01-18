@@ -25,6 +25,7 @@ It is suspected that over 100 games have been made using World Builder. Here is 
 || <a href="http://macintoshgarden.org/games/periapt">Periapt</a> || 1987 || Unknown ||
 || <a href="http://macintoshgarden.org/games/the-village">The Village</a> || 1987 || Unknown ||
 || <a href="http://macintoshgarden.org/games/swamp-witch">Swamp Witch</a> || 1988 || Unknown ||
+|| <a href="http://macintoshgarden.org/games/eidisi">Eidisi I</a> || 1987 || Unknown ||
 || Everyman || 1988 || 80% ||
 || Volcano || 1988 || Unknown ||
 || Ashland Revolution Demo  || 1988 || 95% ||
@@ -38,8 +39,7 @@ It is suspected that over 100 games have been made using World Builder. Here is 
 || <a href="http://macintoshgarden.org/games/pyramid-of-ert">Pyramid of Ert</a> || 1990 || Unknown ||
 || <a href="http://macintoshgarden.org/games/space-adventure">Space Adventure</a> || 1990 || Unknown ||
 || <a href="http://macintoshgarden.org/games/dynasty-of-dar">Dynasty of Dar</a>  || 1990 || Unknown ||
-|| Eidisi I || 1990 || Unknown ||
-|| Mac Spud  || 1990 || Unknown ||
+|| <a href="http://macintoshgarden.org/games/mac-spudd">Mac Spudd!</a>  || 1990 || Unknown ||
 || The Wizard's Adventure || 1990 || Unknown ||
 || <a href="http://macintoshgarden.org/games/drakmyth-castle">Drakmyth Castle</a> || 1991 || Unknown ||
 || <a href="http://macintoshgarden.org/games/pyramid-of-no-return">Pyramid of No Return</a> || 1992 || Unknown ||
