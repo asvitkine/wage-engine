@@ -633,7 +633,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 					weapon.getName());
 				decrementUses(armor);
 			} else {
-				appendText("A hit to the %s.", TARGETS[targetIndex]);
+				appendText("A hit to the %s!", TARGETS[targetIndex]);
 			}
 			playSound(attacker.getScoresHitSound());
 			appendText(attacker.getScoresHitComment());
