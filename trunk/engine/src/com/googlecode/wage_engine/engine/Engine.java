@@ -286,11 +286,13 @@ public class Engine implements Script.Callbacks, MoveListener {
 		commandWasQuick = true;
 	}
 
-	public void appendText(String text) {
+	public boolean appendText(String text) {
 		if (text != null && text.length() > 0) {
 			out.append(text);
 			out.append("\n");
+			return true;
 		}
+		return false;
 	}
 
 	public Chr getMonster() {
@@ -619,6 +621,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 	}
 	
 	private boolean attackHit(Chr attacker, Chr victim, Weapon weapon, int targetIndex) {
+		boolean receivedHitTextPrinted = false;
 		if (targetIndex != -1) {
 			Obj armor = victim.getState().getArmor(targetIndex);
 			if (armor != null) {
@@ -635,7 +638,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 			playSound(attacker.getScoresHitSound());
 			appendText(attacker.getScoresHitComment());
 			playSound(victim.getReceivesHitSound());
-			appendText(victim.getReceivesHitComment());
+			receivedHitTextPrinted = appendText(victim.getReceivesHitComment());
 		} else if (weapon.getType() == Obj.MAGICAL_OBJECT) {
 			appendText(((Obj) weapon).getUseMessage());
 			appendText("The spell is effective!");
@@ -683,7 +686,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 					appendText(Script.getGroundItemsList(currentScene));
 				}
 				world.move(victim, world.getStorageScene());
-			} else if (attacker.isPlayerCharacter()) {
+			} else if (attacker.isPlayerCharacter() && receivedHitTextPrinted) {
 				double physicalPercent = (double) victim.getState().getCurrentPhysicalHp() / victim.getState().getBasePhysicalHp();
 				appendText("%s's condition appears to be %s.",
 					getNameWithDefiniteArticle(victim, true),
