@@ -125,6 +125,9 @@ public class ConsoleView extends WComponent {
 					}
 					prevLinePart = linePart;
 				}
+				if (prevLinePart != null) {
+					wrappedLines.add(prevLinePart);
+				}
 			}
 		}
 		return wrappedLines;
