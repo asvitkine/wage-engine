@@ -686,7 +686,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 					appendText(Script.getGroundItemsList(currentScene));
 				}
 				world.move(victim, world.getStorageScene());
-			} else if (attacker.isPlayerCharacter() && receivedHitTextPrinted) {
+			} else if (attacker.isPlayerCharacter() && !receivedHitTextPrinted) {
 				double physicalPercent = (double) victim.getState().getCurrentPhysicalHp() / victim.getState().getBasePhysicalHp();
 				appendText("%s's condition appears to be %s.",
 					getNameWithDefiniteArticle(victim, true),
