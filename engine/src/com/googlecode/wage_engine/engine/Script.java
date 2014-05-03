@@ -203,94 +203,98 @@ public class Script {
 	// returns Boolean so that NPE can be detected (on invalid op)
 	private Boolean eval(Operand lhs, String op, Operand rhs) {
 		Boolean result = null;
-		if (op.equals("=")) {
+		if ((lhs.type == Operand.CLICK_INPUT || rhs.type == Operand.CLICK_INPUT) &&
+			(op.equals("=") || op.equals(">") || op.equals("<"))) {
 			if (lhs.type == Operand.CLICK_INPUT) {
 				result = evalClickEquality(lhs, rhs, true);
-			} else if (rhs.type == Operand.CLICK_INPUT) {
-				result = evalClickEquality(rhs, lhs, true);
 			} else {
-				List<PairEvaluator> handlers = new ArrayList<PairEvaluator>();
-				handlers.add(new PairEvaluator(Operand.NUMBER, Operand.NUMBER) {
-					@Override
-					public void evaluatePair(Operand o1, Operand o2) {
-						short left = ((Number) o1.value).shortValue();
-						short right = ((Number) o2.value).shortValue();
-						evalResult = (left == right);
-					}
-				});
-				handlers.add(new PairEvaluator(Operand.OBJ, Operand.SCENE) {
-					@Override
-					public void evaluatePair(Operand o1, Operand o2) {
-						evalResult = ((Scene) o2.value).getState().getObjs().contains((Obj) o1.value);
-					}
-				});
-				handlers.add(new PairEvaluator(Operand.CHR, Operand.SCENE) {
-					@Override
-					public void evaluatePair(Operand o1, Operand o2) {
-						evalResult = ((Scene) o2.value).getState().getChrs().contains((Chr) o1.value);
-					}
-				});
-				handlers.add(new PairEvaluator(Operand.OBJ, Operand.CHR) {
-					@Override
-					public void evaluatePair(Operand o1, Operand o2) {
-						evalResult = ((Chr) o2.value).getState().getInventory().contains((Obj) o1.value);
-					}
-				});
-				handlers.add(new PairEvaluator(Operand.CHR, Operand.CHR) {
-					@Override
-					public void evaluatePair(Operand o1, Operand o2) {
-						evalResult = (o1.value == o2.value);
-					}
-				});
-				handlers.add(new PairEvaluator(Operand.SCENE, Operand.SCENE) {
-					@Override
-					public void evaluatePair(Operand o1, Operand o2) {
-						evalResult = (o1.value == o2.value);
-					}
-				});
-				handlers.add(new PairEvaluator(Operand.STRING, Operand.TEXT_INPUT) {
-					@Override
-					public void evaluatePair(Operand o1, Operand o2) {
-						if (inputText != null) {
-							evalResult = inputText.toLowerCase().contains(((String) o1.value).toLowerCase());
-						} else {
-							evalResult = false;
-						}
-					}
-				});
-				handlers.add(new PairEvaluator(Operand.TEXT_INPUT, Operand.STRING) {
-					@Override
-					public void evaluatePair(Operand o1, Operand o2) {
-						if (inputText != null) {
-							evalResult = inputText.toLowerCase().contains(((String) o2.value).toLowerCase());
-						} else {
-							evalResult = false;
-						}
-					}
-				});
-				handlers.add(new PairEvaluator(Operand.NUMBER, Operand.TEXT_INPUT) {
-					@Override
-					public void evaluatePair(Operand o1, Operand o2) {
-						if (inputText != null) {
-							evalResult = inputText.contains(o1.value.toString());
-						} else {
-							evalResult = false;
-						}
-					}
-				});
-				handlers.add(new PairEvaluator(Operand.TEXT_INPUT, Operand.NUMBER) {
-					@Override
-					public void evaluatePair(Operand o1, Operand o2) {
-						if (inputText != null) {
-							evalResult = inputText.contains(o2.value.toString());
-						} else {
-							evalResult = false;
-						}
-					}
-				});
-				evaluatePair(handlers, lhs, rhs);
-				result = (Boolean) evalResult;
+				result = evalClickEquality(rhs, lhs, true);
 			}
+			if (!op.equals("=")) {
+				result = !result;
+			}
+		} else if (op.equals("=")) {
+			List<PairEvaluator> handlers = new ArrayList<PairEvaluator>();
+			handlers.add(new PairEvaluator(Operand.NUMBER, Operand.NUMBER) {
+				@Override
+				public void evaluatePair(Operand o1, Operand o2) {
+					short left = ((Number) o1.value).shortValue();
+					short right = ((Number) o2.value).shortValue();
+					evalResult = (left == right);
+				}
+			});
+			handlers.add(new PairEvaluator(Operand.OBJ, Operand.SCENE) {
+				@Override
+				public void evaluatePair(Operand o1, Operand o2) {
+					evalResult = ((Scene) o2.value).getState().getObjs().contains((Obj) o1.value);
+				}
+			});
+			handlers.add(new PairEvaluator(Operand.CHR, Operand.SCENE) {
+				@Override
+				public void evaluatePair(Operand o1, Operand o2) {
+					evalResult = ((Scene) o2.value).getState().getChrs().contains((Chr) o1.value);
+				}
+			});
+			handlers.add(new PairEvaluator(Operand.OBJ, Operand.CHR) {
+				@Override
+				public void evaluatePair(Operand o1, Operand o2) {
+					evalResult = ((Chr) o2.value).getState().getInventory().contains((Obj) o1.value);
+				}
+				});
+			handlers.add(new PairEvaluator(Operand.CHR, Operand.CHR) {
+				@Override
+				public void evaluatePair(Operand o1, Operand o2) {
+					evalResult = (o1.value == o2.value);
+				}
+			});
+			handlers.add(new PairEvaluator(Operand.SCENE, Operand.SCENE) {
+				@Override
+				public void evaluatePair(Operand o1, Operand o2) {
+					evalResult = (o1.value == o2.value);
+				}
+			});
+			handlers.add(new PairEvaluator(Operand.STRING, Operand.TEXT_INPUT) {
+				@Override
+				public void evaluatePair(Operand o1, Operand o2) {
+					if (inputText != null) {
+						evalResult = inputText.toLowerCase().contains(((String) o1.value).toLowerCase());
+					} else {
+						evalResult = false;
+					}
+				}
+			});
+			handlers.add(new PairEvaluator(Operand.TEXT_INPUT, Operand.STRING) {
+				@Override
+				public void evaluatePair(Operand o1, Operand o2) {
+					if (inputText != null) {
+						evalResult = inputText.toLowerCase().contains(((String) o2.value).toLowerCase());
+					} else {
+						evalResult = false;
+					}
+				}
+			});
+			handlers.add(new PairEvaluator(Operand.NUMBER, Operand.TEXT_INPUT) {
+				@Override
+				public void evaluatePair(Operand o1, Operand o2) {
+					if (inputText != null) {
+						evalResult = inputText.contains(o1.value.toString());
+					} else {
+						evalResult = false;
+					}
+				}
+			});
+			handlers.add(new PairEvaluator(Operand.TEXT_INPUT, Operand.NUMBER) {
+				@Override
+				public void evaluatePair(Operand o1, Operand o2) {
+					if (inputText != null) {
+						evalResult = inputText.contains(o2.value.toString());
+					} else {
+						evalResult = false;
+					}
+				}
+			});
+			evaluatePair(handlers, lhs, rhs);
+			result = (Boolean) evalResult;
 		} else if (op.equals("<")) {
 			// less than
 			// does not equal
@@ -456,9 +460,8 @@ public class Script {
 			}
 		}
 		if (result == null) {
-			System.err.printf("OMG UNHANDLED CASE FIXME (op is %s, lhs.type is %d, rhs.type is %d)\n", op, lhs.type, rhs.type);
-			System.err.println("LHS IS " + lhs.value);
-			System.err.println("RHS IS " + rhs.value);
+			System.err.printf("UNHANDLED CASE: [lhs=%d, rhs=%d]\n", lhs.type, rhs.type);
+			System.err.println("-> " + getCurrentLine());
 			result = false;
 		}
 		return result;
@@ -1380,6 +1383,12 @@ public class Script {
 				sb.append(String.format("%3d: ", lineno++));
 		} 
 		return sb.toString();
+	}
+	
+	private String getCurrentLine() {
+		String[] lines = toString().split("\n");
+		int lineNumber = indexToLine(index);	
+		return lines[lineNumber];
 	}
 	
 	private int indexToLine(int index) {
