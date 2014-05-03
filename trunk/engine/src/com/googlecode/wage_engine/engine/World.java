@@ -277,12 +277,13 @@ public class World {
 		return owner;
 	}
 
-	public void move(Obj obj, Chr chr) {
+	public synchronized void move(Obj obj, Chr chr) {
 		if (obj == null)
 			return;
 		Object from = removeFromChr(obj);
-		if (obj.getState().getCurrentScene() != null) {
-			obj.getState().getCurrentScene().getState().getObjs().remove(obj);
+		Scene currentScene = obj.getState().getCurrentScene();
+		if (currentScene != null) {
+			currentScene.getState().getObjs().remove(obj);
 			from = obj.getState().getCurrentScene();
 		}
 		obj.getState().setCurrentOwner(chr);
@@ -295,7 +296,7 @@ public class World {
 		fireMoveEvent(new MoveEvent(obj, from, chr));
 	}
 
-	public void move(Obj obj, Scene scene) {
+	public synchronized void move(Obj obj, Scene scene) {
 		if (obj == null)
 			return;
 		Object from = removeFromChr(obj);
@@ -318,7 +319,7 @@ public class World {
 		fireMoveEvent(new MoveEvent(obj, from, scene));
 	}
 
-	public void move(Chr chr, Scene scene) {
+	public synchronized void move(Chr chr, Scene scene) {
 		if (chr == null)
 			return;
 		Scene from = chr.getState().getCurrentScene();

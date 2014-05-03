@@ -12,9 +12,11 @@ import com.googlecode.wage_engine.engine.Scene;
 public class SceneViewer extends WComponent {
 	private TexturePaint[] patterns;
 	private Scene scene;
+	private Object lock;
 
-	public SceneViewer(TexturePaint[] patterns) {
+	public SceneViewer(TexturePaint[] patterns, Object lock) {
 		this.patterns = patterns;
+		this.lock = lock;
 		setOpaque(false);
 		setFocusable(false);
 	}
@@ -44,11 +46,13 @@ public class SceneViewer extends WComponent {
 			g2d.setColor(Color.WHITE);
 			g2d.fillRect(2, 2, getWidth()-4, getHeight()-4);
 			scene.getDesign().paint(g2d, patterns);
-			for (Obj o : scene.getState().getObjs())
-				o.getDesign().paint(g2d, patterns);
-			for (Chr c : scene.getState().getChrs())
-				if (!c.isPlayerCharacter())
-					c.getDesign().paint(g2d, patterns);
+			synchronized (lock) {
+				for (Obj o : scene.getState().getObjs())
+					o.getDesign().paint(g2d, patterns);
+				for (Chr c : scene.getState().getChrs())
+					if (!c.isPlayerCharacter())
+						c.getDesign().paint(g2d, patterns);
+			}
 			g2d.translate(-2, -2);
 			g2d.setClip(null);
 		}
