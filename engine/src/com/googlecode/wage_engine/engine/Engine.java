@@ -74,6 +74,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 				} else {
 					Chr chr = world.getChrs().get(location);
 					if (chr == null) {
+						// Note: PLAYER@ is not a valid target here.
 						System.err.printf("Couldn't move %s to %s\n", obj.getName(), obj.getSceneOrOwner());
 					} else {
 						// TODO: Add check for max items.
