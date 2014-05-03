@@ -2,6 +2,7 @@ package com.googlecode.wage_engine.engine;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
 
 public class Script {
 	private byte[] data;
@@ -781,13 +782,45 @@ public class Script {
 		handled = true;
 	}
 	
+	private String preprocessInputText(String inputText) {
+		if (inputText == null)
+			return null;
+
+		// "take " and "pick up " are mapped to "get " before script
+		// execution, so scripts see them as "get ", but only if there's
+		// a trailing space
+		String inputLowerCase = inputText.toLowerCase();
+		for (String prefix : new String[] { "take ", "pick up "}) {
+			if (inputLowerCase.startsWith(prefix)) {
+				return "get " + inputLowerCase.substring(prefix.length());
+			}
+		}
+		String prefix = "put on ";
+		if (inputLowerCase.startsWith(prefix)) {
+			return "wear " + inputLowerCase.substring(prefix.length());
+		}
+
+		// exact aliases:
+		if (inputLowerCase.length() == 1) {
+			for (String direction : new String[] { "north", "east", "south", "west"}) {
+				if (inputLowerCase.charAt(0) == direction.charAt(0)) {
+					return direction;
+				}
+			}
+		}
+		if (inputLowerCase.equals("wait")) {
+			return "rest";
+		}
+		return inputLowerCase;
+	}
+	
 	public boolean execute(World world, int loopCount,
 			String inputText, Object inputClick,
 			Callbacks callbacks)
 	{
 		this.world = world;
 		this.loopCount = loopCount;
-		this.inputText = inputText;
+		this.inputText = inputText = preprocessInputText(inputText);
 		this.inputClick = inputClick;
 		this.callbacks = callbacks;
 		this.handled = false;
@@ -844,34 +877,29 @@ public class Script {
 			return true;
 		}
 		if (world.getGlobalScript() != this) {
-			System.out.println("Executing global script...");
+			System.err.println("Executing global script...");
 			boolean globalHandled = world.getGlobalScript().execute(world, loopCount, inputText, inputClick, callbacks);
 			if (globalHandled)
 				setHandled();
 		} else if (inputText != null) {
+			System.err.println("Trying inputText" + inputText);
 			String input = inputText.toLowerCase();
-			if (input.equals("n") || input.contains("north")) {
+			if (input.contains("north")) {
 				handleMoveCommand(Scene.NORTH, "north");
-			} else if (input.equals("e") || input.contains("east")) {
+			} else if (input.contains("east")) {
 				handleMoveCommand(Scene.EAST, "east");
-			} else if (input.equals("s") || input.contains("south")) {
+			} else if (input.contains("south")) {
 				handleMoveCommand(Scene.SOUTH, "south");
-			} else if (input.equals("w") || input.contains("west")) {
+			} else if (input.contains("west")) {
 				handleMoveCommand(Scene.WEST, "west");
-			} else if (input.startsWith("take ")) {
-				handleTakeCommand(input.substring(5));
 			} else if (input.startsWith("get ")) {
 				handleTakeCommand(input.substring(4));
-			} else if (input.startsWith("pick up ")) {
-				handleTakeCommand(input.substring(8));
 			} else if (input.startsWith("drop ")) {
 				handleDropCommand(input.substring(5));
 			} else if (input.startsWith("aim ")) {
 				handleAimCommand(input.substring(4));
 			} else if (input.startsWith("wear ")) {
 				handleWearCommand(input.substring(5));
-			} else if (input.startsWith("put on ")) {
-				handleWearCommand(input.substring(7));
 			} else if (input.startsWith("offer ")) {
 				handleOfferCommand(input.substring(6));
 			} else if (input.contains("look")) {
@@ -880,7 +908,7 @@ public class Script {
 				handleInventoryCommand();
 			} else if (input.contains("status")) {
 				handleStatusCommand();
-			} else if (input.contains("rest") || input.equals("wait")) {
+			} else if (input.contains("rest")) {
 				handleRestCommand();
 			} else if (callbacks.getOffer() != null && input.contains("accept")) {
 				handleAcceptCommand();
