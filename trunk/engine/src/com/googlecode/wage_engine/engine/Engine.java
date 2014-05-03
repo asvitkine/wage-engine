@@ -319,11 +319,18 @@ public class Engine implements Script.Callbacks, MoveListener {
 				if (loopCount == 1) {
 					sound.play();
 				} else {
-					new Thread(new Runnable() {
+					Thread t = new Thread(new Runnable() {
 						public void run() {
 							sound.play();
 						}
-					}).start();
+					});
+					t.start();
+					try {
+						t.join();
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 		}
