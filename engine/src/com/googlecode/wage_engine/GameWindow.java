@@ -84,7 +84,7 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 		gameInProgress = true;
 		world.reset();
 		soundManager = new SoundManager(world);
-		viewer = new SceneViewer(patterns) {
+		viewer = new SceneViewer(patterns, world) {
 			public void handleMouseEvent(int type, int x, int y) {
 				if (type == MOUSE_CLICKED && isEnabled()) {
 					startThread(new ClickHandler(x, y));
