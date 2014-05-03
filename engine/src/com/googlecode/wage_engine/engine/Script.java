@@ -851,6 +851,7 @@ public class Script {
 					Operand op = readOperand();
 					// TODO check op type is string.
 					setHandled();
+					System.err.println("SOUND: " + getCurrentLine());
 					callbacks.playSound(op.value.toString());
 					// TODO check data[index] == 0xFD
 					index++;
@@ -867,22 +868,20 @@ public class Script {
 				} else if (data[index] == (byte) 0x88) { // END
 					index++;
 				} else {
-					System.out.println(buildStringFromOffset(index));
+					System.err.println(getCurrentLine());
 					System.exit(-1);
 				}
 			}
 		} catch (Exception e) {
+			System.err.println(getCurrentLine());
 			e.printStackTrace();
-			System.out.println(buildStringFromOffset(index));
 			return true;
 		}
 		if (world.getGlobalScript() != this) {
-			System.err.println("Executing global script...");
 			boolean globalHandled = world.getGlobalScript().execute(world, loopCount, inputText, inputClick, callbacks);
 			if (globalHandled)
 				setHandled();
 		} else if (inputText != null) {
-			System.err.println("Trying inputText" + inputText);
 			String input = inputText.toLowerCase();
 			if (input.contains("north")) {
 				handleMoveCommand(Scene.NORTH, "north");
@@ -1079,7 +1078,7 @@ public class Script {
 
 	private void handleStatusCommand() {
 		Chr player = world.getPlayer();
-		appendText("Character name: " + player.getName());
+		appendText("Character name: " + Engine.getNameWithDefiniteArticle(player, false));
 		appendText("Experience: " + player.getContext().getExperience());
 		int wealth = 0;
 		for (Obj o : player.getState().getInventory())

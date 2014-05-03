@@ -60,6 +60,7 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 			for (MenuItem item : menu) {
 				if (item != null &&
 					!"New".equals(item.getText()) &&
+					!"Open...".equals(item.getText()) &&
 					!"Quit".equals(item.getText()))
 				{
 					item.setEnabled(false);
@@ -153,9 +154,12 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 		menubar.setMenu(3, menuBuilder.createMenuFromString(world.getCommandsMenuName(), format));
 	}
 
+	private Scene lastScene = null;
 	public void redrawScene() {
 		final Scene currentScene = world.getPlayerScene();
 		if (currentScene != null) {
+			final boolean firstTime = (lastScene != currentScene);
+			lastScene = currentScene;
 			Runnable repainter = new Runnable() {
 				public void run() {
 					updateConsoleForScene(console, currentScene);
@@ -164,7 +168,7 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 					getContentPane().validate();
 					getContentPane().repaint();
 					console.postUpdateUI();
-					soundManager.updateSoundTimerForScene(currentScene, true);
+					soundManager.updateSoundTimerForScene(currentScene, firstTime);
 				}
 			};
 			SwingUtils.runOnEventDispatchThread(repainter);
