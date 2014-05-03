@@ -200,19 +200,34 @@ public class Script {
 		return result;
 	}
 
+	private Boolean evalClickCondition(Operand lhs, String op, Operand rhs) {
+		// TODO: check if >> can be used for click inputs
+		String[] validOps = new String[] { "=", "==", "<", ">"};
+		if (java.util.Arrays.asList(validOps).indexOf(op) == -1)
+			return null;
+		boolean partialMatch = !op.equals("==");
+		Boolean result;
+		if (lhs.type == Operand.CLICK_INPUT) {
+			result = evalClickEquality(lhs, rhs, partialMatch);
+		} else {
+			result = evalClickEquality(rhs, lhs, partialMatch);
+		}
+		if (op.equals("<") || op.equals(">")) {
+			// CLICK$<FOO only matches if there was a click
+			if (inputClick == null) {
+				result = false;
+			} else {
+				result = !result;
+			}
+		}
+		return result;
+	}
+	
 	// returns Boolean so that NPE can be detected (on invalid op)
 	private Boolean eval(Operand lhs, String op, Operand rhs) {
 		Boolean result = null;
-		if ((lhs.type == Operand.CLICK_INPUT || rhs.type == Operand.CLICK_INPUT) &&
-			(op.equals("=") || op.equals(">") || op.equals("<"))) {
-			if (lhs.type == Operand.CLICK_INPUT) {
-				result = evalClickEquality(lhs, rhs, true);
-			} else {
-				result = evalClickEquality(rhs, lhs, true);
-			}
-			if (!op.equals("=")) {
-				result = !result;
-			}
+		if (lhs.type == Operand.CLICK_INPUT || rhs.type == Operand.CLICK_INPUT) {
+			result = evalClickCondition(lhs, op, rhs);
 		} else if (op.equals("=")) {
 			List<PairEvaluator> handlers = new ArrayList<PairEvaluator>();
 			handlers.add(new PairEvaluator(Operand.NUMBER, Operand.NUMBER) {
@@ -435,28 +450,22 @@ public class Script {
 			result = (Boolean) evalResult;
 		} else if (op.equals("==") || op.equals(">>")) {
 			// TODO: check if >> can be used for click inputs and if == can be used for other things
-			if (op.equals("==") && lhs.type == Operand.CLICK_INPUT) {
-				result = evalClickEquality(lhs, rhs, false);
-			} else if (op.equals("==") && rhs.type == Operand.CLICK_INPUT) {
-				result = evalClickEquality(rhs, lhs, false);
-			} else {
-				// exact string match
-				if (lhs.type == Operand.TEXT_INPUT) {
-					if ((rhs.type != Operand.STRING && rhs.type != Operand.NUMBER) || inputText == null) {
-						result = false;
-					} else {
-						result = inputText.toLowerCase().equals((rhs.value.toString()).toLowerCase());
-					}
-				} else if (rhs.type == Operand.TEXT_INPUT) {
-					if ((lhs.type != Operand.STRING && lhs.type != Operand.NUMBER) || inputText == null) {
-						result = false;
-					} else {
-						result = lhs.value.toString().toLowerCase().equals(inputText.toLowerCase());
-					}
+			// exact string match
+			if (lhs.type == Operand.TEXT_INPUT) {
+				if ((rhs.type != Operand.STRING && rhs.type != Operand.NUMBER) || inputText == null) {
+					result = false;
+				} else {
+					result = inputText.toLowerCase().equals((rhs.value.toString()).toLowerCase());
 				}
-				if (op.equals(">>")) {
-					result = !result;
+			} else if (rhs.type == Operand.TEXT_INPUT) {
+				if ((lhs.type != Operand.STRING && lhs.type != Operand.NUMBER) || inputText == null) {
+					result = false;
+				} else {
+					result = lhs.value.toString().toLowerCase().equals(inputText.toLowerCase());
 				}
+			}
+			if (op.equals(">>")) {
+				result = !result;
 			}
 		}
 		if (result == null) {
