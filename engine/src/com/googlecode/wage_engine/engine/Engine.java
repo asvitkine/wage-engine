@@ -66,7 +66,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 		for (Chr chr : world.getOrderedChrs())
 			world.move(chr, world.getStorageScene());
 		for (Obj obj : world.getOrderedObjs()) {
-			if (!obj.getSceneOrOwner().equals(World.STORAGE)) {
+			if (!obj.getSceneOrOwner().equalsIgnoreCase(World.STORAGE)) {
 				String location = obj.getSceneOrOwner().toLowerCase();
 				Scene scene = getSceneByName(location);
 				if (scene != null) {
@@ -74,8 +74,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 				} else {
 					Chr chr = world.getChrs().get(location);
 					if (chr == null) {
-						System.out.println(obj.getName());
-						System.out.println(obj.getSceneOrOwner());
+						System.err.printf("Couldn't move %s to %s\n", obj.getName(), obj.getSceneOrOwner());
 					} else {
 						// TODO: Add check for max items.
 						world.move(obj, chr);

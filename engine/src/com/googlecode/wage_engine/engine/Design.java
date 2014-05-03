@@ -240,8 +240,6 @@ public class Design {
 	}
 	
 	private void drawBitmap(Canvas g2d, DataInputStream in, boolean mask) throws IOException {
-		// http://developer.apple.com/technotes/tn/tn1023.html
-		//System.out.print("Not the bits!\n");
 		int numBytes = in.readShort();
 		int y1 = in.readShort();
 		int x1 = in.readShort();
@@ -250,9 +248,6 @@ public class Design {
 		int w = x2-x1;
 		int h = y2-y1;
 		int bpr = (w+7)/8;
-	//	System.out.printf("Size=%d\n", numBytes);
-	//	System.out.printf("Dims=%d,%d\n",w,h);
-	//	System.out.printf("BPR=%d\n",bpr);
 		in.mark(Integer.MAX_VALUE);
 		byte[] bits = PackBits.unpack(in, bpr*h);
 		Color[][] canvas = new Color[w][h];

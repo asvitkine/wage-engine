@@ -245,7 +245,7 @@ public class StateManager {
 		
 		// set current scene
 		state.setCurSceneHexOffset(state.getHexOffsetForScene(curScene));
-		System.out.println("Current Scene Offset == " + Integer.toHexString(state.getCurSceneHexOffset()));
+		//System.out.println("Current Scene Offset == " + Integer.toHexString(state.getCurSceneHexOffset()));
 		
 		// set visit#
 		state.setVisitNum(playerContext.getVisits());
