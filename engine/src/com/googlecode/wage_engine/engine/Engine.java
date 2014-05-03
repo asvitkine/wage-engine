@@ -85,7 +85,7 @@ public class Engine implements Script.Callbacks, MoveListener {
 		}
 		boolean playerPlaced = false;
 		for (Chr chr : world.getOrderedChrs()) {
-			if (!chr.getInitialScene().equals(World.STORAGE)) {
+			if (!chr.getInitialScene().equalsIgnoreCase(World.STORAGE)) {
 				Scene scene = getSceneByName(chr.getInitialScene().toLowerCase());
 				if (scene != null) {
 					world.move(chr, scene);
