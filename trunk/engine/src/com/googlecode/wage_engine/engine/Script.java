@@ -40,7 +40,6 @@ public class Script {
 
 	private Operand readOperand() {
 		Operand result = null;
-		System.out.printf("=> %x\n", data[index]);
 		if (data[index] == (byte) 0xA0) { // TEXT$
 			result = new Operand(inputText, Operand.TEXT_INPUT);
 		} else if (data[index] == (byte) 0xA1) {
@@ -122,7 +121,7 @@ public class Script {
 			result = readStringOperand();
 			index--;
 		} else {
-			System.out.printf("Dunno what %x is (index=%d)!\n", data[index], index);
+			System.err.println("Unknown operand " + getCurrentLine());
 		}
 		index++;
 		return result;
@@ -139,11 +138,11 @@ public class Script {
 			sb.append(c);
 		}
 		if (allDigits && sb.length() > 0) {
-			System.out.println("Read number " + sb.toString());
+			// System.out.println("Read number " + sb.toString());
 			result = new Operand(new Integer(sb.toString()), Operand.NUMBER);
 		} else {
 			// TODO: This string could be a room name or something like that.
-			System.out.println("Read string " + sb.toString());
+			// System.out.println("Read string " + sb.toString());
 			result = new Operand(sb.toString(), Operand.STRING);
 		}
 		return result;
@@ -170,7 +169,7 @@ public class Script {
 		} else if (data[index] == (byte) 0x94) {
 			op = ">>";
 		} else {
-			System.out.printf("OP is %x\n", data[index]);
+			System.err.printf("UNKNOWN OP %x\n", data[index]);
 		}
 		index++;
 		return op;
@@ -498,7 +497,7 @@ public class Script {
 				nesting--;
 				if (nesting == 0) {
 					index++;
-					System.out.println("Skipped lines " + indexToLine(fromIndex) + " to " + indexToLine(index));
+					//System.out.println("Skipped lines " + indexToLine(fromIndex) + " to " + indexToLine(index));
 					return;
 				}
 			} else switch (data[index]) {
@@ -531,7 +530,7 @@ public class Script {
 		int then = index;
 		while (data[then] != (byte) 0xFE)
 			then++;
-		System.out.println("I love conditionals! " + buildStringFromOffset(index - 1, then - index) + "}");
+		//System.out.println("I love conditionals! " + buildStringFromOffset(index - 1, then - index) + "}");
 		int logicalOp = 0; // 0 => initial, 1 => and, 2 => or 
 		boolean result = true;
 		boolean done = false;
@@ -539,8 +538,8 @@ public class Script {
 			Operand lhs = readOperand();
 			String op = readOperator();
 			Operand rhs = readOperand();
-			System.out.print("eval lhs => " + lhs.value);
-			System.out.println(" rhs => " + rhs.value + " op => " + op);
+			//System.out.print("eval lhs => " + lhs.value);
+			//System.out.println(" rhs => " + rhs.value + " op => " + op);
 			boolean condResult = eval(lhs, op, rhs);
 			if (logicalOp == 1) {
 				result = (result && condResult);
@@ -556,11 +555,11 @@ public class Script {
 			} else if (data[index] == (byte) 0xFE) {
 				done = true; // then
 			}
-			if (!done)
-				System.out.printf("not done => %x\n", data[index]);
+			//if (!done)
+			//	System.out.println("not done => " + getCurrentLine());
 			index++;
 		} while (!done);
-		System.out.println("Result = " + result);
+		//System.out.println("Result = " + result);
 		if (result == false) {
 			skipBlock();
 		}
@@ -640,7 +639,7 @@ public class Script {
 				break;
 			lastOp = readOperator();
 		} while (true);
-		System.out.println("processLet " + buildStringFromOffset(oldIndex - 1, index - oldIndex + 1) + "}");
+		//System.out.println("processLet " + buildStringFromOffset(oldIndex - 1, index - oldIndex + 1) + "}");
 		assign(oldIndex, result);
 		index++;
 	}
@@ -699,7 +698,7 @@ public class Script {
 	private void evaluatePair(List<PairEvaluator> handlers, Operand o1, Operand o2) {
 		evalResult = null;
 		// First, try for exact matches.
-		System.out.println("Trying exact matches on " + o1.type + " " + o2.type);
+		//System.out.println("Trying exact matches on " + o1.type + " " + o2.type);
 		for (PairEvaluator e : handlers) {
 			if (e.lhsType == o1.type && e.rhsType == o2.type) {
 				e.evaluatePair(o1, o2);
@@ -707,7 +706,7 @@ public class Script {
 			}
 		}
 		// Now, try partial matches.
-		System.out.println("Trying partial matches on " + o1.type + " " + o2.type);
+		// System.out.println("Trying partial matches on " + o1.type + " " + o2.type);
 		for (PairEvaluator e : handlers) {
 			Operand converted;
 			if (e.lhsType == o1.type && (converted = convertOperand(o2, e.rhsType)) != null) {
@@ -719,7 +718,7 @@ public class Script {
 			}
 		}
 		// Now, try double conversion.
-		System.out.println("Trying double conversion on " + o1.type + " " + o2.type);
+		//System.out.println("Trying double conversion on " + o1.type + " " + o2.type);
 		for (PairEvaluator e : handlers) {
 			Operand c1, c2;
 			if ((c1 = convertOperand(o1, e.lhsType)) != null &&
@@ -831,7 +830,7 @@ public class Script {
 					index++;
 					processIf();
 				} else if (data[index] == (byte) 0x87) { // EXIT
-					System.err.println("exit at line " + indexToLine(index));
+					//System.err.println("exit at line " + indexToLine(index));
 					return true;
 				} else if (data[index] == (byte) 0x89) { // MOVE
 					index++;
@@ -1147,7 +1146,6 @@ public class Script {
 			appendText("Your pack is full, you must drop something.");
 		} else {
 			world.move(obj, world.getPlayer());
-			System.out.println("Take Object: " + obj + " for player: " + world.getPlayer());
 			int type = Engine.wearObjIfPossible(player, obj);
 			if (type == Chr.HEAD_ARMOR) {
 				appendText("You are now wearing the " + obj.getName() + ".");
@@ -1398,7 +1396,7 @@ public class Script {
 					sb.append((char) data[i++]);
 				i--;
 			} else {
-				System.out.printf("What is!! %x\n", data[i]);
+				System.err.printf("What is!! %x\n", data[i]);
 				//System.exit(-1);
 			}
 		}
