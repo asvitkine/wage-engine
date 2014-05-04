@@ -50,7 +50,7 @@ It is suspected that over 100 games have been made using World Builder. Here is 
 || <a href="http://www.semitech.com/marc/ray.html">Another Fine Mess</a> || 1997 || Unknown ||
 || <a href="http://www.semitech.com/marc/ray.html">A Mess O’ Trouble</a> || 1997 || Unknown ||
 || <a href="http://www.lucysworlds.com/games/LucysDownloads.html">The Tower</a> || 1997 || Unknown ||
-|| <a href="http://www.lucysworlds.com/games/LucysDownloads.html">Sultan's Palace</a> || 1997 || Unknown ||
+|| <a href="http://www.lucysworlds.com/games/LucysDownloads.html">Sultan's Palace</a> || 1997 || 95%  ||
 || <a href="http://www.lucysworlds.com/games/LucysDownloads.html">Canal District</a> || 1997 || Unknown ||
 || <a href="http://www.lucysworlds.com/games/LucysDownloads.html">Double Trouble</a> || 1997 || Unknown ||
 || The Axe-orcist || 1998 || Unknown ||
