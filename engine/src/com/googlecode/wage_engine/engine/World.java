@@ -277,53 +277,62 @@ public class World {
 		return owner;
 	}
 
-	public synchronized void move(Obj obj, Chr chr) {
-		if (obj == null)
-			return;
+	private Object removeFromCharOrScene(Obj obj) {
 		Object from = removeFromChr(obj);
 		Scene currentScene = obj.getState().getCurrentScene();
 		if (currentScene != null) {
 			currentScene.getState().getObjs().remove(obj);
 			from = obj.getState().getCurrentScene();
 		}
-		obj.getState().setCurrentOwner(chr);
-		chr.getState().getInventory().add(obj);
-		Collections.sort(chr.getState().getInventory(), new Comparator<Obj>() {
-			public int compare(Obj o1, Obj o2) {
-				return o1.getIndex() - o2.getIndex();
-			}
-		});
+		return from;
+	}
+	
+	public void move(Obj obj, Chr chr) {
+		if (obj == null)
+			return;
+		Object from;
+		synchronized (this) {
+			from = removeFromCharOrScene(obj);
+			obj.getState().setCurrentOwner(chr);
+			chr.getState().getInventory().add(obj);
+			Collections.sort(chr.getState().getInventory(), new Comparator<Obj>() {
+				public int compare(Obj o1, Obj o2) {
+					return o1.getIndex() - o2.getIndex();
+				}
+			});
+		}
 		fireMoveEvent(new MoveEvent(obj, from, chr));
 	}
 
-	public synchronized void move(Obj obj, Scene scene) {
+	public void move(Obj obj, Scene scene) {
 		if (obj == null)
 			return;
-		Object from = removeFromChr(obj);
-		if (obj.getState().getCurrentScene() != null) {
-			obj.getState().getCurrentScene().getState().getObjs().remove(obj);
-			from = obj.getState().getCurrentScene();
-		}
-		obj.getState().setCurrentScene(scene);
-		scene.getState().getObjs().add(obj);
-		Collections.sort(scene.getState().getObjs(), new Comparator<Obj>() {
-			public int compare(Obj o1, Obj o2) {
-				boolean o1Immobile = (o1.getType() == Obj.IMMOBILE_OBJECT);
-				boolean o2Immobile = (o2.getType() == Obj.IMMOBILE_OBJECT);
-				if (o1Immobile == o2Immobile) {
-					return o1.getIndex() - o2.getIndex();					
+		Object from;
+		synchronized (this) {
+			from = removeFromCharOrScene(obj);
+			obj.getState().setCurrentScene(scene);
+			scene.getState().getObjs().add(obj);
+			Collections.sort(scene.getState().getObjs(), new Comparator<Obj>() {
+				public int compare(Obj o1, Obj o2) {
+					boolean o1Immobile = (o1.getType() == Obj.IMMOBILE_OBJECT);
+					boolean o2Immobile = (o2.getType() == Obj.IMMOBILE_OBJECT);
+					if (o1Immobile == o2Immobile) {
+						return o1.getIndex() - o2.getIndex();					
+					}
+					return (o1Immobile ? -1 : 1);
 				}
-				return (o1Immobile ? -1 : 1);
-			}
-		});
+			});
+		}
 		fireMoveEvent(new MoveEvent(obj, from, scene));
 	}
 
-	public synchronized void move(Chr chr, Scene scene) {
+	public void move(Chr chr, Scene scene) {
 		if (chr == null)
 			return;
 		Scene from = chr.getState().getCurrentScene();
-		if (from != scene) {
+		if (from == scene)
+			return;
+		synchronized (this) {
 			if (from != null)
 				from.getState().getChrs().remove(chr);
 			scene.getState().getChrs().add(chr);
@@ -336,8 +345,8 @@ public class World {
 				context.setVisits(context.getVisits() + 1);
 			}
 			chr.getState().setCurrentScene(scene);
-			fireMoveEvent(new MoveEvent(chr, from, scene));
 		}
+		fireMoveEvent(new MoveEvent(chr, from, scene));
 	}
 
 	private void sortChrs(List<Chr> chrs) {
