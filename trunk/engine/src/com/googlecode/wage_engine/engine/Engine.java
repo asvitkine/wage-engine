@@ -684,7 +684,8 @@ public class Engine implements Script.Callbacks, MoveListener {
 				appendText("%s is dead!", getNameWithDefiniteArticle(victim, true));
 				Context attackerContext = attacker.getContext();
 				attackerContext.setKills(attackerContext.getKills() + 1);
-				attackerContext.setExperience(attackerContext.getExperience() + 1 + victim.getPhysicalHp());
+				int exp = victim.getSpiritualHp() + victim.getPhysicalHp();
+				attackerContext.setExperience(attackerContext.getExperience() + exp);
 
 				List<Obj> inventory = victim.getState().getInventory();
 				if (!victim.isPlayerCharacter() && !inventory.isEmpty()) {
