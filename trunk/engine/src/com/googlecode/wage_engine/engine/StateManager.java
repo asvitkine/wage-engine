@@ -412,6 +412,7 @@ public class StateManager {
 
 			} else {
 				System.err.println("This saved game is for a different world, please select another one.");
+				System.err.printf("World signature = %x, save signature = %x.\n", world.getSignature(), state.getWorldSig());
 				return false;
 			}
 		} else {
@@ -579,6 +580,9 @@ public class StateManager {
 					}
 
 					scene.setState(readSceneState(in, scene));
+				} else {
+					scene.getState().getObjs().clear();
+					scene.getState().getChrs().clear();
 				}
 			}
 		} catch (IOException e) {
@@ -635,11 +639,14 @@ public class StateManager {
 		short sceneLoc = in.readShort();
 		short charOwner = in.readShort();
 
-		// TODO: Verify that things get properly removed without using world.move()
 		if (charOwner != 0) {
 			state.setCurrentOwner(world.getCharByID(charOwner));
+			if (state.getCurrentOwner() == null)
+				throw new IOException("No char with id " + charOwner);
 		} else {
 			state.setCurrentScene(world.getSceneByID(sceneLoc));			
+			if (state.getCurrentScene() == null)
+				throw new IOException("No scene with id " + sceneLoc);
 		}
 
 		// bytes 7-9 are unknown (always = 0)
