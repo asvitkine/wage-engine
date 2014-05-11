@@ -7,13 +7,13 @@ import com.googlecode.wage_engine.engine.Design;
 
 public class ObjectViewer extends JPanel {
 	private static final long serialVersionUID = 1L;
+	private DesignRenderer renderer;
 	private Design design;
-	private TexturePaint[] patterns;
 	private boolean maskMode;
 
-	public ObjectViewer(Design design, TexturePaint[] patterns) {
+	public ObjectViewer(DesignRenderer renderer, Design design) {
+		this.renderer = renderer;
 		this.design = design;
-		this.patterns = patterns;
 	}
 
 	public void setMaskMode(boolean m) {
@@ -30,9 +30,9 @@ public class ObjectViewer extends JPanel {
 			g2d.setClip(2, 2, getWidth()-4, getHeight()-4);
 			g2d.translate(2, 2);
 			if (maskMode) {
-				design.paintMask(g2d);
+				renderer.paintDesignMask(design, g2d);
 			} else {
-				design.paint(g2d, patterns);
+				renderer.paintDesign(design, g2d);
 			}
 			g2d.translate(-2, -2);
 			g2d.setClip(null);

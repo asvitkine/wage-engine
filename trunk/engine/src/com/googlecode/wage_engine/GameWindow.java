@@ -18,7 +18,7 @@ import com.googlecode.wage_engine.engine.World;
 
 public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuilder.Callbacks {
 	private World world;
-	private TexturePaint[] patterns;
+	private DesignRenderer renderer;
 	private Engine engine;
 	private SceneViewer viewer;
 	private ConsoleView console;
@@ -30,9 +30,9 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 	private boolean gameInProgress;
 	private byte[] initialGameState;
 
-	public GameWindow(World world, TexturePaint[] patterns) {
+	public GameWindow(World world, DesignRenderer renderer) {
 		this.world = world;
-		this.patterns = patterns;
+		this.renderer = renderer;
 		this.menuBuilder = new MenuBarBuilder(world, this);
 		SwingUtils.setupCloseWindowKeyStrokes(this, getRootPane());
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -84,7 +84,7 @@ public class GameWindow extends JFrame implements Engine.Callbacks, MenuBarBuild
 		gameInProgress = true;
 		world.reset();
 		soundManager = new SoundManager(world);
-		viewer = new SceneViewer(patterns, world) {
+		viewer = new SceneViewer(renderer, world) {
 			public void handleMouseEvent(int type, int x, int y) {
 				if (type == MOUSE_CLICKED && isEnabled()) {
 					startThread(new ClickHandler(x, y));

@@ -38,14 +38,14 @@ import com.googlecode.wage_engine.engine.World;
 public class WorldBrowser extends JPanel {
 	private static final long serialVersionUID = 4725978893229240988L;
 	private World world;
-	private TexturePaint[] patterns;
+	private DesignRenderer renderer;
 	private JTabbedPane tabs;
 	private JList sceneList;
 	private JButton playButton;
 
 	public WorldBrowser(final World world) {
 		this.world = world;
-		patterns = loadPatterns(world);
+		renderer = new DesignRenderer(loadPatterns(world));
 		tabs = new JTabbedPane();
 		setLayout(new BorderLayout());
 		add(tabs, BorderLayout.CENTER);
@@ -59,7 +59,7 @@ public class WorldBrowser extends JPanel {
 		add(playButton, BorderLayout.SOUTH);
 		playButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				new GameWindow(world, patterns).setVisible(true);
+				new GameWindow(world, renderer).setVisible(true);
 			}
 		});
 	}
@@ -144,7 +144,7 @@ public class WorldBrowser extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				Scene scene = (Scene) sceneList.getSelectedValue();
 				if (scene != null) {
-					createAndShowWindowWithContent(new ObjectViewer(scene.getDesign(), patterns), scene.getDesignBounds());
+					createAndShowWindowWithContent(new ObjectViewer(renderer, scene.getDesign()), scene.getDesignBounds());
 				}
 			}
 		});
@@ -217,7 +217,7 @@ public class WorldBrowser extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				Obj obj = (Obj) list.getSelectedValue();
 				if (obj != null) {
-					createAndShowWindowWithContent(new ObjectViewer(obj.getDesign(), patterns), obj.getDesignBounds());
+					createAndShowWindowWithContent(new ObjectViewer(renderer, obj.getDesign()), obj.getDesignBounds());
 				}
 			}
 		});
@@ -227,7 +227,7 @@ public class WorldBrowser extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				Obj obj = (Obj) list.getSelectedValue();
 				if (obj != null) {
-					ObjectViewer viewer = new ObjectViewer(obj.getDesign(), patterns);
+					ObjectViewer viewer = new ObjectViewer(renderer, obj.getDesign());
 					viewer.setMaskMode(true);
 					createAndShowWindowWithContent(viewer, obj.getDesignBounds());
 				}
@@ -285,7 +285,7 @@ public class WorldBrowser extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				Chr chr = (Chr) list.getSelectedValue();
 				if (chr != null) {
-					createAndShowWindowWithContent(new ObjectViewer(chr.getDesign(), patterns), null);
+					createAndShowWindowWithContent(new ObjectViewer(renderer, chr.getDesign()), null);
 				}
 			}
 		});
@@ -295,7 +295,7 @@ public class WorldBrowser extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				Chr chr = (Chr) list.getSelectedValue();
 				if (chr != null) {
-					ObjectViewer viewer = new ObjectViewer(chr.getDesign(), patterns);
+					ObjectViewer viewer = new ObjectViewer(renderer, chr.getDesign());
 					viewer.setMaskMode(true);
 					createAndShowWindowWithContent(viewer, chr.getDesignBounds());
 				}
