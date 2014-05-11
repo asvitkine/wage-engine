@@ -325,14 +325,12 @@ public class Engine implements Script.Callbacks, MoveListener {
 						}
 					});
 					t.start();
-					System.err.println("waiting to join");
 					try {
 						t.join();
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					System.err.println("done");
 				}
 			}
 		}

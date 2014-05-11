@@ -469,7 +469,8 @@ public class Script {
 			}
 		}
 		if (result == null) {
-			System.err.printf("UNHANDLED CASE: [lhs=%d, rhs=%d]\n", lhs.type, rhs.type);
+			System.err.printf("UNHANDLED CASE: [lhs=%d/%s, rhs=%d/%s]\n",
+					lhs.type, lhs.value.toString(), rhs.type, rhs.value.toString());
 			System.err.println("-> " + getCurrentLine());
 			result = false;
 		}
@@ -745,7 +746,7 @@ public class Script {
 				Chr chr = (Chr) o2.value;
 				if (obj.getState().getCurrentOwner() != chr) {
 					world.move(obj, chr);
-					setHandled();
+					setHandled();  // TODO: Is this correct?
 				}
 			}
 		});
@@ -756,7 +757,8 @@ public class Script {
 				Scene scene = (Scene) o2.value;
 				if (obj.getState().getCurrentScene() != scene) {
 					world.move(obj, scene);
-					setHandled();
+					// Note: This shouldn't call setHandled() - see
+					// Sultan's Palace 'Food and Drink' scene.
 				}
 			}
 		});
@@ -766,7 +768,7 @@ public class Script {
 				Chr chr = (Chr) o1.value;
 				Scene scene = (Scene) o2.value;
 				world.move(chr, scene);
-				setHandled();
+				setHandled();  // TODO: Is this correct?
 			}
 		});
 		evaluatePair(handlers, what, to);
@@ -850,7 +852,6 @@ public class Script {
 					Operand op = readOperand();
 					// TODO check op type is string.
 					setHandled();
-					System.err.println("SOUND: " + getCurrentLine());
 					callbacks.playSound(op.value.toString());
 					// TODO check data[index] == 0xFD
 					index++;
