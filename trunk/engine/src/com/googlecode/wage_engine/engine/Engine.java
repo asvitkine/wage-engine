@@ -274,7 +274,6 @@ public class Engine implements Script.Callbacks, MoveListener {
 		if (!commandWasQuick && getMonster() != null) {
 			performCombatAction(getMonster(), world.getPlayer());
 		}
-		turn++;
 	}
 
 	public void appendText(String text, Object... args) {
