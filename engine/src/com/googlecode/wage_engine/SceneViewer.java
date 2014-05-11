@@ -10,12 +10,12 @@ import com.googlecode.wage_engine.engine.Obj;
 import com.googlecode.wage_engine.engine.Scene;
 
 public class SceneViewer extends WComponent {
-	private TexturePaint[] patterns;
+	private DesignRenderer renderer;
 	private Scene scene;
 	private Object lock;
 
-	public SceneViewer(TexturePaint[] patterns, Object lock) {
-		this.patterns = patterns;
+	public SceneViewer(DesignRenderer renderer, Object lock) {
+		this.renderer = renderer;
 		this.lock = lock;
 		setOpaque(false);
 		setFocusable(false);
@@ -36,7 +36,7 @@ public class SceneViewer extends WComponent {
 				wb.setTitle(scene.getName());
 		}
 	}
-
+	
 	@Override
 	public void paint(Graphics g) {
 		if (scene != null) {
@@ -45,13 +45,13 @@ public class SceneViewer extends WComponent {
 			g2d.translate(2, 2);
 			g2d.setColor(Color.WHITE);
 			g2d.fillRect(2, 2, getWidth()-4, getHeight()-4);
-			scene.getDesign().paint(g2d, patterns);
+			renderer.paintDesign(scene.getDesign(), g2d);
 			synchronized (lock) {
 				for (Obj o : scene.getState().getObjs())
-					o.getDesign().paint(g2d, patterns);
+					renderer.paintDesign(o.getDesign(), g2d);
 				for (Chr c : scene.getState().getChrs())
 					if (!c.isPlayerCharacter())
-						c.getDesign().paint(g2d, patterns);
+						renderer.paintDesign(c.getDesign(), g2d);
 			}
 			g2d.translate(-2, -2);
 			g2d.setClip(null);
@@ -63,14 +63,14 @@ public class SceneViewer extends WComponent {
 		List<Obj> objs = scene.getState().getObjs();
 		for (int i = objs.size() - 1; i >= 0; i--) {
 			Obj o = objs.get(i);
-			if (o.getDesign().isPointOpaque(x, y)) {
+			if (renderer.isPointOpaque(o.getDesign(), x, y)) {
 				return o;
 			}
 		}
 		List<Chr> chrs = scene.getState().getChrs();
 		for (int i = chrs.size() - 1; i >= 0; i--) {
 			Chr c = chrs.get(i);
-			if (c.getDesign().isPointOpaque(x, y)) {
+			if (renderer.isPointOpaque(c.getDesign(), x, y)) {
 				return c;
 			}
 		}

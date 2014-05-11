@@ -2,28 +2,21 @@ package com.googlecode.wage_engine.engine;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.TexturePaint;
-import java.awt.Transparency;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.RoundRectangle2D;
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import com.googlecode.wage_engine.Graphics2DCanvas;
-
 public class Design {
 	private byte[] data;
 	private Rectangle bounds;
-	private BufferedImage image;
-	private BufferedImage maskImage;
 
 	public Design(byte[] data) {
 		DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
@@ -36,6 +29,10 @@ public class Design {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	public Rectangle getBounds() {
+		return bounds;
 	}
 	
 	private void paintShape(Canvas g2d, TexturePaint[] patterns,
@@ -51,7 +48,7 @@ public class Design {
 		}
 	}
 	
-	private void realPaint(Canvas canvas, TexturePaint[] patterns, boolean mask) throws IOException {
+	public void paint(Canvas canvas, TexturePaint[] patterns, boolean mask) throws IOException {
 		DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
 		if (mask) {
 			canvas.setColor(Color.WHITE);
@@ -290,68 +287,13 @@ public class Design {
 		in.skip(numBytes - 10);
 	}
 
-	private BufferedImage getMaskImage() {
-		if (maskImage == null) {
-			maskImage = new BufferedImage(1024, 1024, BufferedImage.TYPE_BYTE_BINARY);
-			try {
-				Graphics2D g2d = maskImage.createGraphics();
-				g2d.translate(-bounds.x, -bounds.y);
-				Canvas canvas = new Graphics2DCanvas(g2d);
-				realPaint(canvas, null, true);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		return maskImage;
-	}
-	
-	public boolean isPointOpaque(int x, int y) {
-		BufferedImage maskImage = getMaskImage();
-		if (x >= bounds.x && y >= bounds.y && x < bounds.width && y < bounds.height) {
-			return (maskImage.getRGB(x - bounds.x, y - bounds.y) & 0xFF) == 0;	
-		}
-		return false;
-	}
-
 	private Rectangle computeBounds() {
 		MeasureCanvas canvas = new MeasureCanvas();
 		try {
-			realPaint(canvas, null, false);
+			paint(canvas, null, false);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return canvas.getBounds();
-	}
-	
-	public void paint(Graphics2D g, TexturePaint[] patterns) {
-		if (bounds.width == 0)
-			return;
-		if (image == null) {
-		    image = g.getDeviceConfiguration().createCompatibleImage(bounds.width, bounds.height, Transparency.BITMASK);
-			try {
-				Graphics2D g2d = image.createGraphics();
-				g2d.translate(-bounds.x, -bounds.y);
-				Canvas canvas = new Graphics2DCanvas(g2d);
-				realPaint(canvas, patterns, false);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		g.drawImage(image, bounds.x, bounds.y, bounds.width, bounds.height, null);
-	}
-
-	public void paintMask(Graphics2D g) {
-		BufferedImage maskImage = getMaskImage();
-		
-		g.setColor(Color.BLACK);
-		for (int x = 0; x < bounds.width; x++) {
-			for (int y = 0; y < bounds.height; y++) {
-				if (isPointOpaque(x, y)) {
-					g.fillRect(x, y, 1, 1);
-				}
-			}
-		}
-		
-		//g.drawImage(maskImage, bounds.x, bounds.y, bounds.width, bounds.height, null);
 	}
 }
