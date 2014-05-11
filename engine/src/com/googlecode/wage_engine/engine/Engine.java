@@ -21,7 +21,6 @@ public class Engine implements Script.Callbacks, MoveListener {
 	private Scene lastScene;
 	private PrintStream out;
 	private int loopCount;
-	private int turn;
 	private Callbacks callbacks;
 	private Chr monster;
 	private Chr running;
