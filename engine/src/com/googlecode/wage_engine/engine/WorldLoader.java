@@ -80,9 +80,7 @@ public class WorldLoader {
 				if (b != 1 && b != 0)
 					System.err.println("Unexpected value for weapons menu!");
 				in.skip(3);
-				String about = readPascalString(in);
-				about.replace((char) 0x0D, '\n');
-				world.setAboutMessage(about);
+				world.setAboutMessage(readPascalString(in));
 				if (file.getName().equals("Scepters"))
 					in.skip(1); // ????
 				world.setSoundLibrary1(readPascalString(in));
