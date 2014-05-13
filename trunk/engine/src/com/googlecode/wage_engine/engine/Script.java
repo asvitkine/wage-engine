@@ -469,7 +469,7 @@ public class Script {
 		}
 		if (result == null) {
 			System.err.printf("UNHANDLED CASE: [lhs=%d/%s, rhs=%d/%s]\n",
-					lhs.type, lhs.value.toString(), rhs.type, rhs.value.toString());
+					lhs.type, "" + lhs.value, rhs.type, "" + rhs.value);
 			System.err.println("-> " + getCurrentLine());
 			result = false;
 		}
@@ -1396,7 +1396,7 @@ public class Script {
 					sb.append((char) data[i++]);
 				i--;
 			} else {
-				System.err.printf("What is!! %x\n", data[i]);
+				System.err.printf("What is!! %x at %s\n", data[i], sb.toString());
 				//System.exit(-1);
 			}
 		}
