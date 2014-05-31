@@ -1,5 +1,7 @@
 package com.googlecode.wage_engine.engine;
 
+import java.io.ByteArrayOutputStream;
+
 public class ScriptTextConverter {
 	private static final int BLOCK_START = 1;
 	private static final int BLOCK_END = 2;
@@ -113,12 +115,55 @@ public class ScriptTextConverter {
 			} else if (Character.isDefined(data[i])) {
 				do {
 					sb.append((char) data[i++]);
-				} while (Character.isDefined(data[i]));
+				} while (i < data.length && Character.isDefined(data[i]));
 				i--;
 			} else {
 				System.err.printf("What is!! %x at %s\n", data[i], sb.toString());
 			}
 		}
 		return sb.toString();
+	}
+
+	private static int findKeyword(String scriptText) {
+		for (int i = 0; i < mapping.length; i++) {
+			String keyword = mapping[i];
+			if (keyword != null && scriptText.startsWith(keyword)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+	private static boolean isBetween(char c, char min, char max) {
+		return c >= min && c <= max;
+	}
+
+	// TODO: This seems to produce the same script text. Verify
+	//       that the actual bytes are identical too.
+	public static byte[] parseScript(String scriptText) {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		scriptText = scriptText.trim();
+		while (!scriptText.isEmpty()) {
+			int index = findKeyword(scriptText);
+			if (index != -1) {
+				String keyword = mapping[index];
+				out.write(index);
+				scriptText = scriptText.substring(keyword.length());
+				if (keyword.endsWith("\n"))
+					scriptText = scriptText.trim();
+			} else if (scriptText.length() >= 3 && scriptText.charAt(2) == '#' &&
+				isBetween(scriptText.charAt(0), 'A', 'Z') &&
+				isBetween(scriptText.charAt(1), '0', '9')) {
+				out.write(0xFF);
+				int letter = scriptText.charAt(0) - 'A';
+				int digit = scriptText.charAt(1) - '0';
+				out.write(letter * 9 + digit);
+				scriptText = scriptText.substring(3);
+			} else {
+				out.write(scriptText.charAt(0));
+				scriptText = scriptText.substring(1);
+			}
+		}
+		return out.toByteArray();
 	}
 }
