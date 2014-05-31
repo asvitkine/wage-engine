@@ -1247,166 +1247,15 @@ public class Script {
 			appendText("You can't go " + dirName + ".");
 		}
 	}
-	
-	private void indent(StringBuilder sb, int indentLevel) {
-		for (int i = 0; i < indentLevel; i++)
-			sb.append(' ');
-	}
 
 	private String buildStringFromOffset(int offset, int length) {
-		StringBuilder sb = new StringBuilder();
-		int indentLevel = 0;
-		for (int i = offset; i - offset < length && i < data.length; i++) {
-			if (data[i] == (byte) 0x80) {
-				indent(sb, indentLevel);
-				sb.append("IF{");
-			} else if (data[i] == (byte) 0xA0) {
-				sb.append("TEXT$");
-			} else if (data[i] == (byte) 0xA1) {
-				sb.append("CLICK$");
-			} else if (data[i] == (byte) 0xC0) {
-				sb.append("STORAGE@");
-			} else if (data[i] == (byte) 0xC1) {
-				sb.append("SCENE@");
-			} else if (data[i] == (byte) 0xC2) {
-				sb.append("PLAYER@");
-			} else if (data[i] == (byte) 0xC3) {
-				sb.append("MONSTER@");
-			} else if (data[i] == (byte) 0xC4) {
-				sb.append("RANDOMSCN@");
-			} else if (data[i] == (byte) 0xC5) {
-				sb.append("RANDOMCHR@");
-			} else if (data[i] == (byte) 0xC6) {
-				sb.append("RANDOMOBJ@");
-			} else if (data[i] == (byte) 0x81) {
-				sb.append("=");
-			} else if (data[i] == (byte) 0x82) {
-				sb.append("<");
-			} else if (data[i] == (byte) 0x83) {
-				sb.append(">");
-			} else if (data[i] == (byte) 0x84) {
-				sb.append("}AND{");
-			} else if (data[i] == (byte) 0x85) {
-				sb.append("}OR{");
-			} else if (data[i] == (byte) 0x87) {
-				indentLevel -= 2;
-				indent(sb, indentLevel);
-				sb.append("EXIT\n");
-			} else if (data[i] == (byte) 0x88) {
-				indentLevel -= 2;
-				indent(sb, indentLevel);
-				sb.append("END\n");
-			} else if (data[i] == (byte) 0x89) {
-				indent(sb, indentLevel);
-				sb.append("MOVE{");
-			} else if (data[i] == (byte) 0x8A) {
-				sb.append("}TO{");
-			} else if (data[i] == (byte) 0x8B) {
-				indent(sb, indentLevel);
-				sb.append("PRINT{");
-			} else if (data[i] == (byte) 0x8C) {
-				indent(sb, indentLevel);
-				sb.append("SOUND{");
-			} else if (data[i] == (byte) 0x8E) {
-				indent(sb, indentLevel);
-				sb.append("LET{");
-			} else if (data[i] == (byte) 0x8F) {
-				sb.append("+");
-			} else if (data[i] == (byte) 0x90) {
-				sb.append("-");
-			} else if (data[i] == (byte) 0x91) {
-				sb.append("*");
-			} else if (data[i] == (byte) 0x92) {
-				sb.append("/");
-			} else if (data[i] == (byte) 0x93) {
-				sb.append("==");
-			} else if (data[i] == (byte) 0x94) {
-				sb.append(">>");
-			} else if (data[i] == (byte) 0x95) {
-				indent(sb, indentLevel);
-				sb.append("MENU{");
-			} else if (data[i] == (byte) 0xFD) {
-				sb.append("}\n");
-			} else if (data[i] == (byte) 0xFE) {
-				sb.append("}THEN\n");
-				indentLevel += 2;
-			} else if (data[i] == (byte) 0xFF) {
-				i++;
-				int value = data[i];
-				if (value < 0) value += 256;
-				value -= 1;
-				sb.append((char) ('A' + (value / 9)));
-				sb.append((value % 9) + 1);
-				sb.append("#");
-			} else if (data[i] == (byte) 0xB0) {
-				// The number of scenes the player has visited, including repeated visits.
-				sb.append("VISITS#");
-			} else if (data[i] == (byte) 0xB1) {
-				sb.append("RANDOM#"); // RANDOM# for Star Trek, but VISITS# for some other games?
-			} else if (data[i] == (byte) 0xB5) {
-				// A random number between 1 and 100.
-				sb.append("RANDOM#");
-			} else if (data[i] == (byte) 0xB2) {
-				// The number of commands the player has given in the current scene.
-				sb.append("LOOP#");
-			} else if (data[i] == (byte) 0xB3) {
-				// The number of characters killed.
-				sb.append("VICTORY#");
-			} else if (data[i] == (byte) 0xB4) {
-				// ????
-				sb.append("BADCOPY#");
-			} else if (data[i] == (byte) 0xD0) {
-				sb.append("PHYS.STR.BAS#");
-			} else if (data[i] == (byte) 0xD1) {
-				sb.append("PHYS.HIT.BAS#");
-			} else if (data[i] == (byte) 0xD2) {
-				sb.append("PHYS.ARM.BAS#");
-			} else if (data[i] == (byte) 0xD3) {
-				sb.append("PHYS.ACC.BAS#");
-			} else if (data[i] == (byte) 0xD4) {
-				sb.append("SPIR.STR.BAS#");
-			} else if (data[i] == (byte) 0xD5) {
-				sb.append("SPIR.HIT.BAS#");
-			} else if (data[i] == (byte) 0xD6) {
-				sb.append("SPIR.ARM.BAS#");
-			} else if (data[i] == (byte) 0xD7) {
-				sb.append("SPIR.ACC.BAS#");
-			} else if (data[i] == (byte) 0xD8) {
-				sb.append("PHYS.SPE.BAS#");
-			} else if (data[i] == (byte) 0xE0) {
-				sb.append("PHYS.STR.CUR#");
-			} else if (data[i] == (byte) 0xE1) {
-				sb.append("PHYS.HIT.CUR#");
-			} else if (data[i] == (byte) 0xE2) {
-				sb.append("PHYS.ARM.CUR#");
-			} else if (data[i] == (byte) 0xE3) {
-				sb.append("PHYS.ACC.CUR#");
-			} else if (data[i] == (byte) 0xE4) {
-				sb.append("SPIR.STR.CUR#");
-			} else if (data[i] == (byte) 0xE5) {
-				sb.append("SPIR.HIT.CUR#");
-			} else if (data[i] == (byte) 0xE6) {
-				sb.append("SPIR.ARM.CUR#");
-			} else if (data[i] == (byte) 0xE7) {
-				sb.append("SPIR.ACC.CUR#");
-			} else if (data[i] == (byte) 0xE8) {
-				sb.append("PHYS.SPE.CUR#");
-			} else if (Character.isDefined(data[i])) {
-				while (Character.isDefined(data[i]))
-					sb.append((char) data[i++]);
-				i--;
-			} else {
-				System.err.printf("What is!! %x at %s\n", data[i], sb.toString());
-				//System.exit(-1);
-			}
-		}
-		return sb.toString();
+		return ScriptTextConverter.convertScriptText(data, offset, length);
 	}
 
 	private String buildStringFromOffset(int offset) {
 		return buildStringFromOffset(offset, data.length - offset);
 	}
-	
+
 	public String toString() {
 		String s = buildStringFromOffset(12);
 		StringBuilder sb = new StringBuilder("  0: ");
@@ -1418,13 +1267,13 @@ public class Script {
 		} 
 		return sb.toString();
 	}
-	
+
 	private String getCurrentLine() {
 		String[] lines = toString().split("\n");
 		int lineNumber = indexToLine(index);	
 		return lines[lineNumber];
 	}
-	
+
 	private int indexToLine(int index) {
 		int loc = 0;
 		for (char c : buildStringFromOffset(12, index).toCharArray())
