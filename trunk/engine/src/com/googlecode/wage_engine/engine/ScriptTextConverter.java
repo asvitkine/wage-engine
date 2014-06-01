@@ -134,12 +134,12 @@ public class ScriptTextConverter {
 		return sb.toString();
 	}
 
-	private static int findKeyword(String scriptText) {
+	private static int findKeyword(String scriptText, int offset) {
 		// Script may start with multiple keyword (e.g. == and =), so search
 		// from the end, since == and >> are later in the array than = and >.
 		for (int i = mapping.length - 1; i >= 0; i--) {
 			String keyword = mapping[i];
-			if (keyword != null && scriptText.startsWith(keyword)) {
+			if (keyword != null && scriptText.startsWith(keyword, offset)) {
 				return i == 0xb5 ? 0xb1 : i;
 			}
 		}
@@ -150,33 +150,35 @@ public class ScriptTextConverter {
 		return c >= min && c <= max;
 	}
 
-	private static String trimLeft(String s) {
-	    return s.replaceAll("^\\s+", "");
+	private static int trimLeft(String s, int offset) {
+		while (offset < s.length() && Character.isWhitespace(s.charAt(offset)))
+			offset++;
+	    return offset;
 	}
 
 	// TODO: This seems to produce the same script text. Verify
 	//       that the actual bytes are identical too.
 	public static byte[] parseScript(String scriptText) {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		scriptText = trimLeft(scriptText);
 		int lastIndex = 0;
-		while (!scriptText.isEmpty()) {
-			int index = findKeyword(scriptText);
+		int offset = trimLeft(scriptText, 0);
+		while (offset < scriptText.length()) {
+			int index = findKeyword(scriptText, offset);
 			if (index != -1) {
 				lastIndex = index;
 				String keyword = mapping[index];
 				out.write(index);
-				scriptText = scriptText.substring(keyword.length());
+				offset += keyword.length();
 				if (keyword.endsWith("\n"))
-					scriptText = trimLeft(scriptText);
-			} else if (scriptText.length() >= 3 && scriptText.charAt(2) == '#' &&
-				isBetween(scriptText.charAt(0), 'A', 'Z') &&
-				isBetween(scriptText.charAt(1), '0', '9')) {
+					offset = trimLeft(scriptText, offset);
+			} else if (scriptText.length() - offset >= 3 && scriptText.charAt(offset + 2) == '#' &&
+				isBetween(scriptText.charAt(offset), 'A', 'Z') &&
+				isBetween(scriptText.charAt(offset + 1), '0', '9')) {
 				out.write(0xFF);
-				int letter = scriptText.charAt(0) - 'A';
-				int digit = scriptText.charAt(1) - '0';
+				int letter = scriptText.charAt(offset) - 'A';
+				int digit = scriptText.charAt(offset + 1) - '0';
 				out.write(letter * 9 + digit);
-				scriptText = scriptText.substring(3);
+				offset += 3;
 			} else if (lastIndex != 0x80 &&
 					(types[lastIndex] == STATEMENT || types[lastIndex] == OPERATOR)) {
 				// Consume the whole string until } for all non-IF statements,
@@ -184,14 +186,13 @@ public class ScriptTextConverter {
 				// TODO: This doesn't still work correctly for things like:
 				//   IF{EZ-SNAP=PLAYER@}THEN
 				// ... since the '-' in EZ-SNAP will be parsed as an operator.
-				int i;
-				for (i = 0; !scriptText.startsWith("}\n", i); i++) {
-					out.write(scriptText.charAt(i));
+				// Note: A '}' may appear in a text block (e.g. in Swamp Witch), hence the
+				// need for the second cond.
+				while (scriptText.charAt(offset) != '}' || findKeyword(scriptText, offset) == -1) {
+					out.write(scriptText.charAt(offset++));
 				}
-				scriptText = scriptText.substring(i);
 			} else {
-				out.write(scriptText.charAt(0));
-				scriptText = scriptText.substring(1);
+				out.write(scriptText.charAt(offset++));
 			}
 		}
 		return out.toByteArray();
