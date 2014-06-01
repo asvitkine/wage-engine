@@ -6,6 +6,7 @@ public class ScriptTextConverter {
 	private static final int BLOCK_START = 1;
 	private static final int BLOCK_END = 2;
 	private static final int STATEMENT = 3;
+	private static final int OPERATOR = 4;
 
 	private static String[] mapping = new String[256];
 	private static int[] types = new int[256];
@@ -13,8 +14,11 @@ public class ScriptTextConverter {
 		mapping[0x80] = "IF{";
 		types[0x80] = STATEMENT;
 		mapping[0x81] = "=";
+		types[0x81] = OPERATOR;
 		mapping[0x82] = "<";
+		types[0x82] = OPERATOR;
 		mapping[0x83] = ">";
+		types[0x83] = OPERATOR;
 		mapping[0x84] = "}AND{";
 		mapping[0x85] = "}OR{";
 		mapping[0x87] = "EXIT\n";
@@ -31,11 +35,17 @@ public class ScriptTextConverter {
 		mapping[0x8E] = "LET{";
 		types[0x8E] = STATEMENT;
 		mapping[0x8F] = "+";
+		types[0x8F] = OPERATOR;
 		mapping[0x90] = "-";
+		types[0x90] = OPERATOR;
 		mapping[0x91] = "*";
+		types[0x91] = OPERATOR;
 		mapping[0x92] = "/";
+		types[0x92] = OPERATOR;
 		mapping[0x93] = "==";
+		types[0x93] = OPERATOR;
 		mapping[0x94] = ">>";
+		types[0x94] = OPERATOR;
 		mapping[0x95] = "MENU{";
 		types[0x95] = STATEMENT;
 		mapping[0xA0] = "TEXT$";
@@ -115,7 +125,7 @@ public class ScriptTextConverter {
 			} else if (Character.isDefined(data[i])) {
 				do {
 					sb.append((char) data[i++]);
-				} while (i < data.length && Character.isDefined(data[i]));
+				} while (Character.isDefined(data[i]));
 				i--;
 			} else {
 				System.err.printf("What is!! %x at %s\n", data[i], sb.toString());
@@ -125,10 +135,12 @@ public class ScriptTextConverter {
 	}
 
 	private static int findKeyword(String scriptText) {
-		for (int i = 0; i < mapping.length; i++) {
+		// Script may start with multiple keyword (e.g. == and =), so search
+		// from the end, since == and >> are later in the array than = and >.
+		for (int i = mapping.length - 1; i >= 0; i--) {
 			String keyword = mapping[i];
 			if (keyword != null && scriptText.startsWith(keyword)) {
-				return i;
+				return i == 0xb5 ? 0xb1 : i;
 			}
 		}
 		return -1;
@@ -138,19 +150,25 @@ public class ScriptTextConverter {
 		return c >= min && c <= max;
 	}
 
+	private static String trimLeft(String s) {
+	    return s.replaceAll("^\\s+", "");
+	}
+
 	// TODO: This seems to produce the same script text. Verify
 	//       that the actual bytes are identical too.
 	public static byte[] parseScript(String scriptText) {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		scriptText = scriptText.trim();
+		scriptText = trimLeft(scriptText);
+		int lastIndex = 0;
 		while (!scriptText.isEmpty()) {
 			int index = findKeyword(scriptText);
 			if (index != -1) {
+				lastIndex = index;
 				String keyword = mapping[index];
 				out.write(index);
 				scriptText = scriptText.substring(keyword.length());
 				if (keyword.endsWith("\n"))
-					scriptText = scriptText.trim();
+					scriptText = trimLeft(scriptText);
 			} else if (scriptText.length() >= 3 && scriptText.charAt(2) == '#' &&
 				isBetween(scriptText.charAt(0), 'A', 'Z') &&
 				isBetween(scriptText.charAt(1), '0', '9')) {
@@ -159,6 +177,18 @@ public class ScriptTextConverter {
 				int digit = scriptText.charAt(1) - '0';
 				out.write(letter * 9 + digit);
 				scriptText = scriptText.substring(3);
+			} else if (lastIndex != 0x80 &&
+					(types[lastIndex] == STATEMENT || types[lastIndex] == OPERATOR)) {
+				// Consume the whole string until } for all non-IF statements,
+				// without looking for keywords inside it.
+				// TODO: This doesn't still work correctly for things like:
+				//   IF{EZ-SNAP=PLAYER@}THEN
+				// ... since the '-' in EZ-SNAP will be parsed as an operator.
+				int i;
+				for (i = 0; scriptText.charAt(i) != '}'; i++) {
+					out.write(scriptText.charAt(i));
+				}
+				scriptText = scriptText.substring(i);
 			} else {
 				out.write(scriptText.charAt(0));
 				scriptText = scriptText.substring(1);
