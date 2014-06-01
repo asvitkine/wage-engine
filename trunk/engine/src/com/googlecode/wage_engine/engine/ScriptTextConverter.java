@@ -185,7 +185,7 @@ public class ScriptTextConverter {
 				//   IF{EZ-SNAP=PLAYER@}THEN
 				// ... since the '-' in EZ-SNAP will be parsed as an operator.
 				int i;
-				for (i = 0; scriptText.charAt(i) != '}'; i++) {
+				for (i = 0; !scriptText.startsWith("}\n", i); i++) {
 					out.write(scriptText.charAt(i));
 				}
 				scriptText = scriptText.substring(i);
