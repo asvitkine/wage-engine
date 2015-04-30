@@ -1,0 +1,3 @@
+<b>W</b>orld <b>A</b>dventure <b>G</b>ame <b>E</b>ngine is a game engine for running classic Mac graphic text adventure games that were created using Bill Appleton's <a href='http://en.wikipedia.org/wiki/World Builder'>World Builder</a> game creation system.
+
+![http://wage-engine.googlecode.com/svn/trunk/screenshots/startrek.png](http://wage-engine.googlecode.com/svn/trunk/screenshots/startrek.png)
