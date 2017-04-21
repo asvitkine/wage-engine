@@ -132,7 +132,7 @@ public class Script {
 		boolean allDigits = true;
 		while (Character.isDefined(data[index])) {
 			char c = (char) data[index++];
-			if (!Character.isDigit(c))
+			if (!Character.isDigit(c) && !(c == '-' && sb.length() == 0))
 				allDigits = false;
 			sb.append(c);
 		}
