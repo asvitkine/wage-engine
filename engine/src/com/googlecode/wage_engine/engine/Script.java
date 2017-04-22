@@ -313,6 +313,7 @@ public class Script {
 			// less than
 			// does not equal
 			// does not have
+			// is not in room
 			List<PairEvaluator> handlers = new ArrayList<PairEvaluator>();
 			handlers.add(new PairEvaluator(Operand.NUMBER, Operand.NUMBER) {
 				@Override
@@ -364,6 +365,14 @@ public class Script {
 					Obj o = (Obj) o1.value;
 					Scene s = (Scene) o2.value;
 					evalResult = (o.getState().getCurrentScene() != s);
+				}
+			});
+			handlers.add(new PairEvaluator(Operand.CHR, Operand.SCENE) {
+				@Override
+				public void evaluatePair(Operand o1, Operand o2) {
+					Chr c = (Chr) o1.value;
+					Scene s = (Scene) o2.value;
+					evalResult = (c.getState().getCurrentScene() != s);
 				}
 			});
 			handlers.add(new PairEvaluator(Operand.CHR, Operand.CHR) {
